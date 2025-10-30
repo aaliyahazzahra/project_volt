@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/Login%20&%20Register/authenticator.dart';
+import 'package:project_volt/bottomnavigator/BottomNavHomepage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Authenticator(),
+      home: BottomNavHomepage(),
     );
   }
 }

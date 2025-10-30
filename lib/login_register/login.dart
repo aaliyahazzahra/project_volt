@@ -85,7 +85,7 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  // Widget helper untuk membuat tombol (biar rapi)
+  // Widget helper untuk membuat tombol
   Widget _buildRoleButton({
     required String text,
     required IconData icon,
@@ -98,7 +98,7 @@ class _RegisterFormState extends State<RegisterForm> {
             // Style Tanda Terpilih (Oranye)
             icon: Icon(icon, color: Colors.white),
             label: Text(text),
-            onPressed: null, // Dibuat null agar tidak bisa diklik lagi
+            onPressed: null, // agar tidak bisa diklik lagi
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
@@ -112,7 +112,7 @@ class _RegisterFormState extends State<RegisterForm> {
             // Style Tanda Tidak Terpilih (Putih)
             icon: Icon(icon),
             label: Text(text),
-            onPressed: onPressed, // Fungsi untuk ganti state
+            onPressed: onPressed,
             style: OutlinedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.grey[700],

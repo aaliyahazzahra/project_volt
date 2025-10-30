@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/Login%20&%20Register/login.dart';
+import 'package:project_volt/kelas/anggotakelas.dart';
+import 'package:project_volt/kelas/forumkelas.dart';
+import 'package:project_volt/kelas/tugaskelas.dart';
 
-class Authenticator extends StatelessWidget {
-  const Authenticator({super.key});
+class DashboardKelas extends StatelessWidget {
+  const DashboardKelas({super.key});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // 2 tab: Login & Registrasi
+      length: 3,
       child: Scaffold(
         body: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 60.0),
@@ -16,14 +18,14 @@ class Authenticator extends StatelessWidget {
               // Bagian Header
               SizedBox(height: 16),
               Text(
-                "RKL Learning",
+                "Nama Kelas",
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.blueAccent,
                 ),
               ),
-              SizedBox(height: 40),
+              SizedBox(height: 20),
 
               // Bagian TabBar
               Container(
@@ -47,63 +49,33 @@ class Authenticator extends StatelessWidget {
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey,
                   tabs: [
-                    Tab(text: 'Login'),
-                    Tab(text: 'Registrasi'),
+                    Tab(text: 'Tugas'),
+                    Tab(text: 'Forum'),
+                    Tab(text: 'Anggota'),
                   ],
                 ),
               ),
+              SizedBox(height: 20),
 
               // Bagian Form
-              Container(
-                // Agar tinggi dinamis
-                constraints: BoxConstraints(maxHeight: 400.0),
+              SizedBox(
+                height: 500,
                 child: TabBarView(
                   children: [
                     // Halaman 1: Form Login
-                    _buildLoginForm(),
+                    TugasKelas(),
 
                     // Halaman 2: Form Registrasi
-                    RegisterForm(),
+                    ForumKelas(),
+
+                    // Halaman 2: Form Registrasi
+                    AnggotaKelas(),
                   ],
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // Widget terpisah untuk Form Login
-  Widget _buildLoginForm() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        children: [
-          SizedBox(height: 20),
-          TextField(decoration: InputDecoration(labelText: 'Email')),
-          SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(labelText: 'Password'),
-            obscureText: true,
-          ),
-          SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              'Lupa Password?',
-              style: TextStyle(color: Colors.blueAccent),
-            ),
-          ),
-          SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              minimumSize: Size(double.infinity, 50),
-            ),
-            child: Text('Masuk Sekarang'),
-          ),
-        ],
       ),
     );
   }
