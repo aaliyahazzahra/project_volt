@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/kelas/anggotakelas.dart';
-import 'package:project_volt/kelas/forumkelas.dart';
-import 'package:project_volt/kelas/tugaskelas.dart';
+import 'package:project_volt/constant/app_image.dart';
+import 'package:project_volt/view/login_register/loginform.dart';
+import 'package:project_volt/view/login_register/registerform.dart';
 
-class DashboardKelas extends StatelessWidget {
-  const DashboardKelas({super.key});
+class Authenticator extends StatelessWidget {
+  const Authenticator({super.key});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         body: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 60.0),
@@ -17,15 +17,9 @@ class DashboardKelas extends StatelessWidget {
             children: [
               // Bagian Header
               SizedBox(height: 16),
-              Text(
-                "Nama Kelas",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                ),
-              ),
-              SizedBox(height: 20),
+              Image.asset(AppImages.logo, height: 100),
+
+              SizedBox(height: 40),
 
               // Bagian TabBar
               Container(
@@ -49,13 +43,11 @@ class DashboardKelas extends StatelessWidget {
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey,
                   tabs: [
-                    Tab(text: 'Tugas'),
-                    Tab(text: 'Forum'),
-                    Tab(text: 'Anggota'),
+                    Tab(text: 'Login'),
+                    Tab(text: 'Registrasi'),
                   ],
                 ),
               ),
-              SizedBox(height: 20),
 
               // Bagian Form
               SizedBox(
@@ -63,13 +55,10 @@ class DashboardKelas extends StatelessWidget {
                 child: TabBarView(
                   children: [
                     // Halaman 1: Form Login
-                    TugasKelas(),
+                    LoginForm(),
 
                     // Halaman 2: Form Registrasi
-                    ForumKelas(),
-
-                    // Halaman 2: Form Registrasi
-                    AnggotaKelas(),
+                    RegisterForm(),
                   ],
                 ),
               ),

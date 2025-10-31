@@ -1,37 +1,45 @@
 import 'package:circle_nav_bar/circle_nav_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:project_volt/dashboard/homepage.dart';
-import 'package:project_volt/dashboard/profil.dart';
+import 'package:project_volt/model/user_model.dart';
+import 'package:project_volt/view/dashboard/homepage_dosen.dart';
+import 'package:project_volt/view/dashboard/homepage_mhs.dart';
+import 'package:project_volt/view/dashboard/profil.dart';
 
 class BottomNavHomepage extends StatefulWidget {
-  const BottomNavHomepage({super.key});
+  final UserModel user;
+  final int initialIndex; // Untuk menentukan tab awal
+
+  const BottomNavHomepage({
+    super.key,
+    required this.user,
+    this.initialIndex = 0, // Default ke tab pertama
+  });
 
   @override
   State<BottomNavHomepage> createState() => _BottomNavHomepageState();
 }
 
 class _BottomNavHomepageState extends State<BottomNavHomepage> {
-  int _tabIndex = 1; // indeks awal
+  late int _tabIndex;
+  late List<Widget> _widgetOptions;
 
-  // final List<Widget> _pages = const [
-  //   Center(child: Text("Halaman Saya (Indeks 0)")),
-  //   Center(child: Text("Halaman Utama (Indeks 1)")),
-  //   Center(child: Text("Halaman Suka (Indeks 2)")),
-  // ];
+  @override
+  void initState() {
+    super.initState();
+    _tabIndex = widget.initialIndex;
+    _widgetOptions = [
+      HomepageMhs(),
+      HomepageDosen(user: widget.user),
+      ProfilePage(),
+    ];
+  }
 
-  static const List<Widget> _widgetOptions = [
-    HomePage(),
-    HomePage(),
-    ProfilePage(),
-  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _widgetOptions[_tabIndex],
-
       bottomNavigationBar: CircleNavBar(
         activeIndex: _tabIndex,
-
         activeIcons: const [
           Icon(Icons.home, color: Colors.deepPurple),
           Icon(Icons.toc_outlined, color: Colors.deepPurple),
@@ -46,13 +54,11 @@ class _BottomNavHomepageState extends State<BottomNavHomepage> {
         circleColor: Colors.white,
         height: 60,
         circleWidth: 60,
-
         onTap: (newIndex) {
           setState(() {
             _tabIndex = newIndex;
           });
         },
-
         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
         cornerRadius: const BorderRadius.only(
           topLeft: Radius.circular(8),

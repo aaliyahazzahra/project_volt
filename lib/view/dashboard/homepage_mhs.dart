@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:project_volt/bottomnavigator/bottomnavkelas.dart';
 import 'package:project_volt/constant/app_color.dart';
-import 'package:project_volt/kelas/dashboard_kelas.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomepageMhs extends StatefulWidget {
+  const HomepageMhs({super.key});
 
+  @override
+  State<HomepageMhs> createState() => _HomepageMhsState();
+}
+
+class _HomepageMhsState extends State<HomepageMhs> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +75,7 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => DashboardKelas()),
+                  MaterialPageRoute(builder: (context) => BottomNavKelas()),
                 );
                 print("Tombol Gabung Kelas ditekan!");
               },
