@@ -109,7 +109,9 @@ class _LoginFormState extends State<LoginForm> {
                     if (userRole == UserRole.mahasiswa.toString()) {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => HomepageMhs()),
+                        MaterialPageRoute(
+                          builder: (context) => HomepageMhs(user: user),
+                        ),
                       );
                       print("NAVIGASI KE DASHBOARD MAHASISWA");
                     } else if (userRole == UserRole.dosen.toString()) {

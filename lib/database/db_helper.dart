@@ -1,4 +1,6 @@
 import 'package:path/path.dart';
+import 'package:project_volt/model/kelas_model.dart';
+import 'package:project_volt/model/tugas_model.dart';
 import 'package:project_volt/model/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -21,6 +23,7 @@ class DbHelper {
         await db.execute(
           "CREATE TABLE $tableUser("
           "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+          "namaLengkap TEXT NOT NULL, "
           "email TEXT NOT NULL UNIQUE, "
           "password TEXT NOT NULL, "
           "role TEXT NOT NULL"
@@ -54,8 +57,8 @@ class DbHelper {
           "id INTEGER PRIMARY KEY AUTOINCREMENT, "
           "nama_kelas TEXT NOT NULL, "
           "deskripsi TEXT, "
-          "kode_kelas TEXT NOT NULL UNIQUE, " // Kode unik untuk join
-          "dosen_id INTEGER NOT NULL, " // Siapa pembuat/pemilik kelas
+          "kode_kelas TEXT NOT NULL UNIQUE, "
+          "dosen_id INTEGER NOT NULL, "
           "FOREIGN KEY (dosen_id) REFERENCES $tableUser (id) ON DELETE CASCADE"
           ")",
         );
@@ -63,7 +66,7 @@ class DbHelper {
         await db.execute(
           "CREATE TABLE $tableTugas("
           "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-          "kelas_id INTEGER NOT NULL, " // Tugas ini milik kelas mana
+          "kelas_id INTEGER NOT NULL, "
           "judul TEXT NOT NULL, "
           "deskripsi TEXT, "
           "tgl_tenggat TEXT, " // Simpan sebagai String (ISO format)
@@ -164,40 +167,60 @@ class DbHelper {
   }
 
   // DOSEN: Membuat kelas baru
-  static Future<int> createKelas(Map<String, dynamic> data) async {
+  static Future<int> createKelas(KelasModel kelas) async {
     final dbs = await db();
     return await dbs.insert(
       tableKelas,
-      data,
+      kelas.toMap(),
       conflictAlgorithm: ConflictAlgorithm.fail,
     ); // Gagal jika kode_kelas sama
   }
 
-  // DOSEN: Mendapatkan semua kelas yang dia buat
-  static Future<List<Map<String, dynamic>>> getKelasByDosen(int dosenId) async {
+  // UPDATE KELAS
+  static Future<int> updateKelas(KelasModel kelas) async {
     final dbs = await db();
-    return await dbs.query(
+    final id = kelas.id;
+    return await dbs.update(
+      tableKelas,
+      kelas.toMap(),
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // HAPUS KELAS
+  static Future<int> deleteKelas(int id) async {
+    final dbs = await db();
+    return await dbs.delete(tableKelas, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // DOSEN: Mendapatkan semua kelas yang dia buat
+  static Future<List<KelasModel>> getKelasByDosen(int dosenId) async {
+    final dbs = await db();
+    final results = await dbs.query(
       tableKelas,
       where: 'dosen_id = ?',
       whereArgs: [dosenId],
       orderBy: 'nama_kelas ASC', // Diurutkan A-Z
     );
+
+    return results.map((map) => KelasModel.fromMap(map)).toList();
   }
 
   // DOSEN: Membuat tugas baru
-  static Future<int> createTugas(Map<String, dynamic> data) async {
+  static Future<int> createTugas(TugasModel tugas) async {
     final dbs = await db();
-    return await dbs.insert(tableTugas, data);
+    return await dbs.insert(tableTugas, tugas.toMap());
   }
 
   // DOSEN: Mengedit tugas
-  static Future<int> updateTugas(int tugasId, Map<String, dynamic> data) async {
+  static Future<int> updateTugas(TugasModel tugas) async {
     final dbs = await db();
     return await dbs.update(
       tableTugas,
-      data,
+      tugas.toMap(),
       where: 'id = ?',
-      whereArgs: [tugasId],
+      whereArgs: [tugas.id],
     );
   }
 
@@ -208,13 +231,58 @@ class DbHelper {
   }
 
   // MAHASISWA & DOSEN: Melihat semua tugas di satu kelas
-  static Future<List<Map<String, dynamic>>> getTugasByKelas(int kelasId) async {
+  static Future<List<TugasModel>> getTugasByKelas(int kelasId) async {
     final dbs = await db();
-    return await dbs.query(
+    final results = await dbs.query(
       tableTugas,
       where: 'kelas_id = ?',
       whereArgs: [kelasId],
       orderBy: 'id DESC', // Tampilkan yang terbaru di atas
     );
+    return results.map((map) => TugasModel.fromMap(map)).toList();
+  }
+
+  // MAHASISWA: Bergabung dengan kelas
+  static Future<String> joinKelas(int mahasiswaId, String kodeKelas) async {
+    final dbs = await db();
+
+    // Cari kelas berdasarkan kode
+    final List<Map<String, dynamic>> kelasResults = await dbs.query(
+      tableKelas,
+      where: 'kode_kelas = ?',
+      whereArgs: [kodeKelas],
+    );
+
+    // Cek jika kelas tidak ada
+    if (kelasResults.isEmpty) {
+      return "Error: Kode Kelas tidak ditemukan.";
+    }
+    final int kelasId = kelasResults.first['id'];
+
+    // Masukkan ke tabel anggota
+    try {
+      await dbs.insert(
+        tableKelasAnggota,
+        {'kelas_id': kelasId, 'mahasiswa_id': mahasiswaId},
+        conflictAlgorithm: ConflictAlgorithm.fail, // Gagal jika sudah join
+      );
+      return "Sukses: Berhasil bergabung dengan kelas!";
+    } catch (e) {
+      // error jika sudah join
+      print(e);
+      return "Error: Anda sudah terdaftar di kelas ini.";
+    }
+  }
+
+  // MAHASISWA: Mendapatkan semua kelas yang dia ikuti
+  static Future<List<KelasModel>> getKelasByMahasiswa(int mahasiswaId) async {
+    final dbs = await db();
+    final List<Map<String, dynamic>> results = await dbs.rawQuery(
+      'SELECT T1.* FROM $tableKelas T1 '
+      'INNER JOIN $tableKelasAnggota T2 ON T1.id = T2.kelas_id '
+      'WHERE T2.mahasiswa_id = ?',
+      [mahasiswaId],
+    );
+    return results.map((map) => KelasModel.fromMap(map)).toList();
   }
 }

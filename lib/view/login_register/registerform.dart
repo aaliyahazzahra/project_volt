@@ -16,11 +16,15 @@ class _RegisterFormState extends State<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
 
   UserRole _selectedRole = UserRole.mahasiswa;
+  final TextEditingController namaLengkapController = TextEditingController();
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   @override
   void dispose() {
+    namaLengkapController.dispose();
+
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -36,6 +40,16 @@ class _RegisterFormState extends State<RegisterForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              BuildTextField(
+                labelText: "Nama Lengkap",
+                controller: namaLengkapController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nama Lengkap tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
               BuildTextField(
                 labelText: "Email",
                 controller: emailController,
@@ -118,9 +132,9 @@ class _RegisterFormState extends State<RegisterForm> {
                       role: UserRole.dosen,
                       isSelected: _selectedRole == UserRole.dosen,
                       onPressed: () {
-                        setState(() {
-                          _selectedRole = UserRole.dosen;
-                        });
+                        if (_selectedRole != UserRole.dosen) {
+                          _showDosenConfirmationDialog();
+                        }
                       },
                     ),
                   ),
@@ -132,7 +146,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     UserModel newUser = UserModel(
-                      //'newUser' untuk menyimpan ke db
+                      namaLengkap: namaLengkapController.text,
                       email: emailController.text,
                       password: passwordController.text,
                       role: _selectedRole.toString(),
@@ -175,6 +189,75 @@ class _RegisterFormState extends State<RegisterForm> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _showDosenConfirmationDialog() async {
+    bool isChecked = false; // State lokal untuk checkbox di dalam dialog
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User harus menekan tombol
+      builder: (BuildContext context) {
+        // Gunakan StatefulBuilder agar dialog bisa update state checkbox-nya sendiri
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Konfirmasi Pilihan'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Text(
+                      'Apakah Anda yakin ingin mendaftar sebagai Dosen? Pilihan ini hanya untuk Dosen/Staf Pengajar.',
+                    ),
+                    SizedBox(height: 20),
+                    // Checkbox
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isChecked,
+                          onChanged: (bool? value) {
+                            setDialogState(() {
+                              isChecked = value ?? false;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Saya mengerti dan saya adalah seorang Dosen.',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Batal'),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Tutup dialog
+                  },
+                ),
+                TextButton(
+                  // Tombol 'Yakin' akan nonaktif jika checkbox belum dicentang
+                  onPressed: isChecked
+                      ? () {
+                          // Jika yakin dan sudah centang:
+                          setState(() {
+                            _selectedRole = UserRole.dosen; // GANTI STATE UTAMA
+                          });
+                          Navigator.of(context).pop(); // Tutup dialog
+                        }
+                      : null, // <-- Ini membuat tombol nonaktif
+                  child: const Text('Yakin'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

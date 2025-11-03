@@ -8,7 +8,6 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
-
       appBar: AppBar(
         title: Text(
           "Profil Saya",
@@ -20,7 +19,6 @@ class ProfilePage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: AppColor.kBackgroundColor,
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -42,7 +40,6 @@ class ProfilePage extends StatelessWidget {
             _buildOptionItem(
               icon: Icons.logout,
               text: "Keluar",
-              // color: AppColor.kRedColor, // Warna merah khusus
               onTap: () {
                 print("Tombol Keluar ditekan");
               },
@@ -159,7 +156,7 @@ class ProfilePage extends StatelessWidget {
         fillColor: AppColor.kWhiteColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide.none, // Hilangkan border
+          // borderSide: BorderSide.none, // Hilangkan border
         ),
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),

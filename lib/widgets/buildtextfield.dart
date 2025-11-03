@@ -8,12 +8,16 @@ class BuildTextField extends StatefulWidget {
     this.isPassword = false,
     this.controller,
     this.validator,
+    this.readOnly = false,
+    this.maxLines,
   });
 
   final String? labelText;
   final bool isPassword;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
+  final bool readOnly;
+  final int? maxLines;
 
   @override
   State<BuildTextField> createState() => _BuildTextFieldState();
@@ -37,6 +41,8 @@ class _BuildTextFieldState extends State<BuildTextField> {
       validator: widget.validator,
       controller: widget.controller,
       obscureText: _obscureText,
+      readOnly: widget.readOnly,
+      maxLines: widget.isPassword ? 1 : (widget.maxLines ?? 1),
       decoration: InputDecoration(
         labelText: widget.labelText,
         labelStyle: TextStyle(color: Colors.grey[600]), // Warna label

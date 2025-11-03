@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
+import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 
-class BuatKelas extends StatefulWidget {
+class CreateClass extends StatefulWidget {
   // Menerima data Dosen yang sedang login
   final UserModel user;
-  const BuatKelas({super.key, required this.user});
+  const CreateClass({super.key, required this.user});
 
   @override
-  State<BuatKelas> createState() => _BuatKelasState();
+  State<CreateClass> createState() => _CreateClassState();
 }
 
-class _BuatKelasState extends State<BuatKelas> {
+class _CreateClassState extends State<CreateClass> {
   final _formKey = GlobalKey<FormState>();
   final _namaController = TextEditingController();
   final _deskripsiController = TextEditingController();
@@ -40,22 +41,21 @@ class _BuatKelasState extends State<BuatKelas> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final data = {
-        'nama_kelas': _namaController.text,
-        'deskripsi': _deskripsiController.text,
-        'kode_kelas': _kodeController.text,
-        'dosen_id': widget.user.id,
-      };
+      final newKelas = KelasModel(
+        namaKelas: _namaController.text,
+        deskripsi: _deskripsiController.text,
+        kodeKelas: _kodeController.text,
+        dosenId: widget.user.id!,
+      );
 
       try {
-        await DbHelper.createKelas(data);
+        await DbHelper.createKelas(newKelas);
 
         _showMessage('Kelas berhasil dibuat!');
         if (mounted) {
-          Navigator.pop(context); // Kembali ke homepage
+          Navigator.pop(context);
         }
       } catch (e) {
-        // Ini terjadi jika 'kode_kelas' sudah ada
         _showMessage(
           'Error: Kode Kelas mungkin sudah digunakan.',
           isError: true,

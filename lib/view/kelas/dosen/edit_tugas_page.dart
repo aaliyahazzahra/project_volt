@@ -1,0 +1,280 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:project_volt/constant/app_color.dart';
+import 'package:project_volt/database/db_helper.dart';
+import 'package:project_volt/model/tugas_model.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
+
+class EditTugasPage extends StatefulWidget {
+  final TugasModel tugas;
+
+  const EditTugasPage({super.key, required this.tugas});
+
+  @override
+  State<EditTugasPage> createState() => _EditTugasPageState();
+}
+
+class _EditTugasPageState extends State<EditTugasPage> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _judulController;
+  late TextEditingController _deskripsiController;
+  late TugasModel _currentTugasData;
+
+  DateTime? _selectedDateTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentTugasData = widget.tugas;
+    _judulController = TextEditingController(text: _currentTugasData.judul);
+    _deskripsiController = TextEditingController(
+      text: _currentTugasData.deskripsi,
+    );
+
+    // Isi tanggal tenggat jika ada
+    if (_currentTugasData.tglTenggat != null) {
+      try {
+        _selectedDateTime = DateTime.parse(_currentTugasData.tglTenggat!);
+      } catch (e) {
+        _selectedDateTime = null; // Abaikan jika format salah
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _judulController.dispose();
+    _deskripsiController.dispose();
+    super.dispose();
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: isError ? Colors.red : Colors.green,
+        ),
+      );
+    }
+  }
+
+  Future<void> _pickDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(Duration(days: 30)),
+      lastDate: DateTime(2101),
+      locale: const Locale('id', 'ID'),
+    );
+
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(
+          _selectedDateTime ?? DateTime.now(),
+        ),
+      );
+
+      if (pickedTime != null) {
+        final combinedDateTime = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        setState(() {
+          _selectedDateTime = combinedDateTime;
+        });
+      }
+    }
+  }
+
+  void _submitUpdate() async {
+    if (_formKey.currentState!.validate()) {
+      final String? tglTenggat = _selectedDateTime?.toIso8601String();
+
+      // Buat model baru dengan data yang diupdate
+      final updatedTugas = _currentTugasData.copyWith(
+        judul: _judulController.text,
+        deskripsi: _deskripsiController.text,
+        tglTenggat: tglTenggat,
+      );
+
+      try {
+        await DbHelper.updateTugas(updatedTugas);
+        _showMessage('Tugas berhasil diperbarui!');
+        if (mounted) {
+          // Kirim data baru kembali ke halaman daftar tugas
+          Navigator.pop(context, true); // 'true' untuk refresh
+        }
+      } catch (e) {
+        _showMessage('Error: Gagal memperbarui tugas.', isError: true);
+        print(e);
+      }
+    }
+  }
+
+  Future<void> _showDeleteConfirmationDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Hapus Tugas Ini?'),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus tugas "${_currentTugasData.judul}"?\n\nTindakan ini tidak dapat dibatalkan.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red[700]),
+              child: const Text('Ya, Hapus'),
+              onPressed: () async {
+                if (_currentTugasData.id == null) return;
+                try {
+                  await DbHelper.deleteTugas(_currentTugasData.id!);
+                  if (mounted) {
+                    _showMessage('Tugas berhasil dihapus.', isError: false);
+                    Navigator.of(context).pop();
+                    Navigator.of(
+                      context,
+                    ).pop(true); // Tutup EditPage, kirim 'true'
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    _showMessage('Gagal menghapus tugas.', isError: true);
+                  }
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColor.kBackgroundColor,
+      appBar: AppBar(
+        title: Text(
+          "Edit Tugas",
+          style: TextStyle(
+            color: AppColor.kPrimaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: AppColor.kBackgroundColor,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 10),
+                BuildTextField(
+                  labelText: "Judul Tugas",
+                  controller: _judulController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Judul Tugas tidak boleh kosong';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16),
+                BuildTextField(
+                  labelText: "Deskripsi (Opsional)",
+                  controller: _deskripsiController,
+                  maxLines: 5,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Tanggal Tenggat (Opsional)",
+                  style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                ),
+                SizedBox(height: 8),
+                InkWell(
+                  onTap: () => _pickDateTime(context),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[400]!),
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _selectedDateTime == null
+                              ? 'Pilih Tanggal dan Waktu'
+                              : DateFormat(
+                                  'EEEE, d MMMM y - HH:mm',
+                                  'id_ID',
+                                ).format(_selectedDateTime!),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: _selectedDateTime == null
+                                ? Colors.grey[600]
+                                : Colors.black,
+                          ),
+                        ),
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          color: AppColor.kPrimaryColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _submitUpdate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.kPrimaryColor,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Update Tugas',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(height: 20),
+                OutlinedButton.icon(
+                  icon: Icon(Icons.delete_outline),
+                  label: Text("Hapus Tugas Ini"),
+                  onPressed: _showDeleteConfirmationDialog,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red[700],
+                    side: BorderSide(color: Colors.red[700]!),
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
