@@ -1,3 +1,5 @@
+import 'dart:math'; // <-- 1. IMPORT BARU UNTUK KODE ACAK
+
 import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
@@ -6,7 +8,6 @@ import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 
 class CreateClass extends StatefulWidget {
-  // Menerima data Dosen yang sedang login
   final UserModel user;
   const CreateClass({super.key, required this.user});
 
@@ -18,13 +19,11 @@ class _CreateClassState extends State<CreateClass> {
   final _formKey = GlobalKey<FormState>();
   final _namaController = TextEditingController();
   final _deskripsiController = TextEditingController();
-  final _kodeController = TextEditingController();
 
   @override
   void dispose() {
     _namaController.dispose();
     _deskripsiController.dispose();
-    _kodeController.dispose();
     super.dispose();
   }
 
@@ -39,21 +38,34 @@ class _CreateClassState extends State<CreateClass> {
     }
   }
 
+  // Fungsi untuk generate kode unik
+  String _generateKodeKelas() {
+    const String chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    Random rnd = Random();
+    return String.fromCharCodes(
+      Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
+    );
+  }
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final String newKode = _generateKodeKelas();
+
       final newKelas = KelasModel(
         namaKelas: _namaController.text,
         deskripsi: _deskripsiController.text,
-        kodeKelas: _kodeController.text,
+        kodeKelas: newKode,
         dosenId: widget.user.id!,
       );
 
       try {
-        await DbHelper.createKelas(newKelas);
+        final int newId = await DbHelper.createKelas(newKelas);
 
-        _showMessage('Kelas berhasil dibuat!');
+        //Buat objek utuh untuk dikirim kembali
+        final createdKelas = newKelas.copyWith(id: newId);
+
         if (mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, createdKelas);
         }
       } catch (e) {
         _showMessage(
@@ -101,23 +113,11 @@ class _CreateClassState extends State<CreateClass> {
                 ),
                 SizedBox(height: 16),
                 BuildTextField(
+                  maxLines: 5,
                   labelText: "Deskripsi (Opsional)",
                   controller: _deskripsiController,
                 ),
                 SizedBox(height: 16),
-                BuildTextField(
-                  labelText: "Kode Kelas (Unik)",
-                  controller: _kodeController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Kode Kelas tidak boleh kosong';
-                    }
-                    if (value.contains(' ')) {
-                      return 'Kode Kelas tidak boleh mengandung spasi';
-                    }
-                    return null;
-                  },
-                ),
                 SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: _submitForm,

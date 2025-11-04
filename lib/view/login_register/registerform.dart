@@ -3,6 +3,7 @@ import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/primary_auth_button.dart';
 import 'package:project_volt/widgets/rolebutton.dart';
 
 class RegisterForm extends StatefulWidget {
@@ -142,13 +143,12 @@ class _RegisterFormState extends State<RegisterForm> {
               ),
 
               SizedBox(height: 30),
-              ElevatedButton(
+              PrimaryAuthButton(
+                text: 'Daftar Sekarang',
+                backgroundColor: _selectedRole == UserRole.mahasiswa
+                    ? AppColor.colorMahasiswa
+                    : AppColor.colorDosen,
                 onPressed: () async {
-                  final TabController? controller = DefaultTabController.of(
-                    context,
-                  );
-                  final ScaffoldMessengerState scaffoldMessenger =
-                      ScaffoldMessenger.of(context);
                   if (_formKey.currentState!.validate()) {
                     UserModel newUser = UserModel(
                       namaLengkap: namaLengkapController.text,
@@ -164,12 +164,9 @@ class _RegisterFormState extends State<RegisterForm> {
                           content: Text('Registrasi Berhasil! Silakan Login.'),
                         ),
                       );
-                      TabController? controller = DefaultTabController.of(
-                        context,
-                      );
-                      if (controller != null) {
-                        controller.animateTo(0); // Pindah ke tab Login
-                      }
+                      namaLengkapController.clear();
+                      emailController.clear();
+                      passwordController.clear();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -182,18 +179,6 @@ class _RegisterFormState extends State<RegisterForm> {
                     print("Email: ${emailController.text}");
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _selectedRole == UserRole.mahasiswa
-                      ? AppColor.colorMahasiswa
-                      : AppColor.colorDosen,
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 5,
-                ),
-                child: Text('Daftar Sekarang'),
               ),
             ],
           ),

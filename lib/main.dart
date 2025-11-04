@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/view/login_register/authenticator.dart';
+import 'package:project_volt/view/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Authenticator(),
+      home: SplashScreen(),
     );
   }
 }

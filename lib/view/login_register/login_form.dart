@@ -1,10 +1,11 @@
-import 'package:bottom_bar_matu/components/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:project_volt/bottomnavigator/bottom_nav_dosen.dart';
+import 'package:project_volt/bottomnavigator/bottom_nav_mhs.dart';
 import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/user_model.dart';
-import 'package:project_volt/view/dashboard/homepage_dosen.dart';
-import 'package:project_volt/view/dashboard/homepage_mhs.dart';
+import 'package:project_volt/preferences/shared_preferences.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/primary_auth_button.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -84,7 +85,8 @@ class _LoginFormState extends State<LoginForm> {
               ),
             ),
             SizedBox(height: 30),
-            ElevatedButton(
+            PrimaryAuthButton(
+              text: 'Masuk Sekarang',
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   UserModel? user = await DbHelper.loginUser(
@@ -103,6 +105,7 @@ class _LoginFormState extends State<LoginForm> {
                       ),
                     );
                   } else {
+                    await PreferenceHandler.saveUser(user);
                     // Jika user ditemukan, cek role-nya
                     String userRole = user.role;
 
@@ -110,7 +113,7 @@ class _LoginFormState extends State<LoginForm> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HomepageMhs(user: user),
+                          builder: (context) => BottomNavMhs(user: user),
                         ),
                       );
                       print("NAVIGASI KE DASHBOARD MAHASISWA");
@@ -118,7 +121,7 @@ class _LoginFormState extends State<LoginForm> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => HomepageDosen(user: user),
+                          builder: (context) => BottomNavDosen(user: user),
                         ),
                       );
                       print("NAVIGASI KE DASHBOARD DOSEN");
@@ -126,15 +129,6 @@ class _LoginFormState extends State<LoginForm> {
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorBlueLightAS,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 5,
-              ),
-              child: Text('Masuk Sekarang'),
             ),
           ],
         ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
-import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/model/kelas_model.dart';
+import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/view/kelas/dosen/class_detail.dart';
 import 'package:project_volt/view/kelas/dosen/create_class.dart';
 import 'package:project_volt/widgets/class_list.dart';
@@ -47,19 +48,94 @@ class _HomepageDosenState extends State<HomepageDosen> {
     }
   }
 
-  // Fungsi untuk navigasi & refresh data
   void _navigateToBuatKelas() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateClass(user: widget.user)),
-    ).then((_) {
-      // agar data baru tampil
+    ).then((newKelas) {
+      // Muat ulang daftar kelas agar data baru tampil
       setState(() => _isLoading = true);
       _loadKelas();
+
+      if (newKelas != null && newKelas is KelasModel) {
+        if (mounted) {
+          final messenger = ScaffoldMessenger.of(context);
+          _showSuccessDialog(newKelas, messenger);
+        }
+      }
     });
   }
 
-  // Fungsi Untuk Navigasi Detail
+  Future<void> _showSuccessDialog(
+    KelasModel newKelas,
+    ScaffoldMessengerState messenger,
+  ) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // Wajib ditutup manual
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Kelas Berhasil Dibuat!'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Kelas "${newKelas.namaKelas}" telah dibuat.'),
+                SizedBox(height: 20),
+                Text(
+                  'Bagikan kode ini ke mahasiswa Anda:',
+                  style: TextStyle(fontSize: 14),
+                ),
+                SizedBox(height: 8),
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // SelectableText agar bisa di-copy manual
+                      SelectableText(
+                        newKelas.kodeKelas,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.copy),
+                        tooltip: 'Salin Kode',
+                        onPressed: () {
+                          Clipboard.setData(
+                            ClipboardData(text: newKelas.kodeKelas),
+                          );
+                          messenger.showSnackBar(
+                            SnackBar(content: Text("Kode berhasil disalin!")),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Tutup'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // fungsi untuk navigasi detail
   void _navigateToDetail(KelasModel kelas) {
     Navigator.push(
       context,
@@ -74,7 +150,7 @@ class _HomepageDosenState extends State<HomepageDosen> {
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "Daftar Kelas Saya",
+          "Ruang Kelas",
           style: TextStyle(
             color: AppColor.kPrimaryColor,
             fontWeight: FontWeight.bold,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_image.dart';
-import 'package:project_volt/view/login_register/loginform.dart';
+import 'package:project_volt/view/login_register/login_form.dart';
 import 'package:project_volt/view/login_register/registerform.dart';
 
 class Authenticator extends StatelessWidget {
@@ -17,7 +17,7 @@ class Authenticator extends StatelessWidget {
             children: [
               // Bagian Header
               SizedBox(height: 16),
-              Image.asset(AppImages.logo, height: 100),
+              Image.asset(AppImages.volt, height: 100),
 
               SizedBox(height: 40),
 
@@ -40,6 +40,8 @@ class Authenticator extends StatelessWidget {
                     color: Colors.blueAccent,
                     borderRadius: BorderRadius.circular(25.0),
                   ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+
                   labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey,
                   tabs: [

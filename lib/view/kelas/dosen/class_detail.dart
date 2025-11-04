@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/constant/app_color.dart';
+import 'package:flutter/services.dart'; // <-- 1. IMPORT BARU UNTUK SALIN
 import 'package:project_volt/model/kelas_model.dart';
-
 import 'package:project_volt/view/kelas/dosen/edit_class.dart';
+import 'package:project_volt/view/kelas/dosen/tugas_tab_content.dart';
 
 class ClassDetail extends StatefulWidget {
   final KelasModel kelas;
-
   const ClassDetail({super.key, required this.kelas});
 
   @override
@@ -40,21 +39,51 @@ class _ClassDetailState extends State<ClassDetail> {
   }
 
   Widget _buildInfoTab() {
-    return Center(
+    return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Kode Kelas: ${_currentKelasData.kodeKelas}",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColor.kPrimaryColor,
+              "Kode Kelas:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            // untuk salin kode
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SelectableText(
+                    _currentKelasData.kodeKelas,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.copy_all_outlined),
+                    tooltip: 'Salin Kode',
+                    onPressed: () {
+                      Clipboard.setData(
+                        ClipboardData(text: _currentKelasData.kodeKelas),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Kode berhasil disalin!")),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
             Text(
               "Deskripsi:",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -97,11 +126,11 @@ class _ClassDetailState extends State<ClassDetail> {
         ),
         body: TabBarView(
           children: [
-            // Tab 1: Halaman Info
+            // Tab 1: Halaman Info (Sudah diperbarui)
             _buildInfoTab(),
 
-            // Tab 2: Halaman Tugas (Placeholder)
-            Center(child: Text("Daftar Tugas (Belum dibuat)")),
+            // Tab 2: Halaman Tugas (Sudah diisi)
+            TugasTabContent(kelas: _currentKelasData),
 
             // Tab 3: Halaman Anggota (Placeholder)
             Center(child: Text("Daftar Anggota (Belum dibuat)")),

@@ -35,7 +35,7 @@ class _BuildTextFieldState extends State<BuildTextField> {
   @override
   Widget build(BuildContext context) {
     final Color borderColor = Colors.black.withOpacity(0.4);
-    final Color focusedBorderColor = Colors.blueAccent; //Saat Form aktif
+    final Color focusedBorderColor = Color(0xffFF9149); //Saat Form aktif
 
     return TextFormField(
       validator: widget.validator,
