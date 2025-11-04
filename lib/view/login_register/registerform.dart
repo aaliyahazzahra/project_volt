@@ -147,6 +147,8 @@ class _RegisterFormState extends State<RegisterForm> {
                   final TabController? controller = DefaultTabController.of(
                     context,
                   );
+                  final ScaffoldMessengerState scaffoldMessenger =
+                      ScaffoldMessenger.of(context);
                   if (_formKey.currentState!.validate()) {
                     UserModel newUser = UserModel(
                       namaLengkap: namaLengkapController.text,
