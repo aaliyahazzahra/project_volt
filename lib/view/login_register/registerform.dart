@@ -144,6 +144,9 @@ class _RegisterFormState extends State<RegisterForm> {
               SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
+                  final TabController? controller = DefaultTabController.of(
+                    context,
+                  );
                   if (_formKey.currentState!.validate()) {
                     UserModel newUser = UserModel(
                       namaLengkap: namaLengkapController.text,
@@ -159,7 +162,12 @@ class _RegisterFormState extends State<RegisterForm> {
                           content: Text('Registrasi Berhasil! Silakan Login.'),
                         ),
                       );
-                      Navigator.pop(context); // Kembali ke halaman login
+                      TabController? controller = DefaultTabController.of(
+                        context,
+                      );
+                      if (controller != null) {
+                        controller.animateTo(0); // Pindah ke tab Login
+                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
