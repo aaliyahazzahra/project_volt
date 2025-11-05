@@ -285,4 +285,22 @@ class DbHelper {
     );
     return results.map((map) => KelasModel.fromMap(map)).toList();
   }
+
+  // Untuk tab Anggota
+  static Future<List<UserModel>> getAnggotaByKelas(int kelasId) async {
+    final dbs = await db();
+
+    // join mengambil data user (T1) yang terhubung ke kelas_anggota (T2) dengan kelas_id cocok
+    final List<Map<String, dynamic>> results = await dbs.rawQuery(
+      'SELECT T1.* FROM $tableUser T1 '
+      'INNER JOIN $tableKelasAnggota T2 ON T1.id = T2.mahasiswa_id '
+      'WHERE T2.kelas_id = ?'
+      'ORDER BY T1.namaLengkap ASC', // <-- PERUBAHAN DI SINI
+
+      [kelasId],
+    );
+
+    // Konversi Map ke UserModel
+    return results.map((map) => UserModel.fromMap(map)).toList();
+  }
 }
