@@ -32,32 +32,40 @@ class _EditClassState extends State<EditClass> {
     super.dispose();
   }
 
-  void _showMessage(String message, {bool isError = false}) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: isError ? Colors.red : Colors.green,
-        ),
-      );
-    }
+  void _showMessage(
+    ScaffoldMessengerState messenger,
+    String message, {
+    bool isError = false,
+  }) {
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
   }
 
   void _submitUpdate() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     if (_formKey.currentState!.validate()) {
       final updatedModel = _currentKelasData.copyWith(
         deskripsi: _deskripsiController.text,
       );
 
       try {
-        await DbHelper.updateKelas(updatedModel);
+        await DbHelper.updateKelas(updatedModel); // <-- ASYNC GAP
 
-        _showMessage('Deskripsi berhasil diperbarui!');
-        if (mounted) {
-          Navigator.pop(context, updatedModel);
-        }
+        if (!mounted) return;
+        _showMessage(messenger, 'Deskripsi berhasil diperbarui!');
+        navigator.pop(updatedModel); // Kirim data baru
       } catch (e) {
-        _showMessage('Error: Gagal memperbarui kelas.', isError: true);
+        if (!mounted) return;
+        _showMessage(
+          messenger,
+          'Error: Gagal memperbarui kelas.',
+          isError: true,
+        );
         print(e);
       }
     }
@@ -67,7 +75,7 @@ class _EditClassState extends State<EditClass> {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text(
             'Hapus Kelas Ini?',
@@ -90,38 +98,39 @@ class _EditClassState extends State<EditClass> {
             TextButton(
               child: const Text('Batal'),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red[700]),
               child: const Text('Ya, Hapus'),
               onPressed: () async {
-                // Pastikan ID tidak null sebelum menghapus
+                final dialogNavigator = Navigator.of(dialogContext);
+
+                final mainNavigator = Navigator.of(context);
+                final mainMessenger = ScaffoldMessenger.of(context);
+
                 if (_currentKelasData.id == null) return;
                 try {
                   // Panggil DbHelper untuk hapus
                   await DbHelper.deleteKelas(_currentKelasData.id!);
 
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Kelas berhasil dihapus.'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pop(); // Kembali ke HomepageDosen
-                  }
+                  if (!mounted) return;
+                  _showMessage(
+                    mainMessenger,
+                    'Kelas berhasil dihapus.',
+                    isError: false,
+                  );
+
+                  dialogNavigator.pop(); // Tutup dialog
+                  mainNavigator.pop(); // Kembali ke HomepageDosen
                 } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Gagal menghapus kelas.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
+                  if (!mounted) return;
+                  _showMessage(
+                    mainMessenger,
+                    'Gagal menghapus kelas.',
+                    isError: true,
+                  );
                 }
               },
             ),

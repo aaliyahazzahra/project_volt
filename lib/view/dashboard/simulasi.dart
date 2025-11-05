@@ -93,7 +93,7 @@ class _SimulasiState extends State<Simulasi> {
                         top: gate.position.dy,
                         child: _buildGateWidget(gate.type),
                       );
-                    }).toList(),
+                    }),
                   ],
                 );
               },

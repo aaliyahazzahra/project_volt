@@ -51,11 +51,11 @@ class _ProfilePageState extends State<ProfilePage> {
   //   print("Navigasi ke Edit Profil Akademik");
   // }
 
-  void _navigateToGantiPassword() {
-    // TODO: Arahkan ke halaman GantiPasswordPage
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => GantiPasswordPage()));
-    print("Navigasi ke Ganti Password");
-  }
+  // void _navigateToGantiPassword() {
+  //   // TODO: Arahkan ke halaman GantiPasswordPage
+  //   // Navigator.push(context, MaterialPageRoute(builder: (context) => GantiPasswordPage()));
+  //   print("Navigasi ke Ganti Password");
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +83,13 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildOptionItem(
               icon: Icons.star,
               text: "Badge Saya",
-              onTap: _navigateToGantiPassword,
+              // onTap: _navigateToGantiPassword,
+            ),
+            SizedBox(height: 12),
+            _buildOptionItem(
+              icon: Icons.logout,
+              text: "Tentang Aplikasi",
+              // onTap: _logout,
             ),
             Spacer(),
             _buildOptionItem(
