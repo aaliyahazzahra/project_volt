@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // <-- 1. IMPORT BARU UNTUK SALIN
+import 'package:flutter/services.dart';
+import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/kelas_model.dart';
+import 'package:project_volt/view/kelas/dosen/anggota_tab_content.dart';
 import 'package:project_volt/view/kelas/dosen/edit_class.dart';
 import 'package:project_volt/view/kelas/dosen/tugas_tab_content.dart';
 
@@ -22,19 +24,31 @@ class _ClassDetailState extends State<ClassDetail> {
   }
 
   void _navigateToEdit() async {
-    final updatedData = await Navigator.push(
+    final isSuccess = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditClass(kelas: _currentKelasData),
       ),
     );
 
-    if (updatedData != null && mounted) {
-      if (updatedData is KelasModel) {
-        setState(() {
-          _currentKelasData = updatedData;
-        });
-      }
+    if (isSuccess == true && mounted) {
+      _refreshKelasData();
+    }
+  }
+
+  Future<void> _refreshKelasData() async {
+    // Ambil ulang data kelas dari DB
+    // TODO: Buat fungsi DbHelper.getKelasById(int id) agar lebih efisien
+    final updatedList = await DbHelper.getKelasByDosen(widget.kelas.dosenId);
+    final updatedKelas = updatedList.firstWhere(
+      (k) => k.id == widget.kelas.id,
+      orElse: () => _currentKelasData,
+    ); // Ambil data lama jika tidak ketemu
+
+    if (mounted) {
+      setState(() {
+        _currentKelasData = updatedKelas;
+      });
     }
   }
 
@@ -50,7 +64,6 @@ class _ClassDetailState extends State<ClassDetail> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            // untuk salin kode
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -126,14 +139,11 @@ class _ClassDetailState extends State<ClassDetail> {
         ),
         body: TabBarView(
           children: [
-            // Tab 1: Halaman Info (Sudah diperbarui)
             _buildInfoTab(),
 
-            // Tab 2: Halaman Tugas (Sudah diisi)
             TugasTabContent(kelas: _currentKelasData),
 
-            // Tab 3: Halaman Anggota (Placeholder)
-            Center(child: Text("Daftar Anggota (Belum dibuat)")),
+            AnggotaTabContent(kelas: _currentKelasData),
           ],
         ),
       ),
