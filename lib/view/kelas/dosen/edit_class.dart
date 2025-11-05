@@ -73,20 +73,18 @@ class _EditClassState extends State<EditClass> {
             'Hapus Kelas Ini?',
             style: TextStyle(color: Colors.red[700]),
           ),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('PERINGATAN:'),
-                SizedBox(height: 8),
-                Text(
-                  'Menghapus kelas "${_currentKelasData.namaKelas}" akan '
-                  'menghapus SEMUA data tugas dan daftar anggota di dalamnya '
-                  'secara permanen.',
-                ),
-                SizedBox(height: 12),
-                Text('Tindakan ini tidak dapat dibatalkan.'),
-              ],
-            ),
+          content: ListBody(
+            children: <Widget>[
+              Text('PERINGATAN:'),
+              SizedBox(height: 8),
+              Text(
+                'Menghapus kelas "${_currentKelasData.namaKelas}" akan '
+                'menghapus SEMUA data tugas dan daftar anggota di dalamnya '
+                'secara permanen.',
+              ),
+              SizedBox(height: 12),
+              Text('Tindakan ini tidak dapat dibatalkan.'),
+            ],
           ),
           actions: <Widget>[
             TextButton(

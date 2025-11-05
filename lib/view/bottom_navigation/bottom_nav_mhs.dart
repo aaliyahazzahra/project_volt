@@ -38,11 +38,10 @@ class _BottomNavMhsState extends State<BottomNavMhs> {
           color: Color.fromARGB(255, 14, 57, 94),
 
           selectedIndex: _tabIndex,
-
           items: [
             BottomBarItem(iconData: Icons.assignment, label: 'Tugas'),
-            BottomBarItem(iconData: Icons.forum, label: 'Forum'),
-            BottomBarItem(iconData: Icons.group, label: 'Anggota'),
+            BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
+            BottomBarItem(iconData: Icons.group, label: 'Profil'),
           ],
           onSelect: (newIndex) {
             setState(() {

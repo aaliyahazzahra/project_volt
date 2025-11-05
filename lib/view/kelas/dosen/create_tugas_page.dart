@@ -44,7 +44,7 @@ class _CreateTugasPageState extends State<CreateTugasPage> {
       initialDate: _selectedDateTime ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
-      locale: const Locale('id', 'ID'),
+      // locale: const Locale('id', 'ID'),
     );
 
     if (pickedDate != null) {
@@ -163,10 +163,10 @@ class _CreateTugasPageState extends State<CreateTugasPage> {
                         Text(
                           _selectedDateTime == null
                               ? 'Pilih Tanggal dan Waktu'
-                              : DateFormat(
-                                  'EEEE, d MMMM y - HH:mm',
-                                  'id_ID',
-                                ).format(_selectedDateTime!),
+                              : DateFormat.yMd().add_Hm().format(
+                                  _selectedDateTime!,
+                                ),
+
                           style: TextStyle(
                             fontSize: 16,
                             color: _selectedDateTime == null

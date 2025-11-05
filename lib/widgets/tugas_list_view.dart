@@ -27,9 +27,7 @@ class TugasListView extends StatelessWidget {
           try {
             // Ubah string ISO kembali ke DateTime
             final tgl = DateTime.parse(tugas.tglTenggat!);
-            // Format ke 'dd MMM yyyy, HH:mm' (misal: 25 Des 2024, 14:30)
-            tenggat =
-                "Tenggat: ${DateFormat('d MMM y, HH:mm', 'id_ID').format(tgl)}";
+            tenggat = "Tenggat: ${DateFormat.yMd().add_Hm().format(tgl)}";
           } catch (e) {
             tenggat = "Format tanggal salah.";
           }

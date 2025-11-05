@@ -8,8 +8,6 @@ import 'package:project_volt/view/kelas/dosen/edit_tugas_page.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/widgets/tugas_list_view.dart';
 
-// TODO: Buat halaman EditTugasPage
-
 class TugasTabContent extends StatefulWidget {
   final KelasModel kelas;
   const TugasTabContent({super.key, required this.kelas});

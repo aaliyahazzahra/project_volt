@@ -1,11 +1,11 @@
 import 'dart:async'; // Butuh untuk timer
 
 import 'package:flutter/material.dart';
-import 'package:project_volt/bottomnavigator/bottom_nav_dosen.dart';
-import 'package:project_volt/bottomnavigator/bottom_nav_mhs.dart';
 import 'package:project_volt/constant/app_image.dart';
 import 'package:project_volt/model/user_model.dart';
-import 'package:project_volt/preferences/shared_preferences.dart';
+import 'package:project_volt/utils/preference_handler.dart';
+import 'package:project_volt/view/bottom_navigation/bottom_nav_dosen.dart';
+import 'package:project_volt/view/bottom_navigation/bottom_nav_mhs.dart';
 import 'package:project_volt/view/login_register/authenticator.dart';
 
 class SplashScreen extends StatefulWidget {

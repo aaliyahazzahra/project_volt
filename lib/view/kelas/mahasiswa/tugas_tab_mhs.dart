@@ -4,6 +4,7 @@ import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/tugas_model.dart';
+import 'package:project_volt/view/kelas/mahasiswa/tugas_detail_mhs.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class TugasTabMhs extends StatefulWidget {
@@ -46,8 +47,7 @@ class _TugasTabMhsState extends State<TugasTabMhs> {
         if (tugas.tglTenggat != null) {
           try {
             final tgl = DateTime.parse(tugas.tglTenggat!);
-            tenggat =
-                "Tenggat: ${DateFormat('d MMM y, HH:mm', 'id_ID').format(tgl)}";
+            tenggat = "Tenggat: ${DateFormat.yMd().add_Hm().format(tgl)}";
           } catch (e) {
             tenggat = "Format tanggal salah.";
           }
@@ -71,12 +71,16 @@ class _TugasTabMhsState extends State<TugasTabMhs> {
             subtitle: Text(
               tenggat,
               style: TextStyle(
-                  color: tugas.tglTenggat == null
-                      ? Colors.grey
-                      : Colors.red[700]),
+                color: tugas.tglTenggat == null ? Colors.grey : Colors.red[700],
+              ),
             ),
             onTap: () {
-              // TODO: Arahkan ke halaman detail tugas (untuk submit, dll)
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TugasDetailMhs(tugas: tugas),
+                ),
+              );
               print("Buka detail tugas: ${tugas.judul}");
             },
           ),
@@ -92,12 +96,12 @@ class _TugasTabMhsState extends State<TugasTabMhs> {
       child: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _daftarTugas.isEmpty
-              ? EmptyStateWidget(
-                  icon: Icons.assignment_late_outlined,
-                  title: "Belum Ada Tugas",
-                  message: "Dosen Anda belum memposting tugas apapun di kelas ini.",
-                )
-              : _buildTugasList(),
+          ? EmptyStateWidget(
+              icon: Icons.assignment_late_outlined,
+              title: "Belum Ada Tugas",
+              message: "Dosen Anda belum memposting tugas apapun di kelas ini.",
+            )
+          : _buildTugasList(),
     );
   }
 }

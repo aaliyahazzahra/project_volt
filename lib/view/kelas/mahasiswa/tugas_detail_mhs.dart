@@ -14,7 +14,7 @@ class TugasDetailMhs extends StatelessWidget {
     }
     try {
       final tgl = DateTime.parse(tglTenggat);
-      return DateFormat('EEEE, d MMMM y - HH:mm', 'id_ID').format(tgl);
+      return "Tenggat: ${DateFormat.yMd().add_Hm().format(tgl)}";
     } catch (e) {
       return "Format tanggal salah.";
     }

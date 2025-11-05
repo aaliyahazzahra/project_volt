@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/user_model.dart';
+import 'package:project_volt/view/kelas/mahasiswa/tugas_tab_mhs.dart';
 
 // TODO: Buat halaman TugasTabMahasiswa
 // TODO: Buat halaman AnggotaTabMahasiswa
@@ -85,7 +86,7 @@ class _ClassDetailMhsState extends State<ClassDetailMhs> {
             _buildInfoTab(),
 
             // Tab 2: Halaman Tugas (Masih placeholder)
-            Center(child: Text("Daftar Tugas Mahasiswa (Belum dibuat)")),
+            TugasTabMhs(kelas: widget.kelas),
 
             // Tab 3: Halaman Anggota (Masih placeholder)
             Center(child: Text("Daftar Anggota Kelas (Belum dibuat)")),

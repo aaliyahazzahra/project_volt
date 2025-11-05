@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/model/user_model.dart';
-import 'package:project_volt/preferences/shared_preferences.dart';
+import 'package:project_volt/utils/preference_handler.dart';
 import 'package:project_volt/view/login_register/authenticator.dart';
-// TODO: import 'package:project_volt/view/profile/edit_profil_akademik_page.dart';
-// TODO: import 'package:project_volt/view/profile/ganti_password_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final UserModel user;
@@ -47,11 +45,11 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _navigateToEditAkademik() {
-    // TODO: Arahkan ke halaman EditProfilAkademikPage
-    // Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilAkademikPage(user: widget.user)));
-    print("Navigasi ke Edit Profil Akademik");
-  }
+  // void _navigateToEditAkademik() {
+  //   // TODO: Arahkan ke halaman EditProfilAkademikPage
+  //   // Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilAkademikPage(user: widget.user)));
+  //   print("Navigasi ke Edit Profil Akademik");
+  // }
 
   void _navigateToGantiPassword() {
     // TODO: Arahkan ke halaman GantiPasswordPage
@@ -80,18 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           children: [
             _buildProfileHeader(),
-            SizedBox(height: 24),
-            _buildOptionItem(
-              icon: Icons.school_outlined,
-              text: "Edit Profil Akademik",
-              onTap: _navigateToEditAkademik,
-            ),
-            SizedBox(height: 12),
-            _buildOptionItem(
-              icon: Icons.lock_outline,
-              text: "Ganti Password",
-              onTap: _navigateToGantiPassword,
-            ),
+
             SizedBox(height: 12),
             _buildOptionItem(
               icon: Icons.star,
@@ -116,7 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final bool isDosen = widget.user.role == UserRole.dosen.toString();
     final String roleText = isDosen ? "Dosen" : "Mahasiswa";
     final Color roleColor = isDosen
-        ? (AppColor.colorDosen ?? Colors.orange)
+        ? (AppColor.colorDosen)
         : AppColor.kPrimaryColor;
 
     return Container(

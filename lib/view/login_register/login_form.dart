@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/bottomnavigator/bottom_nav_dosen.dart';
-import 'package:project_volt/bottomnavigator/bottom_nav_mhs.dart';
 import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/user_model.dart';
-import 'package:project_volt/preferences/shared_preferences.dart';
+import 'package:project_volt/utils/preference_handler.dart';
+import 'package:project_volt/view/bottom_navigation/bottom_nav_dosen.dart';
+import 'package:project_volt/view/bottom_navigation/bottom_nav_mhs.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
 
