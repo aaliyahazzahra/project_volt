@@ -6,6 +6,7 @@ class UserModel {
   final String email;
   final String password;
   final String role;
+  final String? nim;
 
   UserModel({
     this.id,
@@ -13,6 +14,7 @@ class UserModel {
     required this.email,
     required this.password,
     required this.role,
+    this.nim,
   });
 
   // Konversi dari Map (dari DB) ke UserModel
@@ -23,6 +25,7 @@ class UserModel {
       email: map['email'],
       password: map['password'],
       role: map['role'],
+      nim: map['nim'],
     );
   }
 

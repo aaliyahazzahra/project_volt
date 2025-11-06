@@ -3,6 +3,7 @@ import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/user_model.dart';
+import 'package:project_volt/widgets/anggota_list_view.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class AnggotaTabContent extends StatefulWidget {
@@ -46,37 +47,10 @@ class _AnggotaTabContentState extends State<AnggotaTabContent> {
               title: "Belum Ada Anggota",
               message: "Belum ada mahasiswa yang bergabung dengan kelas ini.",
             )
-          : _buildAnggotaList(),
-    );
-  }
-
-  // menampilkan daftar anggota
-  Widget _buildAnggotaList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: _daftarAnggota.length,
-      itemBuilder: (context, index) {
-        final anggota = _daftarAnggota[index];
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12.0),
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: AppColor.kIconBgColor,
-              child: Icon(Icons.person_outline, color: AppColor.kPrimaryColor),
+          : AnggotaListView(
+              daftarAnggota: _daftarAnggota,
+              // onAnggotaTap: _handleAnggotaTap,
             ),
-            title: Text(
-              anggota.namaLengkap,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(anggota.email),
-          ),
-        );
-      },
     );
   }
 }

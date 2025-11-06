@@ -86,18 +86,20 @@ class _EditClassState extends State<EditClass> {
             'Hapus Kelas Ini?',
             style: TextStyle(color: Colors.red[700]),
           ),
-          content: ListBody(
-            children: <Widget>[
-              Text('PERINGATAN:'),
-              SizedBox(height: 8),
-              Text(
-                'Menghapus kelas "${_currentKelasData.namaKelas}" akan '
-                'menghapus SEMUA data tugas dan daftar anggota di dalamnya '
-                'secara permanen.',
-              ),
-              SizedBox(height: 12),
-              Text('Tindakan ini tidak dapat dibatalkan.'),
-            ],
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('PERINGATAN:'),
+                SizedBox(height: 8),
+                Text(
+                  'Menghapus kelas "${_currentKelasData.namaKelas}" akan '
+                  'menghapus SEMUA data tugas dan daftar anggota di dalamnya '
+                  'secara permanen.',
+                ),
+                SizedBox(height: 12),
+                Text('Tindakan ini tidak dapat dibatalkan.'),
+              ],
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -159,64 +161,62 @@ class _EditClassState extends State<EditClass> {
         centerTitle: true,
         backgroundColor: AppColor.kBackgroundColor,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 10),
-                BuildTextField(
-                  labelText: "Nama Kelas",
-                  controller: TextEditingController(
-                    text: _currentKelasData.namaKelas,
-                  ),
-                  readOnly: true,
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 10),
+              BuildTextField(
+                labelText: "Nama Kelas",
+                controller: TextEditingController(
+                  text: _currentKelasData.namaKelas,
                 ),
-                SizedBox(height: 16),
-                BuildTextField(
-                  labelText: "Kode Kelas",
-                  controller: TextEditingController(
-                    text: _currentKelasData.kodeKelas,
-                  ),
-                  readOnly: true,
+                readOnly: true,
+              ),
+              SizedBox(height: 16),
+              BuildTextField(
+                labelText: "Kode Kelas",
+                controller: TextEditingController(
+                  text: _currentKelasData.kodeKelas,
                 ),
-                SizedBox(height: 16),
-                BuildTextField(
-                  labelText: "Deskripsi",
-                  controller: _deskripsiController,
-                ),
-                SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _submitUpdate,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.kPrimaryColor,
-                    foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Update Deskripsi',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                readOnly: true,
+              ),
+              SizedBox(height: 16),
+              BuildTextField(
+                labelText: "Deskripsi",
+                controller: _deskripsiController,
+              ),
+              SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: _submitUpdate,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.kPrimaryColor,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                SizedBox(height: 40),
-                Center(
-                  child: TextButton.icon(
-                    icon: Icon(Icons.delete_outline, color: Colors.red[700]),
-                    label: Text(
-                      'Hapus Kelas Ini',
-                      style: TextStyle(color: Colors.red[700]),
-                    ),
-                    onPressed: _showDeleteConfirmationDialog,
-                  ),
+                child: Text(
+                  'Update Deskripsi',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-              ],
-            ),
+              ),
+              SizedBox(height: 40),
+              Center(
+                child: TextButton.icon(
+                  icon: Icon(Icons.delete_outline, color: Colors.red[700]),
+                  label: Text(
+                    'Hapus Kelas Ini',
+                    style: TextStyle(color: Colors.red[700]),
+                  ),
+                  onPressed: _showDeleteConfirmationDialog,
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -136,13 +136,13 @@ class _HomepageMhsState extends State<HomepageMhs> {
         title: Text(
           "Ruang Kelas",
           style: TextStyle(
-            color: AppColor.kPrimaryColor,
+            color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
         centerTitle: true,
-        backgroundColor: AppColor.kBackgroundColor,
+        backgroundColor: AppColor.kAppBar,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

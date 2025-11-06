@@ -43,13 +43,11 @@ class _TugasTabContentState extends State<TugasTabContent> {
   }
 
   void _navigateToEditTugas(TugasModel tugas) async {
-    // 'await' sampai halaman EditTugasPage ditutup
     final isSuccess = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EditTugasPage(tugas: tugas)),
     );
 
-    // berjalan setelah halaman ditutup
     if (isSuccess == true && mounted) {
       _refreshTugasList();
     }
@@ -62,7 +60,6 @@ class _TugasTabContentState extends State<TugasTabContent> {
         builder: (context) => CreateTugasPage(kelasId: widget.kelas.id!),
       ),
     ).then((_) {
-      // Refresh daftar tugas saat kembali
       setState(() => _isLoading = true);
       _loadTugas();
     });
@@ -71,7 +68,7 @@ class _TugasTabContentState extends State<TugasTabContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.kBackgroundColor,
+      backgroundColor: AppColor.kWhiteColor,
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _daftarTugas.isEmpty

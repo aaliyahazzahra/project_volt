@@ -20,6 +20,10 @@ class DbHelper {
     final dbPath = await getDatabasesPath();
     return openDatabase(
       join(dbPath, 'volt_project.db'),
+      onConfigure: (db) async {
+        // Aktifkan foreign key constraints (untuk ON DELETE CASCADE)
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: (db, version) async {
         // Buat tabel users
         await db.execute(
@@ -88,7 +92,7 @@ class DbHelper {
           ")",
         );
 
-        // Buat tabel Submisi
+        // Buat tabel Submisi(dibuat oleh Dosen untuk Kelas)
         await db.execute(
           "CREATE TABLE $tableSubmisi("
           "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -324,11 +328,11 @@ class DbHelper {
 
     // join mengambil data user (T1) yang terhubung ke kelas_anggota (T2) dengan kelas_id cocok
     final List<Map<String, dynamic>> results = await dbs.rawQuery(
-      'SELECT T1.* FROM $tableUser T1 '
+      'SELECT T1.*, T3.nim FROM $tableUser T1 '
       'INNER JOIN $tableKelasAnggota T2 ON T1.id = T2.mahasiswa_id '
-      'WHERE T2.kelas_id = ?'
-      'ORDER BY T1.namaLengkap ASC', // <-- PERUBAHAN DI SINI
-
+      'LEFT JOIN $tableMahasiswa T3 ON T1.id = T3.user_id ' // LEFT JOIN ke tabel mahasiswa
+      'WHERE T2.kelas_id = ? '
+      'ORDER BY T1.namaLengkap ASC',
       [kelasId],
     );
 

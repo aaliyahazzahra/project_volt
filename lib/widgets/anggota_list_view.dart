@@ -35,7 +35,7 @@ class AnggotaListView extends StatelessWidget {
               anggota.namaLengkap,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(anggota.email),
+            subtitle: Text(anggota.nim ?? "NIM belum diatur"),
             onTap: () {
               // Hanya panggil fungsi jika onTap tidak null
               if (onAnggotaTap != null) {

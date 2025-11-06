@@ -136,12 +136,17 @@ class _HomepageDosenState extends State<HomepageDosen> {
   }
 
   // fungsi untuk navigasi detail
-  void _navigateToDetail(KelasModel kelas) {
-    Navigator.push(
+  void _navigateToDetail(KelasModel kelas) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ClassDetail(kelas: kelas)),
     );
-    print("Buka detail untuk kelas ID: ${kelas.id}");
+
+    // Cek jika ada sinyal 'true'
+    if (result == true && mounted) {
+      setState(() => _isLoading = true);
+      _loadKelas(); // Muat ulang
+    }
   }
 
   @override
@@ -152,13 +157,14 @@ class _HomepageDosenState extends State<HomepageDosen> {
         title: Text(
           "Ruang Kelas",
           style: TextStyle(
-            color: AppColor.kPrimaryColor,
+            color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
+
         centerTitle: true,
-        backgroundColor: AppColor.kBackgroundColor,
+        backgroundColor: AppColor.kAppBar,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

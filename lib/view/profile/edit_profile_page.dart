@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_color.dart';
-import 'package:project_volt/database/db_helper.dart'; // Sesuaikan path ke DbHelper Anda
+import 'package:project_volt/database/db_helper.dart'; // Sesuaikan path
 import 'package:project_volt/model/user_model.dart';
+
+final List<String> daftarKampus = [
+  'Universitas Indonesia (UI)',
+  'Institut Teknologi Bandung (ITB)',
+  'Universitas Gadjah Mada (UGM)',
+  'Universitas Airlangga (UNAIR)',
+  'Institut Pertanian Bogor (IPB)',
+  'Universitas Padjadjaran (UNPAD)',
+  'Universitas Diponegoro (UNDIP)',
+  'Universitas Brawijaya (UB)',
+  'Institut Teknologi Sepuluh Nopember (ITS)',
+  'Universitas Negeri Jakarta (UNJ)',
+  'Universitas Sebelas Maret (UNS)',
+  'Universitas Hasanuddin (UNHAS)',
+];
 
 class EditProfilePage extends StatefulWidget {
   final UserModel user;
@@ -13,20 +28,20 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _kampusController;
+
+  String? _selectedKampus;
+
   late TextEditingController _nomorIndukController;
 
   bool _isLoading = true;
   late bool _isDosen;
-
-  // Label untuk form
   String _nomorIndukLabel = "NIM";
 
   @override
   void initState() {
     super.initState();
-    _kampusController = TextEditingController();
     _nomorIndukController = TextEditingController();
+    _selectedKampus = null; // Awalnya kosong
 
     _isDosen = widget.user.role == UserRole.dosen.toString();
     _nomorIndukLabel = _isDosen ? "NIDN/NIDK" : "NIM";
@@ -36,7 +51,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   void dispose() {
-    _kampusController.dispose();
     _nomorIndukController.dispose();
     super.dispose();
   }
@@ -55,7 +69,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
 
       if (profileData != null) {
-        _kampusController.text = profileData['nama_kampus'] ?? '';
+        final String? loadedNamaKampus = profileData['nama_kampus'];
+
+        if (loadedNamaKampus != null &&
+            daftarKampus.contains(loadedNamaKampus)) {
+          _selectedKampus = loadedNamaKampus;
+        } else {
+          _selectedKampus = null;
+        }
+
         if (_isDosen) {
           _nomorIndukController.text = profileData['nidn_nidk'] ?? '';
         } else {
@@ -64,7 +86,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
     } catch (e) {
       print("Error loading profile: $e");
-      // Tampilkan snackbar jika gagal load
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -81,7 +102,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<void> _saveProfileData() async {
     if (!_formKey.currentState!.validate()) {
-      return; // Jangan simpan jika form tidak valid
+      return;
     }
 
     setState(() {
@@ -91,7 +112,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       Map<String, dynamic> data = {
         'user_id': widget.user.id!,
-        'nama_kampus': _kampusController.text.trim(),
+        'nama_kampus': _selectedKampus,
       };
 
       if (_isDosen) {
@@ -106,7 +127,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Profil berhasil diperbarui!')));
-        Navigator.pop(context); // Kembali ke halaman profil
+        Navigator.pop(context);
       }
     } catch (e) {
       print("Error saving profile: $e");
@@ -152,9 +173,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Form Nama Kampus
-                      TextFormField(
-                        controller: _kampusController,
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedKampus,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: 'Nama Kampus / Universitas',
                           border: OutlineInputBorder(
@@ -163,16 +184,31 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           filled: true,
                           fillColor: AppColor.kWhiteColor,
                         ),
+                        hint: Text('Pilih Kampus'),
+                        items: daftarKampus.map((String kampus) {
+                          return DropdownMenuItem<String>(
+                            value: kampus,
+                            child: Text(
+                              kampus,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedKampus = newValue;
+                          });
+                        },
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Nama kampus tidak boleh kosong';
+                          if (value == null || value.isEmpty) {
+                            return 'Harap pilih nama kampus';
                           }
                           return null;
                         },
                       ),
+
                       SizedBox(height: 16),
 
-                      // Form NIM / NIDN
                       TextFormField(
                         controller: _nomorIndukController,
                         decoration: InputDecoration(
@@ -193,7 +229,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       SizedBox(height: 32),
 
-                      // Tombol Simpan
                       ElevatedButton(
                         onPressed: _saveProfileData,
                         style: ElevatedButton.styleFrom(

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
-import 'package:project_volt/view/profile/edit_profile_page.dart';
-
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/utils/preference_handler.dart';
 import 'package:project_volt/view/login_register/authenticator.dart';
+import 'package:project_volt/view/profile/edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final UserModel user;
@@ -65,16 +63,15 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text(
           "Profil Saya",
           style: TextStyle(
-            color: AppColor.kPrimaryColor,
+            color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        backgroundColor: AppColor.kBackgroundColor,
-        elevation: 0,
+        backgroundColor: AppColor.kAppBar,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: AppColor.kPrimaryColor),
+            icon: Icon(Icons.settings_outlined, color: AppColor.kTextColor),
             onPressed: _navigateToEditProfile,
             tooltip: 'Ubah Profil Akademik',
           ),
@@ -103,6 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
               icon: Icons.logout,
               text: "Keluar",
               onTap: _logout,
+              color: AppColor.kErrorColor,
             ),
             SizedBox(height: 12),
           ],
@@ -136,18 +134,16 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 1. FOTO
           CircleAvatar(
-            radius: 40, //
+            radius: 40,
             backgroundColor: AppColor.kPrimaryColor,
-            child: Icon(Icons.person, size: 40, color: AppColor.kBlueCardColor),
+            child: Icon(Icons.person, size: 40, color: AppColor.colorMahasiswa),
           ),
-          SizedBox(height: 16), // Jarak
-          // 2. NAMA
+          SizedBox(height: 16),
           Text(
             widget.user.namaLengkap,
             style: TextStyle(
-              fontSize: 20, // Font lebih besar
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppColor.kTextColor,
             ),
@@ -156,15 +152,13 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           SizedBox(height: 4),
 
-          // 3. EMAIL
           Text(
             widget.user.email,
             style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 16), // Jarak
-          // --- 6. BADGE BARU ---
+          SizedBox(height: 16),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -182,11 +176,10 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // --- Widget Tombol Opsi (Reusable) ---
   Widget _buildOptionItem({
     required IconData icon,
     required String text,
-    // Color color = AppColor.kTextColor,
+    Color color = AppColor.kTextColor,
     VoidCallback? onTap,
   }) {
     return Container(
@@ -205,11 +198,11 @@ class _ProfilePageState extends State<ProfilePage> {
         onTap: onTap,
         leading: Icon(
           icon,
-          // color: color == AppColor.kTextColor ? AppColor.kPrimaryColor : color,
+          color: color == AppColor.kTextColor ? AppColor.kPrimaryColor : color,
         ),
         title: Text(
           text,
-          // style: TextStyle(fontWeight: FontWeight.w600, color: color),
+          style: TextStyle(fontWeight: FontWeight.w600, color: color),
         ),
         trailing: Icon(Icons.chevron_right, color: Colors.grey[400]),
       ),

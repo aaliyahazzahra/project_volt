@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_color.dart';
 
-// 1. Definisikan tipe data untuk gerbang di canvas
 class GateOnCanvas {
   final String type; // 'AND', 'OR', 'NOT'
   final Offset position;
@@ -17,7 +16,6 @@ class Simulasi extends StatefulWidget {
 }
 
 class _SimulasiState extends State<Simulasi> {
-  // 2. State untuk menyimpan semua gerbang yang ada di canvas
   final List<GateOnCanvas> _gatesOnCanvas = [];
 
   @override
@@ -26,19 +24,19 @@ class _SimulasiState extends State<Simulasi> {
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "Simulasi Logic Gate",
+          "Simulasi",
           style: TextStyle(
-            color: AppColor.kPrimaryColor,
+            color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        backgroundColor: AppColor.kBackgroundColor,
+        backgroundColor: AppColor.kAppBar,
         elevation: 0,
         actions: [
           // Tombol Reset
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: AppColor.kTextColor),
             tooltip: "Reset Canvas",
             onPressed: () {
               setState(() {
@@ -50,17 +48,12 @@ class _SimulasiState extends State<Simulasi> {
       ),
       body: Column(
         children: [
-          // 3. CANVAS AREA (Expanded agar mengisi sisa ruang)
           Expanded(
-            // DragTarget adalah area yang "mendengarkan" Draggable
             child: DragTarget<String>(
-              // Fungsi yang berjalan saat Draggable dijatuhkan
               onAcceptWithDetails: (details) {
-                // 'details.data' berisi tipe gerbang ('AND', 'OR')
                 // 'details.offset' berisi posisi di layar (global)
 
-                // Kita butuh posisi lokal di dalam canvas
-                // Kita gunakan RenderBox untuk konversi
+                // RenderBox untuk konversi
                 final RenderBox renderBox =
                     context.findRenderObject() as RenderBox;
                 final Offset localOffset = renderBox.globalToLocal(
@@ -71,16 +64,14 @@ class _SimulasiState extends State<Simulasi> {
                   _gatesOnCanvas.add(
                     GateOnCanvas(
                       type: details.data,
-                      // Kita kurangi sedikit agar pas di jari
                       position: Offset(
                         localOffset.dx - 40,
-                        localOffset.dy - 100,
+                        localOffset.dy - 30,
                       ),
                     ),
                   );
                 });
               },
-              // Tampilan canvas saat Draggable di atasnya
               builder: (context, candidateData, rejectedData) {
                 return Stack(
                   children: [
@@ -100,28 +91,37 @@ class _SimulasiState extends State<Simulasi> {
             ),
           ),
 
-          // 4. TOOLBOX AREA
           _buildToolbox(),
         ],
       ),
     );
   }
 
-  // Widget untuk Toolbox di bagian bawah
+  // Widget untuk Toolbox
   Widget _buildToolbox() {
     return Container(
       height: 100,
       width: double.infinity,
-      color: AppColor.kWhiteColor.withOpacity(0.5),
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildDraggableGate("AND"),
-          _buildDraggableGate("OR"),
-          _buildDraggableGate("NOT"),
-          // TODO: Tambahkan gerbang lain (XOR, NAND, dll)
-        ],
+      color: AppColor.kWarningColor.withOpacity(0.5),
+
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+
+        padding: const EdgeInsets.all(16.0),
+
+        child: Row(
+          children: [
+            _buildDraggableGate("AND"),
+            SizedBox(width: 12),
+            _buildDraggableGate("OR"),
+            SizedBox(width: 12),
+            _buildDraggableGate("AND"),
+            SizedBox(width: 12),
+            _buildDraggableGate("NAND"),
+            SizedBox(width: 12),
+            _buildDraggableGate("NOR"),
+          ],
+        ),
       ),
     );
   }

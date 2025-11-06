@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/user_model.dart';
+import 'package:project_volt/view/kelas/dosen/anggota_tab_content.dart';
 import 'package:project_volt/view/kelas/mahasiswa/tugas_tab_mhs.dart';
 
 // TODO: Buat halaman TugasTabMahasiswa
@@ -27,40 +28,38 @@ class _ClassDetailMhsState extends State<ClassDetailMhs> {
   }
 
   Widget _buildInfoTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Kode Kelas:",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Kode Kelas:",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            _currentKelasData.kodeKelas,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColor.kPrimaryColor,
             ),
-            SizedBox(height: 8),
-            Text(
-              _currentKelasData.kodeKelas,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColor.kPrimaryColor,
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              "Deskripsi:",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              _currentKelasData.deskripsi != null &&
-                      _currentKelasData.deskripsi!.isNotEmpty
-                  ? _currentKelasData.deskripsi!
-                  : "(Tidak ada deskripsi)",
-              style: TextStyle(fontSize: 16, height: 1.4),
-            ),
-          ],
-        ),
+          ),
+          SizedBox(height: 16),
+          Text(
+            "Deskripsi:",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text(
+            _currentKelasData.deskripsi != null &&
+                    _currentKelasData.deskripsi!.isNotEmpty
+                ? _currentKelasData.deskripsi!
+                : "(Tidak ada deskripsi)",
+            style: TextStyle(fontSize: 16, height: 1.4),
+          ),
+        ],
       ),
     );
   }
@@ -89,7 +88,7 @@ class _ClassDetailMhsState extends State<ClassDetailMhs> {
             TugasTabMhs(kelas: widget.kelas),
 
             // Tab 3: Halaman Anggota (Masih placeholder)
-            Center(child: Text("Daftar Anggota Kelas (Belum dibuat)")),
+            AnggotaTabContent(kelas: _currentKelasData),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:bottom_bar_matu/bottom_bar/bottom_bar_bubble.dart';
 import 'package:bottom_bar_matu/bottom_bar_item.dart';
 import 'package:flutter/material.dart';
+import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/view/dashboard/homepage_dosen.dart';
 import 'package:project_volt/view/dashboard/simulasi.dart';
@@ -35,7 +36,7 @@ class _BottomNavDosenState extends State<BottomNavDosen> {
       child: Scaffold(
         body: _widgetOptions[_tabIndex],
         bottomNavigationBar: BottomBarBubble(
-          color: Color.fromARGB(255, 14, 57, 94),
+          color: AppColor.kSecondaryColor,
           selectedIndex: _tabIndex,
           items: [
             BottomBarItem(iconData: Icons.assignment, label: 'Tugas'),
