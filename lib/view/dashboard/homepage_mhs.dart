@@ -155,7 +155,7 @@ class _HomepageMhsState extends State<HomepageMhs> {
             )
           : ClassList(daftarKelas: _daftarKelas, onKelasTap: _navigateToDetail),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showGabungKelasDialog, // <-- Memanggil dialog
+        onPressed: _showGabungKelasDialog,
         backgroundColor: AppColor.kPrimaryColor,
         tooltip: 'Gabung Kelas Baru',
         child: Icon(Icons.add, color: Colors.white),
