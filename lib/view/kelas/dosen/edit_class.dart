@@ -32,7 +32,6 @@ class _EditClassState extends State<EditClass> {
     super.dispose();
   }
 
-  // Terima messenger agar aman dari 'async gap'
   void _showMessage(
     ScaffoldMessengerState messenger,
     String message, {
@@ -46,9 +45,7 @@ class _EditClassState extends State<EditClass> {
     );
   }
 
-  // --- DISAMAKAN DENGAN POLA 1 (KIRIM 'true') ---
   void _submitUpdate() async {
-    // Ambil context SEBELUM await
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -58,11 +55,15 @@ class _EditClassState extends State<EditClass> {
       );
 
       try {
-        await DbHelper.updateKelas(updatedModel); // <-- ASYNC GAP
+        await DbHelper.updateKelas(updatedModel);
 
         if (!mounted) return;
-        _showMessage(messenger, 'Deskripsi berhasil diperbarui!');
-        navigator.pop(true); // <-- KIRIM 'true' (Sama seperti EditTugasPage)
+        _showMessage(
+          messenger,
+          'Deskripsi berhasil diperbarui!',
+          isError: false,
+        );
+        navigator.pop(true);
       } catch (e) {
         if (!mounted) return;
         _showMessage(
@@ -75,7 +76,6 @@ class _EditClassState extends State<EditClass> {
     }
   }
 
-  // --- DISAMAKAN DENGAN POLA 1 (KIRIM 'true') ---
   Future<void> _showDeleteConfirmationDialog() async {
     return showDialog<void>(
       context: context,
@@ -103,23 +103,21 @@ class _EditClassState extends State<EditClass> {
             TextButton(
               child: const Text('Batal'),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Tutup dialog
+                Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red[700]),
               child: const Text('Ya, Hapus'),
               onPressed: () async {
-                // Ambil context SEBELUM await
                 final dialogNavigator = Navigator.of(dialogContext);
                 final mainNavigator = Navigator.of(context);
                 final mainMessenger = ScaffoldMessenger.of(context);
 
                 if (_currentKelasData.id == null) return;
                 try {
-                  await DbHelper.deleteKelas(
-                    _currentKelasData.id!,
-                  ); // <-- ASYNC GAP
+                  // Panggil DbHelper untuk hapus
+                  await DbHelper.deleteKelas(_currentKelasData.id!);
 
                   if (!mounted) return;
                   _showMessage(
@@ -129,9 +127,7 @@ class _EditClassState extends State<EditClass> {
                   );
 
                   dialogNavigator.pop(); // Tutup dialog
-                  mainNavigator.pop(
-                    true,
-                  ); // <-- KIRIM 'true' (Sama seperti EditTugasPage)
+                  mainNavigator.pop(true);
                 } catch (e) {
                   if (!mounted) return;
                   _showMessage(

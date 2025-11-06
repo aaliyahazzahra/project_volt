@@ -48,9 +48,13 @@ class _EditTugasPageState extends State<EditTugasPage> {
     super.dispose();
   }
 
-  void _showMessage(String message, {bool isError = false}) {
+  void _showMessage(
+    ScaffoldMessengerState messenger,
+    String message, {
+    bool isError = false,
+  }) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(message),
           backgroundColor: isError ? Colors.red : Colors.green,
@@ -59,7 +63,7 @@ class _EditTugasPageState extends State<EditTugasPage> {
     }
   }
 
-  Future<void> _pickDateTime(BuildContext context) async {
+  Future<void> _pickDateTime(BuildContext dialogContext) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDateTime ?? DateTime.now(),
@@ -92,6 +96,8 @@ class _EditTugasPageState extends State<EditTugasPage> {
   }
 
   void _submitUpdate() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     if (_formKey.currentState!.validate()) {
       final String? tglTenggat = _selectedDateTime?.toIso8601String();
 
@@ -104,13 +110,17 @@ class _EditTugasPageState extends State<EditTugasPage> {
 
       try {
         await DbHelper.updateTugas(updatedTugas);
-        _showMessage('Tugas berhasil diperbarui!');
+        _showMessage(messenger, 'Tugas berhasil diperbarui!');
         if (mounted) {
           // Kirim data baru kembali ke halaman daftar tugas
           Navigator.pop(context, true); // 'true' untuk refresh
         }
       } catch (e) {
-        _showMessage('Error: Gagal memperbarui tugas.', isError: true);
+        _showMessage(
+          messenger,
+          'Error: Gagal memperbarui tugas.',
+          isError: true,
+        );
         print(e);
       }
     }
@@ -119,7 +129,7 @@ class _EditTugasPageState extends State<EditTugasPage> {
   Future<void> _showDeleteConfirmationDialog() async {
     return showDialog<void>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text('Hapus Tugas Ini?'),
           content: Text(
@@ -128,26 +138,36 @@ class _EditTugasPageState extends State<EditTugasPage> {
           actions: <Widget>[
             TextButton(
               child: const Text('Batal'),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red[700]),
               child: const Text('Ya, Hapus'),
               onPressed: () async {
+                // Ambil context SEBELUM await
+                final dialogNavigator = Navigator.of(dialogContext);
+                final mainNavigator = Navigator.of(context);
+                final mainMessenger = ScaffoldMessenger.of(context);
+
                 if (_currentTugasData.id == null) return;
                 try {
                   await DbHelper.deleteTugas(_currentTugasData.id!);
-                  if (mounted) {
-                    _showMessage('Tugas berhasil dihapus.', isError: false);
-                    Navigator.of(context).pop();
-                    Navigator.of(
-                      context,
-                    ).pop(true); // Tutup EditPage, kirim 'true'
-                  }
+
+                  if (!mounted) return;
+                  _showMessage(
+                    mainMessenger,
+                    'Tugas berhasil dihapus.',
+                    isError: false,
+                  );
+                  dialogNavigator.pop();
+                  mainNavigator.pop(true);
                 } catch (e) {
-                  if (mounted) {
-                    _showMessage('Gagal menghapus tugas.', isError: true);
-                  }
+                  if (!mounted) return;
+                  _showMessage(
+                    mainMessenger,
+                    'Gagal menghapus tugas.',
+                    isError: true,
+                  );
                 }
               },
             ),

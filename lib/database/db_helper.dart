@@ -5,6 +5,7 @@ import 'package:project_volt/model/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DbHelper {
+  //untuk orangnya
   static const String tableUser = 'users';
   static const String tableMahasiswa = 'mahasiswa_profile';
   static const String tableDosen = 'dosen_profile';
@@ -13,6 +14,7 @@ class DbHelper {
   static const String tableKelas = 'kelas';
   static const String tableTugas = 'tugas';
   static const String tableKelasAnggota = 'kelas_anggota';
+  static const String tableSubmisi = 'submisi_tugas';
 
   static Future<Database> db() async {
     final dbPath = await getDatabasesPath();
@@ -83,6 +85,20 @@ class DbHelper {
           "FOREIGN KEY (kelas_id) REFERENCES $tableKelas (id) ON DELETE CASCADE, "
           "FOREIGN KEY (mahasiswa_id) REFERENCES $tableUser (id) ON DELETE CASCADE, "
           "UNIQUE(kelas_id, mahasiswa_id)" // 1 mhs hanya bisa join 1x per kelas
+          ")",
+        );
+
+        // Buat tabel Submisi
+        await db.execute(
+          "CREATE TABLE $tableSubmisi("
+          "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+          "tugas_id INTEGER NOT NULL, "
+          "mahasiswa_id INTEGER NOT NULL, "
+          "link_submisi TEXT NOT NULL, " // Link Google Drive, dll.
+          "tgl_submit TEXT NOT NULL, " // Waktu submit
+          "FOREIGN KEY (tugas_id) REFERENCES $tableTugas (id) ON DELETE CASCADE, "
+          "FOREIGN KEY (mahasiswa_id) REFERENCES $tableUser (id) ON DELETE CASCADE, "
+          "UNIQUE(tugas_id, mahasiswa_id)"
           ")",
         );
       },
@@ -240,6 +256,22 @@ class DbHelper {
       orderBy: 'id DESC', // Tampilkan yang terbaru di atas
     );
     return results.map((map) => TugasModel.fromMap(map)).toList();
+  }
+
+  // DOSEN: Mengambil data spesifik untuk satu kelas saja
+  static Future<KelasModel?> getKelasById(int id) async {
+    final dbs = await db();
+    final results = await dbs.query(
+      tableKelas,
+      where: 'id = ?', // Filter berdasarkan ID kelas
+      whereArgs: [id], // Gunakan parameter 'id'
+    );
+
+    if (results.isNotEmpty) {
+      // Kembalikan SATU KelasModel
+      return KelasModel.fromMap(results.first);
+    }
+    return null; // Kembalikan null jika tidak ditemukan
   }
 
   // MAHASISWA: Bergabung dengan kelas

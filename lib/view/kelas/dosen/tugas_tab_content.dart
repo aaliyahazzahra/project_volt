@@ -42,16 +42,17 @@ class _TugasTabContentState extends State<TugasTabContent> {
     }
   }
 
-  void _navigateToEditTugas(TugasModel tugas) {
-    Navigator.push(
+  void _navigateToEditTugas(TugasModel tugas) async {
+    // 'await' sampai halaman EditTugasPage ditutup
+    final isSuccess = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EditTugasPage(tugas: tugas)),
-    ).then((isSuccess) {
-      // isSuccess dikirim 'true' dari EditTugasPage jika ada update/delete
-      if (isSuccess == true) {
-        _refreshTugasList();
-      }
-    });
+    );
+
+    // berjalan setelah halaman ditutup
+    if (isSuccess == true && mounted) {
+      _refreshTugasList();
+    }
   }
 
   void _navigateToCreateTugas() {

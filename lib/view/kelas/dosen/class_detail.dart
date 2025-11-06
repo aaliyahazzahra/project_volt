@@ -23,7 +23,7 @@ class _ClassDetailState extends State<ClassDetail> {
     _currentKelasData = widget.kelas;
   }
 
-  void _navigateToEdit() async {
+  void _navigateToEditKelas() async {
     final isSuccess = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -36,19 +36,21 @@ class _ClassDetailState extends State<ClassDetail> {
     }
   }
 
+  // Kode baru yang EFISIEN (menggunakan fungsi baru Anda)
   Future<void> _refreshKelasData() async {
-    // Ambil ulang data kelas dari DB
-    // TODO: Buat fungsi DbHelper.getKelasById(int id) agar lebih efisien
-    final updatedList = await DbHelper.getKelasByDosen(widget.kelas.dosenId);
-    final updatedKelas = updatedList.firstWhere(
-      (k) => k.id == widget.kelas.id,
-      orElse: () => _currentKelasData,
-    ); // Ambil data lama jika tidak ketemu
+    final updatedKelas = await DbHelper.getKelasById(
+      widget.kelas.id!,
+    ); // <-- LANGSUNG AMBIL SATU
 
-    if (mounted) {
+    if (!mounted) return;
+
+    if (updatedKelas != null) {
       setState(() {
         _currentKelasData = updatedKelas;
       });
+    } else {
+      // Kelas tidak ditemukan (mungkin sudah dihapus)
+      Navigator.of(context).pop();
     }
   }
 
@@ -125,7 +127,7 @@ class _ClassDetailState extends State<ClassDetail> {
           actions: [
             IconButton(
               icon: Icon(Icons.edit_note),
-              onPressed: _navigateToEdit,
+              onPressed: _navigateToEditKelas,
               tooltip: 'Edit Deskripsi',
             ),
           ],

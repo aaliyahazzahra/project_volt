@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'package:project_volt/view/profile/edit_profile_page.dart';
+
 import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/model/user_model.dart';
 import 'package:project_volt/utils/preference_handler.dart';
@@ -45,17 +48,14 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // void _navigateToEditAkademik() {
-  //   // TODO: Arahkan ke halaman EditProfilAkademikPage
-  //   // Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilAkademikPage(user: widget.user)));
-  //   print("Navigasi ke Edit Profil Akademik");
-  // }
-
-  // void _navigateToGantiPassword() {
-  //   // TODO: Arahkan ke halaman GantiPasswordPage
-  //   // Navigator.push(context, MaterialPageRoute(builder: (context) => GantiPasswordPage()));
-  //   print("Navigasi ke Ganti Password");
-  // }
+  void _navigateToEditProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfilePage(user: widget.user),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +72,13 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         backgroundColor: AppColor.kBackgroundColor,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings_outlined, color: AppColor.kPrimaryColor),
+            onPressed: _navigateToEditProfile,
+            tooltip: 'Ubah Profil Akademik',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -87,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: 12),
             _buildOptionItem(
-              icon: Icons.logout,
+              icon: Icons.info_outline,
               text: "Tentang Aplikasi",
               // onTap: _logout,
             ),
@@ -131,13 +138,9 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           // 1. FOTO
           CircleAvatar(
-            radius: 40, // <-- 5. Dibuat lebih besar
+            radius: 40, //
             backgroundColor: AppColor.kPrimaryColor,
-            child: Icon(
-              Icons.person,
-              size: 40,
-              color: AppColor.kBlueCardColor,
-            ), // Sesuai snippet Anda
+            child: Icon(Icons.person, size: 40, color: AppColor.kBlueCardColor),
           ),
           SizedBox(height: 16), // Jarak
           // 2. NAMA
