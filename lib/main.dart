@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:project_volt/view/splash/splash_screen.dart';
+import 'package:project_volt/features/0_splash/splash_screen.dart';
 
 void main() async {
   await initializeDateFormatting('id_ID', null);

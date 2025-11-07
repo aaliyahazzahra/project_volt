@@ -1,0 +1,96 @@
+import 'package:flutter/material.dart';
+import 'package:project_volt/common_widgets/emptystate.dart';
+import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/data/database/db_helper.dart';
+import 'package:project_volt/data/models/kelas_model.dart';
+import 'package:project_volt/data/models/tugas_model.dart';
+import 'package:project_volt/features/4_kelas/view/create_tugas_page.dart';
+import 'package:project_volt/features/4_kelas/view/tugas_detail_dosen.dart';
+import 'package:project_volt/features/4_kelas/widgets/list_views/tugas_list_view.dart';
+
+class TugasTabContent extends StatefulWidget {
+  final KelasModel kelas;
+  const TugasTabContent({super.key, required this.kelas});
+
+  @override
+  State<TugasTabContent> createState() => _TugasTabContentState();
+}
+
+class _TugasTabContentState extends State<TugasTabContent> {
+  List<TugasModel> _daftarTugas = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTugas();
+  }
+
+  void _refreshTugasList() {
+    setState(() => _isLoading = true); // Nyalakan loading
+    _loadTugas();
+  }
+
+  Future<void> _loadTugas() async {
+    if (widget.kelas.id == null) return;
+    final data = await DbHelper.getTugasByKelas(widget.kelas.id!);
+    if (mounted) {
+      setState(() {
+        _daftarTugas = data;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _navigateToDetailTugas(TugasModel tugas) async {
+    final bool? isDataChanged = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        // Ganti tujuan navigasi
+        builder: (context) => TugasDetailDosen(tugas: tugas),
+      ),
+    );
+
+    if (isDataChanged == true && mounted) {
+      _refreshTugasList();
+    }
+  }
+
+  void _navigateToCreateTugas() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateTugasPage(kelasId: widget.kelas.id!),
+      ),
+    ).then((_) {
+      setState(() => _isLoading = true);
+      _loadTugas();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColor.kWhiteColor,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _daftarTugas.isEmpty
+          ? EmptyStateWidget(
+              icon: Icons.assignment_late_outlined,
+              title: "Belum Ada Tugas",
+              message:
+                  "Tekan tombol (+) di bawah untuk membuat tugas pertama di kelas ini.",
+            )
+          : TugasListView(
+              daftarTugas: _daftarTugas,
+              onTugasTap: _navigateToDetailTugas,
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToCreateTugas,
+        backgroundColor: AppColor.kPrimaryColor,
+        tooltip: 'Buat Tugas Baru',
+        child: Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+}
