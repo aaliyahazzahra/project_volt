@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -48,12 +49,28 @@ class _CreateMateriPageState extends State<CreateMateriPage> {
       } else {}
     } catch (e) {
       print("Error picking file: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal memilih file: $e'),
-          backgroundColor: Colors.red,
-        ),
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(
+      //     content: Text('Gagal memilih file: $e'),
+      //     backgroundColor: Colors.red,
+      //   ),
+      // );
+      final snackBarContent = AwesomeSnackbarContent(
+        title: "Peringatan",
+        message: "Gagal memilih file: $e",
+        contentType: ContentType.warning,
       );
+
+      final snackBar = SnackBar(
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        content: snackBarContent,
+      );
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
     }
   }
 
@@ -64,12 +81,22 @@ class _CreateMateriPageState extends State<CreateMateriPage> {
     }
 
     if (_linkController.text.trim().isEmpty && _pickedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Harap sertakan Link Materi atau Upload File.'),
-          backgroundColor: Colors.orange,
-        ),
+      final snackBarContent = AwesomeSnackbarContent(
+        title: "Peringatan",
+        message: "Harap sertakan Link Materi atau Upload File.",
+        contentType: ContentType.warning,
       );
+
+      final snackBar = SnackBar(
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        content: snackBarContent,
+      );
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
       return;
     }
 
@@ -104,23 +131,43 @@ class _CreateMateriPageState extends State<CreateMateriPage> {
       await DbHelper.createMateri(materi);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Materi berhasil diposting!'),
-            backgroundColor: Colors.green,
-          ),
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Sukses",
+          message: "Materi berhasil diposting!",
+          contentType: ContentType.success,
         );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
         Navigator.of(context).pop(true); // Kirim 'true' untuk refresh
       }
     } catch (e) {
       print("Error saving materi: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal menyimpan materi: $e'),
-            backgroundColor: Colors.red,
-          ),
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Peringatan",
+          message: "Gagal menyimpan materi: $e",
+          contentType: ContentType.warning,
         );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
       }
     } finally {
       if (mounted) {

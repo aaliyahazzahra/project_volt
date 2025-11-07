@@ -1,5 +1,6 @@
 // [FILE BARU: .../view/kelas/widget/info_tab_content.dart]
 
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
@@ -49,9 +50,24 @@ class InfoTabContent extends StatelessWidget {
                     tooltip: 'Salin Kode',
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: kelas.kodeKelas));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Kode berhasil disalin!")),
+
+                      final snackBarContent = AwesomeSnackbarContent(
+                        title: "Sukses",
+                        message: "Kode berhasil disalin!",
+                        contentType: ContentType.success,
                       );
+
+                      final snackBar = SnackBar(
+                        elevation: 0,
+
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.transparent,
+                        content: snackBarContent,
+                      );
+
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(snackBar);
                     },
                   ),
                 ],

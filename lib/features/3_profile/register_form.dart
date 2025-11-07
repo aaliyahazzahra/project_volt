@@ -1,3 +1,4 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/common_widgets/buildtextfield.dart';
 import 'package:project_volt/common_widgets/primary_auth_button.dart';
@@ -159,21 +160,42 @@ class _RegisterFormState extends State<RegisterForm> {
                     bool isSuccess = await DbHelper.registerUser(newUser);
                     if (!mounted) return;
                     if (isSuccess) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Registrasi Berhasil! Silakan Login.'),
-                        ),
+                      final snackBarContent = AwesomeSnackbarContent(
+                        title: "Sukses",
+                        message: "Registrasi berhasil, silakan login",
+                        contentType: ContentType.success,
                       );
+
+                      final snackBar = SnackBar(
+                        elevation: 0,
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.transparent,
+                        content: snackBarContent,
+                      );
+
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(snackBar);
                       namaLengkapController.clear();
                       emailController.clear();
                       passwordController.clear();
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Email ini sudah terdaftar.'),
-                          backgroundColor: Colors.red,
-                        ),
+                      final snackBarContent = AwesomeSnackbarContent(
+                        title: "Peringatan",
+                        message: "Email ini sudah terdaftar",
+                        contentType: ContentType.warning,
                       );
+
+                      final snackBar = SnackBar(
+                        elevation: 0,
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.transparent,
+                        content: snackBarContent,
+                      );
+
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(snackBar);
                     }
                     print("Mendaftar sebagai: $_selectedRole");
                     print("Email: ${emailController.text}");

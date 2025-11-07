@@ -1,3 +1,4 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/common_widgets/buildtextfield.dart';
@@ -48,21 +49,6 @@ class _EditTugasPageState extends State<EditTugasPage> {
     super.dispose();
   }
 
-  void _showMessage(
-    ScaffoldMessengerState messenger,
-    String message, {
-    bool isError = false,
-  }) {
-    if (mounted) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: isError ? Colors.red : Colors.green,
-        ),
-      );
-    }
-  }
-
   Future<void> _pickDateTime(BuildContext dialogContext) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -110,17 +96,44 @@ class _EditTugasPageState extends State<EditTugasPage> {
 
       try {
         await DbHelper.updateTugas(updatedTugas);
-        _showMessage(messenger, 'Tugas berhasil diperbarui!');
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Sukses",
+          message: "Tugas berhasil diperbarui",
+          contentType: ContentType.success,
+        );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
         if (mounted) {
           // Kirim data baru kembali ke halaman daftar tugas
           Navigator.pop(context, true); // 'true' untuk refresh
         }
       } catch (e) {
-        _showMessage(
-          messenger,
-          'Error: Gagal memperbarui tugas.',
-          isError: true,
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Error",
+          message: "Gagal memperbarui tugas.",
+          contentType: ContentType.warning,
         );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+
         print(e);
       }
     }
@@ -154,20 +167,42 @@ class _EditTugasPageState extends State<EditTugasPage> {
                   await DbHelper.deleteTugas(_currentTugasData.id!);
 
                   if (!mounted) return;
-                  _showMessage(
-                    mainMessenger,
-                    'Tugas berhasil dihapus.',
-                    isError: false,
+                  final snackBarContent = AwesomeSnackbarContent(
+                    title: "Sukses",
+                    message: "Tugas berhasil dihapus",
+                    contentType: ContentType.success,
                   );
+
+                  final snackBar = SnackBar(
+                    elevation: 0,
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.transparent,
+                    content: snackBarContent,
+                  );
+
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(snackBar);
                   dialogNavigator.pop();
                   mainNavigator.pop(true);
                 } catch (e) {
                   if (!mounted) return;
-                  _showMessage(
-                    mainMessenger,
-                    'Gagal menghapus tugas.',
-                    isError: true,
+                  final snackBarContent = AwesomeSnackbarContent(
+                    title: "Peringatan",
+                    message: "Gagal menghapus tugas.",
+                    contentType: ContentType.warning,
                   );
+
+                  final snackBar = SnackBar(
+                    elevation: 0,
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.transparent,
+                    content: snackBarContent,
+                  );
+
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(snackBar);
                 }
               },
             ),

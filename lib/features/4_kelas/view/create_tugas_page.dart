@@ -1,3 +1,4 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/common_widgets/buildtextfield.dart';
@@ -25,17 +26,6 @@ class _CreateTugasPageState extends State<CreateTugasPage> {
     _judulController.dispose();
     _deskripsiController.dispose();
     super.dispose();
-  }
-
-  void _showMessage(String message, {bool isError = false}) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: isError ? Colors.red : Colors.green,
-        ),
-      );
-    }
   }
 
   Future<void> _pickDateTime(BuildContext context) async {
@@ -85,13 +75,42 @@ class _CreateTugasPageState extends State<CreateTugasPage> {
 
       try {
         await DbHelper.createTugas(newTugas);
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Sukses",
+          message: "Tugas berhasil dibuat!",
+          contentType: ContentType.success,
+        );
 
-        _showMessage('Tugas berhasil dibuat!');
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
         if (mounted) {
           Navigator.pop(context); // Kembali ke halaman detail kelas
         }
       } catch (e) {
-        _showMessage('Error: Gagal membuat tugas.', isError: true);
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Error",
+          message: "Gagal membuat tugas.",
+          contentType: ContentType.warning,
+        );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
         print(e);
       }
     }

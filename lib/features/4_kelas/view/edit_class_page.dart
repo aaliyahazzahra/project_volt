@@ -1,3 +1,4 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/common_widgets/buildtextfield.dart';
 import 'package:project_volt/core/constants/app_color.dart';
@@ -32,22 +33,8 @@ class _EditClassState extends State<EditClass> {
     super.dispose();
   }
 
-  void _showMessage(
-    ScaffoldMessengerState messenger,
-    String message, {
-    bool isError = false,
-  }) {
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-      ),
-    );
-  }
-
   void _submitUpdate() async {
     final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
 
     if (_formKey.currentState!.validate()) {
       final updatedModel = _currentKelasData.copyWith(
@@ -58,19 +45,42 @@ class _EditClassState extends State<EditClass> {
         await DbHelper.updateKelas(updatedModel);
 
         if (!mounted) return;
-        _showMessage(
-          messenger,
-          'Deskripsi berhasil diperbarui!',
-          isError: false,
+
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Sukses",
+          message: "Deskripsi berhasil diperbarui!",
+          contentType: ContentType.success,
         );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
         navigator.pop(true);
       } catch (e) {
         if (!mounted) return;
-        _showMessage(
-          messenger,
-          'Error: Gagal memperbarui kelas.',
-          isError: true,
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Error",
+          message: "Gagal memperbarui kelas.",
+          contentType: ContentType.failure,
         );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
         print(e);
       }
     }
@@ -114,7 +124,6 @@ class _EditClassState extends State<EditClass> {
               onPressed: () async {
                 final dialogNavigator = Navigator.of(dialogContext);
                 final mainNavigator = Navigator.of(context);
-                final mainMessenger = ScaffoldMessenger.of(context);
 
                 if (_currentKelasData.id == null) return;
                 try {
@@ -122,21 +131,44 @@ class _EditClassState extends State<EditClass> {
                   await DbHelper.deleteKelas(_currentKelasData.id!);
 
                   if (!mounted) return;
-                  _showMessage(
-                    mainMessenger,
-                    'Kelas berhasil dihapus.',
-                    isError: false,
+
+                  final snackBarContent = AwesomeSnackbarContent(
+                    title: "Sukses",
+                    message: "Kelas berhasil dihapus.",
+                    contentType: ContentType.success,
                   );
+
+                  final snackBar = SnackBar(
+                    elevation: 0,
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.transparent,
+                    content: snackBarContent,
+                  );
+
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(snackBar);
 
                   dialogNavigator.pop(); // Tutup dialog
                   mainNavigator.pop(true);
                 } catch (e) {
                   if (!mounted) return;
-                  _showMessage(
-                    mainMessenger,
-                    'Gagal menghapus kelas.',
-                    isError: true,
+                  final snackBarContent = AwesomeSnackbarContent(
+                    title: "Peringatan",
+                    message: "Gagal menghapus kelas",
+                    contentType: ContentType.warning,
                   );
+
+                  final snackBar = SnackBar(
+                    elevation: 0,
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: Colors.transparent,
+                    content: snackBarContent,
+                  );
+
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(snackBar);
                 }
               },
             ),

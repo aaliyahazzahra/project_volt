@@ -40,7 +40,7 @@ class _BottomNavMhsState extends State<BottomNavMhs> {
 
           selectedIndex: _tabIndex,
           items: [
-            BottomBarItem(iconData: Icons.assignment, label: 'Tugas'),
+            BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
             BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
             BottomBarItem(iconData: Icons.group, label: 'Profil'),
           ],

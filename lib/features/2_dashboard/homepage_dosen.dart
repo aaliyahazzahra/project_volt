@@ -1,3 +1,4 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/common_widgets/emptystate.dart';
@@ -33,9 +34,23 @@ class _HomepageDosenState extends State<HomepageDosen> {
     if (widget.user.id == null) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: User ID tidak ditemukan.")),
+
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Error",
+          message: "User ID tidak ditemukan",
+          contentType: ContentType.failure,
         );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
       }
       return;
     }
@@ -119,9 +134,22 @@ class _HomepageDosenState extends State<HomepageDosen> {
                           Clipboard.setData(
                             ClipboardData(text: newKelas.kodeKelas),
                           );
-                          messenger.showSnackBar(
-                            SnackBar(content: Text("Kode berhasil disalin!")),
+                          final snackBarContent = AwesomeSnackbarContent(
+                            title: "Sukses",
+                            message: "Kode berhasil disalin",
+                            contentType: ContentType.success,
                           );
+
+                          final snackBar = SnackBar(
+                            elevation: 0,
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: Colors.transparent,
+                            content: snackBarContent,
+                          );
+
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(snackBar);
                         },
                       ),
                     ],
@@ -160,14 +188,22 @@ class _HomepageDosenState extends State<HomepageDosen> {
   }
 
   void _showProfileWarning() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Harap lengkapi NIDN/NIDK dan Kampus Anda di menu Profil.',
-        ),
-        backgroundColor: Colors.orange[700],
-      ),
+    final snackBarContent = AwesomeSnackbarContent(
+      title: "Peringatan",
+      message: "Harap lengkapi menu Profil.",
+      contentType: ContentType.warning,
     );
+
+    final snackBar = SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      content: snackBarContent,
+    );
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(snackBar);
   }
 
   @override

@@ -1,22 +1,9 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/database/db_helper.dart'; // Sesuaikan path
+import 'package:project_volt/core/constants/app_data.dart';
+import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/user_model.dart';
-
-final List<String> daftarKampus = [
-  'Universitas Indonesia (UI)',
-  'Institut Teknologi Bandung (ITB)',
-  'Universitas Gadjah Mada (UGM)',
-  'Universitas Airlangga (UNAIR)',
-  'Institut Pertanian Bogor (IPB)',
-  'Universitas Padjadjaran (UNPAD)',
-  'Universitas Diponegoro (UNDIP)',
-  'Universitas Brawijaya (UB)',
-  'Institut Teknologi Sepuluh Nopember (ITS)',
-  'Universitas Negeri Jakarta (UNJ)',
-  'Universitas Sebelas Maret (UNS)',
-  'Universitas Hasanuddin (UNHAS)',
-];
 
 class EditProfilePage extends StatefulWidget {
   final UserModel user;
@@ -124,17 +111,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Profil berhasil diperbarui!')));
+        ScaffoldMessenger.of(context);
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Sukses",
+          message: "Berhasil merubah profil",
+          contentType: ContentType.success,
+        );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
         Navigator.pop(context);
       }
     } catch (e) {
       print("Error saving profile: $e");
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Gagal menyimpan profil: $e')));
+        ScaffoldMessenger.of(context);
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Error",
+          message: "Gagal menyimpan profil.",
+          contentType: ContentType.warning,
+        );
+
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: snackBarContent,
+        );
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
       }
     } finally {
       if (mounted) {

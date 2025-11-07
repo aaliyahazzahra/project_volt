@@ -1,3 +1,4 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
@@ -88,22 +89,44 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
         await DbHelper.leaveKelas(widget.user.id!, _currentKelasData.id!);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Anda telah keluar dari kelas.'),
-              backgroundColor: Colors.green,
-            ),
+          final snackBarContent = AwesomeSnackbarContent(
+            title: "Sukses",
+            message: "Anda berhasil keluar dari kelas",
+            contentType: ContentType.success,
           );
+
+          final snackBar = SnackBar(
+            elevation: 0,
+
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.transparent,
+            content: snackBarContent,
+          );
+
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(snackBar);
           Navigator.of(context).pop(true);
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Gagal keluar kelas: $e'),
-              backgroundColor: Colors.red,
-            ),
+          final snackBarContent = AwesomeSnackbarContent(
+            title: "Peringatan",
+            message: "Gagal keluar kelas: $e",
+            contentType: ContentType.warning,
           );
+
+          final snackBar = SnackBar(
+            elevation: 0,
+
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.transparent,
+            content: snackBarContent,
+          );
+
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(snackBar);
         }
       }
     }

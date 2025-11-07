@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_volt/core/constants/app_color.dart';
 
 class BuildTextField extends StatefulWidget {
   const BuildTextField({
@@ -34,8 +35,8 @@ class _BuildTextFieldState extends State<BuildTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final Color borderColor = Colors.black.withOpacity(0.4);
-    final Color focusedBorderColor = Color(0xffFF9149); //Saat Form aktif
+    final Color borderColor = AppColor.kBlackColor;
+    final Color focusedBorderColor = AppColor.kPrimaryColor;
 
     return TextFormField(
       validator: widget.validator,
@@ -45,7 +46,7 @@ class _BuildTextFieldState extends State<BuildTextField> {
       maxLines: widget.isPassword ? 1 : (widget.maxLines ?? 1),
       decoration: InputDecoration(
         labelText: widget.labelText,
-        labelStyle: TextStyle(color: Colors.grey[600]), // Warna label
+        labelStyle: TextStyle(color: AppColor.kDisabledColor),
 
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: focusedBorderColor, width: 2.0),
@@ -70,7 +71,7 @@ class _BuildTextFieldState extends State<BuildTextField> {
                 },
                 icon: Icon(
                   _obscureText ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.grey, // Warna Icon
+                  color: AppColor.kDisabledColor,
                 ),
               )
             : null,

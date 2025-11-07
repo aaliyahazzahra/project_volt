@@ -91,7 +91,10 @@ class _TugasDetailDosenState extends State<TugasDetailDosen> {
               indicatorColor: AppColor.kPrimaryColor,
               tabs: [
                 Tab(icon: Icon(Icons.info_outline), text: "Info Tugas"),
-                Tab(icon: Icon(Icons.group_outlined), text: "Submisi Mhs"),
+                Tab(
+                  icon: Icon(Icons.group_outlined),
+                  text: "Submisi Mahasiswa",
+                ),
               ],
             ),
           ),
