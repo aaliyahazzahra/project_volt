@@ -3,7 +3,7 @@ import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/user_model.dart';
-import 'package:project_volt/view/kelas/mahasiswa/class_detail_mhs.dart';
+import 'package:project_volt/view/kelas/class_detail_page.dart';
 import 'package:project_volt/widgets/class_list.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 // TODO: Buat halaman DetailKelasMahasiswa
@@ -19,6 +19,7 @@ class HomepageMhs extends StatefulWidget {
 class _HomepageMhsState extends State<HomepageMhs> {
   List<KelasModel> _daftarKelas = [];
   bool _isLoading = true;
+  bool _isProfileComplete = false;
 
   // untuk dialog "Gabung Kelas"
   final TextEditingController _kodeController = TextEditingController();
@@ -26,7 +27,7 @@ class _HomepageMhsState extends State<HomepageMhs> {
   @override
   void initState() {
     super.initState();
-    _loadKelasGabungan();
+    _loadData();
   }
 
   @override
@@ -35,7 +36,7 @@ class _HomepageMhsState extends State<HomepageMhs> {
     super.dispose();
   }
 
-  Future<void> _loadKelasGabungan() async {
+  Future<void> _loadData() async {
     if (widget.user.id == null) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -46,10 +47,18 @@ class _HomepageMhsState extends State<HomepageMhs> {
       return;
     }
 
-    final data = await DbHelper.getKelasByMahasiswa(widget.user.id!);
+    final dataKelas = await DbHelper.getKelasByMahasiswa(widget.user.id!);
+    final dataProfil = await DbHelper.getMahasiswaProfile(widget.user.id!);
+    bool profileComplete =
+        dataProfil != null &&
+        (dataProfil['nim'] != null && dataProfil['nim'].isNotEmpty) &&
+        (dataProfil['nama_kampus'] != null &&
+            dataProfil['nama_kampus'].isNotEmpty);
+
     if (mounted) {
       setState(() {
-        _daftarKelas = data;
+        _daftarKelas = dataKelas;
+        _isProfileComplete = profileComplete;
         _isLoading = false;
       });
     }
@@ -67,20 +76,24 @@ class _HomepageMhsState extends State<HomepageMhs> {
   }
 
   // navigasi ke detail
-  void _navigateToDetail(KelasModel kelas) {
-    Navigator.push(
+  void _navigateToDetail(KelasModel kelas) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ClassDetailMhs(kelas: kelas, user: widget.user),
+        builder: (context) => ClassDetailPage(kelas: kelas, user: widget.user),
       ),
     );
+
+    if (result == true && mounted) {
+      _loadData();
+    }
 
     print("Buka detail untuk kelas ID: ${kelas.id}");
   }
 
   // dialog gabung kelas
   Future<void> _showGabungKelasDialog() async {
-    _kodeController.clear(); // agar bersih setiap dialog dibuka
+    _kodeController.clear();
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -114,17 +127,26 @@ class _HomepageMhsState extends State<HomepageMhs> {
 
                 // Tampilkan hasil
                 _showMessage(hasil, isError: hasil.startsWith("Error:"));
-                Navigator.of(context).pop(); // Tutup dialog
-                // Jika sukses, refresh daftar kelas
+                Navigator.of(context).pop();
+
                 if (hasil.startsWith("Sukses:")) {
                   setState(() => _isLoading = true);
-                  _loadKelasGabungan();
+                  _loadData();
                 }
               },
             ),
           ],
         );
       },
+    );
+  }
+
+  void _showProfileWarning() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Harap lengkapi NIM dan Kampus Anda di menu Profil.'),
+        backgroundColor: Colors.orange[700],
+      ),
     );
   }
 
@@ -155,7 +177,9 @@ class _HomepageMhsState extends State<HomepageMhs> {
             )
           : ClassList(daftarKelas: _daftarKelas, onKelasTap: _navigateToDetail),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showGabungKelasDialog,
+        onPressed: _isProfileComplete
+            ? _showGabungKelasDialog
+            : _showProfileWarning,
         backgroundColor: AppColor.kPrimaryColor,
         tooltip: 'Gabung Kelas Baru',
         child: Icon(Icons.add, color: Colors.white),

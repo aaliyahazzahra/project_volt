@@ -1,5 +1,7 @@
 import 'package:path/path.dart';
 import 'package:project_volt/model/kelas_model.dart';
+import 'package:project_volt/model/materi_model.dart';
+import 'package:project_volt/model/submisi_model.dart';
 import 'package:project_volt/model/tugas_model.dart';
 import 'package:project_volt/model/user_model.dart';
 import 'package:sqflite/sqflite.dart';
@@ -9,6 +11,9 @@ class DbHelper {
   static const String tableUser = 'users';
   static const String tableMahasiswa = 'mahasiswa_profile';
   static const String tableDosen = 'dosen_profile';
+
+  // untuk materi
+  static const String tableMateri = 'materi';
 
   // untuk kelas & tugas
   static const String tableKelas = 'kelas';
@@ -80,6 +85,20 @@ class DbHelper {
           ")",
         );
 
+        // Buat tabel MATERI (dibuat oleh Dosen untuk Kelas)
+        await db.execute(
+          "CREATE TABLE $tableMateri("
+          "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+          "kelas_id INTEGER NOT NULL, "
+          "judul TEXT NOT NULL, "
+          "deskripsi TEXT, "
+          "link_materi TEXT, " // Untuk link GDrive, Youtube, dll.
+          "file_path_materi TEXT, "
+          "tgl_posting TEXT NOT NULL, " // Simpan sebagai String (ISO format)
+          "FOREIGN KEY (kelas_id) REFERENCES $tableKelas (id) ON DELETE CASCADE"
+          ")",
+        );
+
         // Buat tabel Anggota Kelas (diisi oleh Mahasiswa)
         await db.execute(
           "CREATE TABLE $tableKelasAnggota("
@@ -98,8 +117,10 @@ class DbHelper {
           "id INTEGER PRIMARY KEY AUTOINCREMENT, "
           "tugas_id INTEGER NOT NULL, "
           "mahasiswa_id INTEGER NOT NULL, "
-          "link_submisi TEXT NOT NULL, " // Link Google Drive, dll.
-          "tgl_submit TEXT NOT NULL, " // Waktu submit
+          "link_submisi TEXT, "
+          "file_path_submisi TEXT, "
+          "nilai INTEGER DEFAULT 0, "
+          "tgl_submit TEXT NOT NULL, "
           "FOREIGN KEY (tugas_id) REFERENCES $tableTugas (id) ON DELETE CASCADE, "
           "FOREIGN KEY (mahasiswa_id) REFERENCES $tableUser (id) ON DELETE CASCADE, "
           "UNIQUE(tugas_id, mahasiswa_id)"
@@ -250,6 +271,22 @@ class DbHelper {
     return await dbs.delete(tableTugas, where: 'id = ?', whereArgs: [tugasId]);
   }
 
+  // Mengambil data spesifik untuk SATU tugas saja
+  static Future<TugasModel?> getTugasById(int id) async {
+    final dbs = await db();
+    final results = await dbs.query(
+      tableTugas,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isNotEmpty) {
+      // Kembalikan SATU TugasModel
+      return TugasModel.fromMap(results.first);
+    }
+    return null; // Kembalikan null jika tidak ditemukan (misal sudah dihapus)
+  }
+
   // MAHASISWA & DOSEN: Melihat semua tugas di satu kelas
   static Future<List<TugasModel>> getTugasByKelas(int kelasId) async {
     final dbs = await db();
@@ -262,20 +299,142 @@ class DbHelper {
     return results.map((map) => TugasModel.fromMap(map)).toList();
   }
 
+  // MAHASISWA: Mengumpulkan atau memperbarui submisi
+  static Future<int> createOrUpdateSubmisi(SubmisiModel submisi) async {
+    final dbs = await db();
+    // Gunakan 'replace' agar jika mahasiswa submit ulang, data lama tertimpa
+    return await dbs.insert(
+      tableSubmisi,
+      submisi.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // MAHASISWA: Mengecek submisi dia sebelumnya
+  static Future<SubmisiModel?> getSubmisiByTugasAndMahasiswa(
+    int tugasId,
+    int mahasiswaId,
+  ) async {
+    final dbs = await db();
+    final results = await dbs.query(
+      tableSubmisi,
+      where: 'tugas_id = ? AND mahasiswa_id = ?',
+      whereArgs: [tugasId, mahasiswaId],
+    );
+    if (results.isNotEmpty) {
+      return SubmisiModel.fromMap(results.first);
+    }
+    return null;
+  }
+
+  // DOSEN: Melihat semua submisi untuk satu tugas
+  static Future<List<SubmisiModel>> getAllSubmisiByTugas(int tugasId) async {
+    final dbs = await db();
+    final results = await dbs.query(
+      tableSubmisi,
+      where: 'tugas_id = ?',
+      whereArgs: [tugasId],
+      orderBy: 'tgl_submit DESC',
+    );
+    return results.map((map) => SubmisiModel.fromMap(map)).toList();
+  }
+
+  static Future<int> deleteSubmisiByTugasAndMahasiswa(
+    int tugasId,
+    int mahasiswaId,
+  ) async {
+    final dbs = await db();
+    return await dbs.delete(
+      tableSubmisi,
+      where: 'tugas_id = ? AND mahasiswa_id = ?',
+      whereArgs: [tugasId, mahasiswaId],
+    );
+  }
+
+  // DOSEN: Melihat semua submisi (lengkap dengan data mahasiswa)
+  static Future<List<SubmisiDetail>> getSubmisiDetailByTugas(
+    int tugasId,
+  ) async {
+    final dbs = await db();
+    // Kueri SQL untuk menggabungkan 3 tabel:
+    // T1 = users (Nama, Email)
+    // T2 = submisi_tugas (File, Link, Tanggal, Nilai)
+    // T3 = mahasiswa_profile (NIM)
+    final List<Map<String, dynamic>> results = await dbs.rawQuery(
+      'SELECT T1.*, T2.*, T3.nim '
+      'FROM $tableUser T1 '
+      'INNER JOIN $tableSubmisi T2 ON T1.id = T2.mahasiswa_id '
+      'LEFT JOIN $tableMahasiswa T3 ON T1.id = T3.user_id '
+      'WHERE T2.tugas_id = ? '
+      'ORDER BY T1.namaLengkap ASC', // Urutkan berdasarkan nama A-Z
+      [tugasId],
+    );
+
+    List<SubmisiDetail> daftarSubmisi = [];
+    for (var map in results) {
+      daftarSubmisi.add(
+        SubmisiDetail(
+          submisi: SubmisiModel.fromMap(map),
+          mahasiswa: UserModel.fromMap(map),
+          nim: map['nim'],
+        ),
+      );
+    }
+    return daftarSubmisi;
+  }
+
+  // DOSEN: Membuat materi baru
+  static Future<int> createMateri(MateriModel materi) async {
+    final dbs = await db();
+    return await dbs.insert(tableMateri, materi.toMap());
+  }
+
+  // DOSEN: Mengedit materi
+  static Future<int> updateMateri(MateriModel materi) async {
+    final dbs = await db();
+    return await dbs.update(
+      tableMateri,
+      materi.toMap(),
+      where: 'id = ?',
+      whereArgs: [materi.id],
+    );
+  }
+
+  // DOSEN: Menghapus materi
+  static Future<int> deleteMateri(int materiId) async {
+    final dbs = await db();
+    return await dbs.delete(
+      tableMateri,
+      where: 'id = ?',
+      whereArgs: [materiId],
+    );
+  }
+
+  // MAHASISWA & DOSEN: Melihat semua materi di satu kelas
+  static Future<List<MateriModel>> getMateriByKelas(int kelasId) async {
+    final dbs = await db();
+    final results = await dbs.query(
+      tableMateri,
+      where: 'kelas_id = ?',
+      whereArgs: [kelasId],
+      orderBy: 'id DESC',
+    );
+    return results.map((map) => MateriModel.fromMap(map)).toList();
+  }
+
   // DOSEN: Mengambil data spesifik untuk satu kelas saja
   static Future<KelasModel?> getKelasById(int id) async {
     final dbs = await db();
     final results = await dbs.query(
       tableKelas,
       where: 'id = ?', // Filter berdasarkan ID kelas
-      whereArgs: [id], // Gunakan parameter 'id'
+      whereArgs: [id],
     );
 
     if (results.isNotEmpty) {
-      // Kembalikan SATU KelasModel
       return KelasModel.fromMap(results.first);
     }
-    return null; // Kembalikan null jika tidak ditemukan
+    return null;
   }
 
   // MAHASISWA: Bergabung dengan kelas
@@ -297,17 +456,28 @@ class DbHelper {
 
     // Masukkan ke tabel anggota
     try {
-      await dbs.insert(
-        tableKelasAnggota,
-        {'kelas_id': kelasId, 'mahasiswa_id': mahasiswaId},
-        conflictAlgorithm: ConflictAlgorithm.fail, // Gagal jika sudah join
-      );
+      await dbs.insert(tableKelasAnggota, {
+        'kelas_id': kelasId,
+        'mahasiswa_id': mahasiswaId,
+      }, conflictAlgorithm: ConflictAlgorithm.fail);
       return "Sukses: Berhasil bergabung dengan kelas!";
     } catch (e) {
       // error jika sudah join
       print(e);
       return "Error: Anda sudah terdaftar di kelas ini.";
     }
+  }
+
+  // MAHASISWA: Keluar dari kelas
+  static Future<int> leaveKelas(int mahasiswaId, int kelasId) async {
+    final dbs = await db();
+
+    // Hapus data mahasiswa dari tabel anggota berdasarkan ID kelas dan ID mhs
+    return await dbs.delete(
+      tableKelasAnggota,
+      where: 'kelas_id = ? AND mahasiswa_id = ?',
+      whereArgs: [kelasId, mahasiswaId],
+    );
   }
 
   // MAHASISWA: Mendapatkan semua kelas yang dia ikuti
@@ -326,11 +496,10 @@ class DbHelper {
   static Future<List<UserModel>> getAnggotaByKelas(int kelasId) async {
     final dbs = await db();
 
-    // join mengambil data user (T1) yang terhubung ke kelas_anggota (T2) dengan kelas_id cocok
     final List<Map<String, dynamic>> results = await dbs.rawQuery(
       'SELECT T1.*, T3.nim FROM $tableUser T1 '
       'INNER JOIN $tableKelasAnggota T2 ON T1.id = T2.mahasiswa_id '
-      'LEFT JOIN $tableMahasiswa T3 ON T1.id = T3.user_id ' // LEFT JOIN ke tabel mahasiswa
+      'LEFT JOIN $tableMahasiswa T3 ON T1.id = T3.user_id '
       'WHERE T2.kelas_id = ? '
       'ORDER BY T1.namaLengkap ASC',
       [kelasId],
@@ -339,4 +508,12 @@ class DbHelper {
     // Konversi Map ke UserModel
     return results.map((map) => UserModel.fromMap(map)).toList();
   }
+}
+
+class SubmisiDetail {
+  final SubmisiModel submisi;
+  final UserModel mahasiswa;
+  final String? nim;
+
+  SubmisiDetail({required this.submisi, required this.mahasiswa, this.nim});
 }

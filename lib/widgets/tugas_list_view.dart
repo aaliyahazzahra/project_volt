@@ -23,13 +23,27 @@ class TugasListView extends StatelessWidget {
 
         // Format tanggal tenggat
         String tenggat = "Tidak ada tenggat.";
+
+        // 1. Tentukan warna default (jika tidak ada tenggat)
+        Color tenggatColor = Colors.grey[600] ?? Colors.grey;
+
         if (tugas.tglTenggat != null) {
           try {
-            // Ubah string ISO kembali ke DateTime
             final tgl = DateTime.parse(tugas.tglTenggat!);
             tenggat = "Tenggat: ${DateFormat.yMd().add_Hm().format(tgl)}";
+
+            final now = DateTime.now();
+
+            if (now.isAfter(tgl)) {
+              tenggatColor = Colors.red[700] ?? Colors.red;
+            } else if (tgl.isBefore(now.add(const Duration(days: 3)))) {
+              tenggatColor = Colors.orange[800] ?? Colors.orange;
+            } else {
+              tenggatColor = Colors.green[700] ?? Colors.green;
+            }
           } catch (e) {
             tenggat = "Format tanggal salah.";
+            tenggatColor = Colors.red;
           }
         }
 
@@ -51,7 +65,8 @@ class TugasListView extends StatelessWidget {
             subtitle: Text(
               tenggat,
               style: TextStyle(
-                color: tugas.tglTenggat == null ? Colors.grey : Colors.red[700],
+                color: tenggatColor,
+                fontWeight: FontWeight.w500,
               ),
             ),
             onTap: () => onTugasTap(tugas),

@@ -4,8 +4,8 @@ import 'package:project_volt/constant/app_color.dart';
 import 'package:project_volt/database/db_helper.dart';
 import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/user_model.dart';
-import 'package:project_volt/view/kelas/dosen/class_detail.dart';
 import 'package:project_volt/view/kelas/dosen/create_class.dart';
+import 'package:project_volt/view/kelas/class_detail_page.dart';
 import 'package:project_volt/widgets/class_list.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
@@ -21,14 +21,15 @@ class _HomepageDosenState extends State<HomepageDosen> {
   List<KelasModel> _daftarKelas = [];
 
   bool _isLoading = true;
+  bool _isProfileComplete = false;
 
   @override
   void initState() {
     super.initState();
-    _loadKelas();
+    _loadData();
   }
 
-  Future<void> _loadKelas() async {
+  Future<void> _loadData() async {
     if (widget.user.id == null) {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -39,10 +40,18 @@ class _HomepageDosenState extends State<HomepageDosen> {
       return;
     }
 
-    final data = await DbHelper.getKelasByDosen(widget.user.id!);
+    final dataKelas = await DbHelper.getKelasByDosen(widget.user.id!);
+    final dataProfil = await DbHelper.getDosenProfile(widget.user.id!);
+    bool profileComplete =
+        dataProfil != null &&
+        (dataProfil['nidn_nidk'] != null &&
+            dataProfil['nidn_nidk'].isNotEmpty) &&
+        (dataProfil['nama_kampus'] != null &&
+            dataProfil['nama_kampus'].isNotEmpty);
     if (mounted) {
       setState(() {
-        _daftarKelas = data;
+        _daftarKelas = dataKelas;
+        _isProfileComplete = profileComplete;
         _isLoading = false;
       });
     }
@@ -55,7 +64,7 @@ class _HomepageDosenState extends State<HomepageDosen> {
     ).then((newKelas) {
       // Muat ulang daftar kelas agar data baru tampil
       setState(() => _isLoading = true);
-      _loadKelas();
+      _loadData();
 
       if (newKelas != null && newKelas is KelasModel) {
         if (mounted) {
@@ -72,7 +81,7 @@ class _HomepageDosenState extends State<HomepageDosen> {
   ) async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // Wajib ditutup manual
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Kelas Berhasil Dibuat!'),
@@ -95,7 +104,6 @@ class _HomepageDosenState extends State<HomepageDosen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // SelectableText agar bisa di-copy manual
                       SelectableText(
                         newKelas.kodeKelas,
                         style: TextStyle(
@@ -139,14 +147,27 @@ class _HomepageDosenState extends State<HomepageDosen> {
   void _navigateToDetail(KelasModel kelas) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ClassDetail(kelas: kelas)),
+      MaterialPageRoute(
+        builder: (context) => ClassDetailPage(kelas: kelas, user: widget.user),
+      ),
     );
 
     // Cek jika ada sinyal 'true'
     if (result == true && mounted) {
       setState(() => _isLoading = true);
-      _loadKelas(); // Muat ulang
+      _loadData(); // Muat ulang
     }
+  }
+
+  void _showProfileWarning() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Harap lengkapi NIDN/NIDK dan Kampus Anda di menu Profil.',
+        ),
+        backgroundColor: Colors.orange[700],
+      ),
+    );
   }
 
   @override
@@ -177,8 +198,12 @@ class _HomepageDosenState extends State<HomepageDosen> {
             )
           : ClassList(daftarKelas: _daftarKelas, onKelasTap: _navigateToDetail),
       floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToBuatKelas,
-        backgroundColor: AppColor.kPrimaryColor,
+        onPressed: _isProfileComplete
+            ? _navigateToBuatKelas
+            : _showProfileWarning,
+        backgroundColor: _isProfileComplete
+            ? AppColor.kPrimaryColor
+            : Colors.grey,
         child: Icon(Icons.add, color: Colors.white),
       ),
     );

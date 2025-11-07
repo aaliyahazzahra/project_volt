@@ -5,6 +5,7 @@ import 'package:project_volt/model/kelas_model.dart';
 import 'package:project_volt/model/tugas_model.dart';
 import 'package:project_volt/view/kelas/dosen/create_tugas_page.dart';
 import 'package:project_volt/view/kelas/dosen/edit_tugas_page.dart';
+import 'package:project_volt/view/kelas/dosen/tugas_detail_dosen.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/widgets/tugas_list_view.dart';
 
@@ -42,13 +43,16 @@ class _TugasTabContentState extends State<TugasTabContent> {
     }
   }
 
-  void _navigateToEditTugas(TugasModel tugas) async {
-    final isSuccess = await Navigator.push(
+  void _navigateToDetailTugas(TugasModel tugas) async {
+    final bool? isDataChanged = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => EditTugasPage(tugas: tugas)),
+      MaterialPageRoute(
+        // Ganti tujuan navigasi
+        builder: (context) => TugasDetailDosen(tugas: tugas),
+      ),
     );
 
-    if (isSuccess == true && mounted) {
+    if (isDataChanged == true && mounted) {
       _refreshTugasList();
     }
   }
@@ -80,7 +84,7 @@ class _TugasTabContentState extends State<TugasTabContent> {
             )
           : TugasListView(
               daftarTugas: _daftarTugas,
-              onTugasTap: _navigateToEditTugas,
+              onTugasTap: _navigateToDetailTugas,
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToCreateTugas,

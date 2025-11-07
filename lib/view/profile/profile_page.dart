@@ -14,6 +14,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  late bool _isMahasiswa;
   // fungsi Logout
   Future<void> _logout() async {
     final bool? confirm = await showDialog<bool>(
@@ -56,6 +57,12 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _isMahasiswa = widget.user.role == UserRole.mahasiswa.toString();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
@@ -84,11 +91,14 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildProfileHeader(),
 
             SizedBox(height: 12),
-            _buildOptionItem(
-              icon: Icons.star,
-              text: "Badge Saya",
-              // onTap: _navigateToGantiPassword,
-            ),
+            if (_isMahasiswa) ...[
+              _buildOptionItem(
+                icon: Icons.star,
+                text: "Badge Saya",
+                // onTap: _navigateToGantiPassword,
+              ),
+              SizedBox(height: 12),
+            ],
             SizedBox(height: 12),
             _buildOptionItem(
               icon: Icons.info_outline,
