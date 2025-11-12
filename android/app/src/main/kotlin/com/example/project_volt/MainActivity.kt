@@ -1,4 +1,4 @@
-package com.example.project_volt
+package com.aaliyah.project_volt
 
 import io.flutter.embedding.android.FlutterActivity
 

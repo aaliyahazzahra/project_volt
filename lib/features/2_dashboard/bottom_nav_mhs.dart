@@ -5,7 +5,7 @@ import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/models/user_model.dart';
 import 'package:project_volt/features/2_dashboard/homepage_mhs.dart';
 import 'package:project_volt/features/3_profile/profile_page.dart';
-import 'package:project_volt/features/5_simulasi/simulasi.dart';
+import 'package:project_volt/features/5_simulasi/simulasi_page.dart';
 
 class BottomNavMhs extends StatefulWidget {
   final UserModel user;
@@ -25,7 +25,7 @@ class _BottomNavMhsState extends State<BottomNavMhs> {
     super.initState();
     _widgetOptions = [
       HomepageMhs(user: widget.user),
-      Simulasi(),
+      SimulationPage(),
       ProfilePage(user: widget.user),
     ];
   }
