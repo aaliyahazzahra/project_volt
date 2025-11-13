@@ -18,26 +18,27 @@ class BottomNavMhs extends StatefulWidget {
 class _BottomNavMhsState extends State<BottomNavMhs> {
   int _tabIndex = 0; // indeks awal
 
-  late final List<Widget> _widgetOptions;
-
+  final PageController controller = PageController();
   @override
   void initState() {
     super.initState();
-    _widgetOptions = [
-      HomepageMhs(user: widget.user),
-      SimulationPage(),
-      ProfilePage(user: widget.user),
-    ];
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: _widgetOptions[_tabIndex],
+        // body: _widgetOptions[_tabIndex],
+        body: PageView(
+          controller: controller,
+          children: [
+            HomepageMhs(user: widget.user),
+            SimulationPage(),
+            ProfilePage(user: widget.user),
+          ],
+        ),
         bottomNavigationBar: BottomBarBubble(
           color: AppColor.kSecondaryColor,
-
           selectedIndex: _tabIndex,
           items: [
             BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
@@ -45,9 +46,8 @@ class _BottomNavMhsState extends State<BottomNavMhs> {
             BottomBarItem(iconData: Icons.group, label: 'Profil'),
           ],
           onSelect: (newIndex) {
-            setState(() {
-              _tabIndex = newIndex;
-            });
+            _tabIndex = newIndex;
+            controller.jumpToPage(newIndex);
           },
         ),
       ),

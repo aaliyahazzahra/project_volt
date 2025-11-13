@@ -16,7 +16,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  // state untuk animasi
   bool _showFullLogo = false;
 
   @override
@@ -85,18 +84,11 @@ class _SplashScreenState extends State<SplashScreen> {
         children: [
           Center(
             child: AnimatedCrossFade(
-              firstChild: Image.asset(
-                AppImages.vAja, // Gambar "V"
-                height: 250,
-              ),
-              secondChild: Image.asset(
-                AppImages.volt, // Gambar "VOLT"
-                height: 200,
-              ),
+              firstChild: Image.asset(AppImages.vAja, height: 250),
+              secondChild: Image.asset(AppImages.volt, height: 200),
               crossFadeState: _showFullLogo
-                  ? CrossFadeState
-                        .showSecond // Tampilkan VOLT
-                  : CrossFadeState.showFirst, // Tampilkan V
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
               duration: const Duration(seconds: 2),
               firstCurve: Interval(0.0, 0.5, curve: Curves.easeOut),
               secondCurve: Interval(0.6, 1.0, curve: Curves.easeIn),

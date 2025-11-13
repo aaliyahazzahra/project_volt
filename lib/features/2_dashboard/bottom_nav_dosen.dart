@@ -17,24 +17,25 @@ class BottomNavDosen extends StatefulWidget {
 
 class _BottomNavDosenState extends State<BottomNavDosen> {
   int _tabIndex = 0; // indeks awal
-
-  late final List<Widget> _widgetOptions;
+  final PageController controller = PageController();
 
   @override
   void initState() {
     super.initState();
-    _widgetOptions = [
-      HomepageDosen(user: widget.user),
-      SimulationPage(),
-      ProfilePage(user: widget.user),
-    ];
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: _widgetOptions[_tabIndex],
+        body: PageView(
+          controller: controller,
+          children: [
+            HomepageDosen(user: widget.user),
+            SimulationPage(),
+            ProfilePage(user: widget.user),
+          ],
+        ),
         bottomNavigationBar: BottomBarBubble(
           color: AppColor.kSecondaryColor,
           selectedIndex: _tabIndex,
@@ -44,9 +45,9 @@ class _BottomNavDosenState extends State<BottomNavDosen> {
             BottomBarItem(iconData: Icons.group, label: 'Profil'),
           ],
           onSelect: (newIndex) {
-            setState(() {
-              _tabIndex = newIndex;
-            });
+            _tabIndex = newIndex;
+            controller.jumpToPage(newIndex);
+            // setState(() {});
           },
         ),
       ),

@@ -97,14 +97,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
-  collection_providers:
-    dependency: "direct main"
-    description:
-      name: collection_providers
-      sha256: c3c24c6817a57590943d662eeb32dd1a03f243382f046db0103e17bd84f58ee7
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.2"
   cross_file:
     dependency: transitive
     description:
@@ -182,30 +174,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_fit_events:
-    dependency: transitive
-    description:
-      name: flutter_fit_events
-      sha256: "9fb9ac601440b8188f1d76e0582c551a0bf1dc9771a24c511262b471f1a2a0f1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
-  flutter_fit_utils:
-    dependency: transitive
-    description:
-      name: flutter_fit_utils
-      sha256: de5a21ce2e6d40abb2c072683a599694e2c268fefcc3ecc6deef8e78a7bbdc58
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.1"
-  flutter_fit_utils_provider:
-    dependency: "direct main"
-    description:
-      name: flutter_fit_utils_provider
-      sha256: b850b0473082948e133ac21bec089c2ebee753caf13da36533e37dd31009cdac
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.1"
   flutter_launcher_icons:
     dependency: "direct main"
     description:
@@ -269,14 +237,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "16.3.0"
-  hive:
-    dependency: transitive
-    description:
-      name: hive
-      sha256: "8dcf6db979d7933da8217edcec84e9df1bdb4e4edc7fc77dbd5aa74356d6d941"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.3"
   http:
     dependency: "direct main"
     description:
@@ -381,14 +341,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
-  motion_tab_bar:
-    dependency: "direct main"
-    description:
-      name: motion_tab_bar
-      sha256: "71bcb42a91253479896a2767f18424cac0ed967d73763e0f8ae467b97661a588"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.4"
   nested:
     dependency: transitive
     description:
@@ -477,22 +429,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-  photo_manager:
-    dependency: transitive
-    description:
-      name: photo_manager
-      sha256: a0d9a7a9bc35eda02d33766412bde6d883a8b0acb86bbe37dac5f691a0894e8a
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.7.1"
-  photo_manager_image_provider:
-    dependency: "direct main"
-    description:
-      name: photo_manager_image_provider
-      sha256: b6015b67b32f345f57cf32c126f871bced2501236c405aafaefa885f7c821e4f
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.0"
   platform:
     dependency: transitive
     description:
@@ -525,14 +461,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.5+1"
-  rxdart:
-    dependency: transitive
-    description:
-      name: rxdart
-      sha256: "5c3004a4a8dbb94bd4bf5412a4def4acdaa12e12f269737a5751369e12d1a962"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.28.0"
   shared_preferences:
     dependency: "direct main"
     description:

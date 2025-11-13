@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart'; // <-- PERUBAHAN 1: WAJIB ADA
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart'; // Ganti dengan path AppColor Anda
 import 'package:uuid/uuid.dart';
@@ -154,6 +155,9 @@ class _SimulationPageState extends State<SimulationPage> {
   String? _draggingComponentId;
   Offset? _dragStartOffset;
 
+  // --- PERUBAHAN 2: Variabel status untuk mencegah simulasi tumpang tindih ---
+  bool _isSimulating = false;
+
   // -- FUNGSI HELPER ---
 
   void _resetDragging() {
@@ -222,65 +226,41 @@ class _SimulationPageState extends State<SimulationPage> {
 
   // --- ⭐️⭐️⭐️ LOGIC ENGINE ⭐️⭐️⭐️ ---
 
-  void _runSimulation() {
-    // Jalankan beberapa kali untuk menstabilkan sinyal (penting untuk loop)
-    for (int i = 0; i < 10; i++) {
-      for (final component in _componentsOnCanvas) {
-        // 1. Update input komponen berdasarkan kabel
-        for (final wire in _wires) {
-          if (wire.toComponentId == component.id) {
-            // Kabel ini terhubung KE komponen ini
-            try {
-              final sourceComponent = _componentsOnCanvas.firstWhere(
-                (c) => c.id == wire.fromComponentId,
-              );
-              // Set nilai inputnya
-              component.inputs[wire.toNodeId] = sourceComponent.outputValue;
-            } catch (e) {
-              // Source komponen tidak ditemukan
-            }
-          }
-        }
+  // --- PERUBAHAN 3: Mengganti fungsi _runSimulation ---
+  void _runSimulation() async {
+    // 1. Mencegah simulasi berjalan tumpang tindih
+    if (_isSimulating) return;
 
-        // 2. Hitung output baru komponen
-        bool newOutput = false;
-        switch (component.type) {
-          case 'INPUT':
-            // Outputnya dikontrol manual (sudah di-set saat di-tap)
-            newOutput = component.outputValue;
-            break;
-          case 'AND':
-            newOutput =
-                component.inputs['input_a']! && component.inputs['input_b']!;
-            break;
-          case 'OR':
-            newOutput =
-                component.inputs['input_a']! || component.inputs['input_b']!;
-            break;
-          case 'NOT':
-            newOutput = !component.inputs['input_a']!;
-            break;
-          case 'NAND':
-            newOutput =
-                !(component.inputs['input_a']! && component.inputs['input_b']!);
-            break;
-          case 'NOR':
-            newOutput =
-                !(component.inputs['input_a']! || component.inputs['input_b']!);
-            break;
-          case 'OUTPUT':
-            // Output (LED) tidak punya output, tapi kita set nilainya
-            // agar visualnya berubah
-            component.outputValue = component.inputs['input_a']!;
-            newOutput = component.outputValue;
-            break;
-        }
-        component.outputValue = newOutput;
-      }
-    }
+    setState(() {
+      _isSimulating = true;
+      // Anda bisa tambahkan loading spinner di sini jika mau
+      // misalnya di dalam build() check if (_isSimulating) show spinner
+    });
 
-    // Panggil setState HANYA SEKALI di akhir untuk update UI
-    setState(() {});
+    // 2. Siapkan "payload" untuk dikirim ke background
+    // Kita buat salinan list agar aman saat proses background berjalan
+    final payload = SimulationPayload(
+      List<SimulationComponent>.from(_componentsOnCanvas),
+      List<WireConnection>.from(_wires),
+    );
+
+    // 3. JALANKAN DI BACKGROUND THREAD!
+    // UI Anda TIDAK AKAN FREEZE
+    final List<SimulationComponent> updatedComponents = await compute(
+      _runSimulationInBackground,
+      payload,
+    );
+
+    // 4. Setelah selesai, update UI dengan data baru
+    // Cek jika widget masih 'mounted' (ada di tree) untuk menghindari error
+    if (!mounted) return;
+
+    setState(() {
+      // Ganti list lama dengan list baru yang sudah di-update
+      _componentsOnCanvas.clear();
+      _componentsOnCanvas.addAll(updatedComponents);
+      _isSimulating = false;
+    });
   }
   // --- ⭐️⭐️⭐️ AKHIR LOGIC ENGINE ⭐️⭐️⭐️ ---
 
@@ -388,6 +368,14 @@ class _SimulationPageState extends State<SimulationPage> {
                         ),
                       );
                     }),
+
+                    // (Opsional) Tampilkan loading saat simulasi berjalan
+                    if (_isSimulating)
+                      Center(
+                        child: CircularProgressIndicator(
+                          color: AppColor.kPrimaryColor,
+                        ),
+                      ),
                   ],
                 );
               },
@@ -803,7 +791,9 @@ class WirePainter extends CustomPainter {
 
         canvas.drawPath(path, paint);
       } catch (e) {
-        print("Error drawing wire: $e");
+        // print("Error drawing wire: $e");
+        // Kita sembunyikan print-nya agar tidak menuh-menuhin konsol
+        // Error ini wajar terjadi sesaat ketika komponen dihapus
       }
     }
   }
