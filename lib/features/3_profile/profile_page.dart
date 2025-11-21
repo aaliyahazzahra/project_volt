@@ -3,6 +3,7 @@ import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/utils/preference_handler.dart';
 import 'package:project_volt/data/models/user_model.dart';
 import 'package:project_volt/features/1_auth/authenticator.dart';
+import 'package:project_volt/features/3_profile/about_page.dart';
 import 'package:project_volt/features/3_profile/edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -15,7 +16,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late bool _isMahasiswa;
-  // fungsi Logout
+
   Future<void> _logout() async {
     final bool? confirm = await showDialog<bool>(
       context: context,
@@ -36,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (confirm == true) {
-      await PreferenceHandler.removeUser(); // Hapus session
+      await PreferenceHandler.removeUser();
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -79,8 +80,12 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.settings_outlined, color: AppColor.kTextColor),
-            onPressed: _navigateToEditProfile,
-            tooltip: 'Ubah Profil Akademik',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Fitur Pengaturan akan segera hadir!")),
+              );
+            },
+            tooltip: 'Pengaturan',
           ),
         ],
       ),
@@ -95,7 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
               _buildOptionItem(
                 icon: Icons.star,
                 text: "Badge Saya",
-                // onTap: _navigateToGantiPassword,
+                // onTap: () {},
               ),
               SizedBox(height: 12),
             ],
@@ -103,7 +108,12 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildOptionItem(
               icon: Icons.info_outline,
               text: "Tentang Aplikasi",
-              // onTap: _logout,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutPage()),
+                );
+              },
             ),
             Spacer(),
             _buildOptionItem(
@@ -119,7 +129,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Widget Profile
   Widget _buildProfileHeader() {
     final bool isDosen = widget.user.role == UserRole.dosen.toString();
     final String roleText = isDosen ? "Dosen" : "Mahasiswa";
@@ -129,7 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+      padding: EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         color: AppColor.kWhiteColor,
         borderRadius: BorderRadius.circular(15.0),
@@ -141,45 +150,96 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: AppColor.kPrimaryColor,
-            child: Icon(Icons.person, size: 40, color: AppColor.kWhiteColor),
-          ),
-          SizedBox(height: 16),
-          Text(
-            widget.user.namaLengkap,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColor.kTextColor,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.user.namaLengkap,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColor.kTextColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  widget.user.email,
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: roleColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: roleColor.withOpacity(0.5)),
+                  ),
+                  child: Text(
+                    roleText,
+                    style: TextStyle(
+                      color: roleColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
           ),
-          SizedBox(height: 4),
 
-          Text(
-            widget.user.email,
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 16),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: roleColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: roleColor.withOpacity(0.5)),
-            ),
-            child: Text(
-              roleText,
-              style: TextStyle(color: roleColor, fontWeight: FontWeight.bold),
-            ),
+          SizedBox(width: 16),
+          Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColor.kPrimaryColor, width: 2),
+                ),
+                child: CircleAvatar(
+                  radius: 35,
+                  backgroundColor: AppColor.kPrimaryColor.withOpacity(0.1),
+                  child: Icon(
+                    Icons.person,
+                    size: 40,
+                    color: AppColor.kPrimaryColor,
+                  ),
+                ),
+              ),
+
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Material(
+                  color: AppColor.kWhiteColor,
+                  shape: CircleBorder(),
+                  elevation: 2,
+                  child: InkWell(
+                    onTap: _navigateToEditProfile,
+                    customBorder: CircleBorder(),
+                    child: Container(
+                      padding: EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        size: 16,
+                        color: AppColor.kPrimaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

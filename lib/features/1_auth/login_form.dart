@@ -72,7 +72,7 @@ class _LoginFormState extends State<LoginForm> {
                   return 'Password tidak sesuai ketentuan.';
                 }
 
-                return null; // Lolos validasi
+                return null;
               },
             ),
 
@@ -97,7 +97,6 @@ class _LoginFormState extends State<LoginForm> {
                   if (!mounted) return;
 
                   if (user == null) {
-                    // Jika user tidak ditemukan
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Email atau Password salah.'),
@@ -106,7 +105,6 @@ class _LoginFormState extends State<LoginForm> {
                     );
                   } else {
                     await PreferenceHandler.saveUser(user);
-                    // Jika user ditemukan, cek role-nya
                     String userRole = user.role;
 
                     if (userRole == UserRole.mahasiswa.toString()) {
