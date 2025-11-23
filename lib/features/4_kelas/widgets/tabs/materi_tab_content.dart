@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/emptystate.dart';
+import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/kelas_model.dart';
@@ -55,7 +55,6 @@ class _MateriTabContentState extends State<MateriTabContent> {
       ),
     );
 
-    // Refresh list jika 'true' dikembalikan
     if (result == true && mounted) {
       _loadMateri();
     }
@@ -73,13 +72,14 @@ class _MateriTabContentState extends State<MateriTabContent> {
 
   @override
   Widget build(BuildContext context) {
+    final Color rolePrimaryColor = widget.isDosen
+        ? AppColor.kPrimaryColor
+        : AppColor.kAccentColor;
     return Scaffold(
-      backgroundColor: widget.isDosen
-          ? AppColor.kWhiteColor
-          : AppColor.kWhiteColor,
+      backgroundColor: AppColor.kWhiteColor,
 
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: rolePrimaryColor))
           : _daftarMateri.isEmpty
           ? EmptyStateWidget(
               icon: Icons.menu_book_outlined,
@@ -87,10 +87,12 @@ class _MateriTabContentState extends State<MateriTabContent> {
               message: widget.isDosen
                   ? "Tekan tombol (+) di bawah untuk memposting materi pertama."
                   : "Dosen Anda belum memposting materi apapun di kelas ini.",
+              iconColor: rolePrimaryColor,
             )
           : MateriListView(
               daftarMateri: _daftarMateri,
               onMateriTap: _navigateToDetailMateri,
+              roleColor: rolePrimaryColor,
             ),
 
       floatingActionButton: widget.isDosen
@@ -98,7 +100,8 @@ class _MateriTabContentState extends State<MateriTabContent> {
               onPressed: _navigateToCreateMateri,
               backgroundColor: AppColor.kPrimaryColor,
               tooltip: 'Posting Materi Baru',
-              child: Icon(Icons.add, color: Colors.white),
+
+              child: const Icon(Icons.add, color: AppColor.kWhiteColor),
             )
           : null,
     );

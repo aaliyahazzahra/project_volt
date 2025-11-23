@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:project_volt/common_widgets/emptystate.dart';
+import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/tugas_model.dart';
@@ -17,7 +17,7 @@ class TugasDetailDosen extends StatefulWidget {
 
 class _TugasDetailDosenState extends State<TugasDetailDosen> {
   late TugasModel _currentTugasData;
-  bool _dataTelahDiubah = false; // Untuk sinyal refresh
+  bool _dataTelahDiubah = false;
 
   @override
   void initState() {
@@ -35,7 +35,6 @@ class _TugasDetailDosenState extends State<TugasDetailDosen> {
     );
 
     if (isSuccess == true && mounted) {
-      // Jika berhasil edit/hapus, refresh data di halaman ini
       _dataTelahDiubah = true;
       _refreshTugasData();
     }
@@ -50,7 +49,6 @@ class _TugasDetailDosenState extends State<TugasDetailDosen> {
           _currentTugasData = updatedTugas;
         });
       } else {
-        // Tugas telah dihapus, kirim sinyal 'true' & tutup halaman ini
         Navigator.of(context).pop(true);
       }
     }
@@ -62,7 +60,6 @@ class _TugasDetailDosenState extends State<TugasDetailDosen> {
       canPop: false,
       onPopInvoked: (bool didPop) {
         if (didPop) return;
-        // Kirim sinyal 'true' hanya jika ada editan
         Navigator.of(context).pop(_dataTelahDiubah);
       },
       child: DefaultTabController(
@@ -189,7 +186,7 @@ class _TugasDetailDosenState extends State<TugasDetailDosen> {
   }
 }
 
-// --- Widget untuk Tab 2 (Submisi) ---
+//  Widget untuk Tab 2 (Submisi)
 class _SubmisiListTab extends StatefulWidget {
   final int tugasId;
   const _SubmisiListTab({required this.tugasId});

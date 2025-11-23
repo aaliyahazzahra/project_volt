@@ -38,7 +38,8 @@ class _BottomNavMhsState extends State<BottomNavMhs> {
           ],
         ),
         bottomNavigationBar: BottomBarBubble(
-          color: AppColor.kSecondaryColor,
+          backgroundColor: AppColor.kWhiteColor,
+          color: AppColor.kAccentColor,
           selectedIndex: _tabIndex,
           items: [
             BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),

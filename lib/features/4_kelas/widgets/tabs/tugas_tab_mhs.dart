@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/emptystate.dart';
+import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/kelas_model.dart';
@@ -55,16 +55,20 @@ class _TugasTabMhsState extends State<TugasTabMhs> {
     return Container(
       color: AppColor.kWhiteColor,
       child: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(color: AppColor.kAccentColor),
+            )
           : _daftarTugas.isEmpty
           ? EmptyStateWidget(
               icon: Icons.assignment_late_outlined,
               title: "Belum Ada Tugas",
               message: "Dosen Anda belum memposting tugas apapun di kelas ini.",
+              iconColor: AppColor.kAccentColor,
             )
           : TugasListView(
               daftarTugas: _daftarTugas,
               onTugasTap: _navigateToDetailTugas,
+              roleColor: AppColor.kAccentColor,
             ),
     );
   }

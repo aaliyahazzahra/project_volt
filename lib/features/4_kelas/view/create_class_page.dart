@@ -1,7 +1,6 @@
-import 'dart:math'; // <-- 1. IMPORT BARU UNTUK KODE ACAK
-
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/kelas_model.dart';
@@ -123,7 +122,7 @@ class _CreateClassState extends State<CreateClass> {
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColor.kPrimaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColor.kWhiteColor,
                     minimumSize: Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

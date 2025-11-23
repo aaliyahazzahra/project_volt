@@ -1,12 +1,14 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/emptystate.dart';
+import 'package:flutter/services.dart';
+import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/database/db_helper.dart';
+import 'package:project_volt/data/kelas_data_source.dart';
 import 'package:project_volt/data/models/kelas_model.dart';
 import 'package:project_volt/data/models/user_model.dart';
 import 'package:project_volt/features/4_kelas/view/class_detail_page.dart';
 import 'package:project_volt/features/4_kelas/widgets/class_list.dart';
+
 // TODO: Buat halaman DetailKelasMahasiswa
 
 class HomepageMhs extends StatefulWidget {
@@ -18,11 +20,12 @@ class HomepageMhs extends StatefulWidget {
 }
 
 class _HomepageMhsState extends State<HomepageMhs> {
+  final KelasDataSource _kelasDataSource = KelasDataSource();
+
   List<KelasModel> _daftarKelas = [];
   bool _isLoading = true;
   bool _isProfileComplete = false;
 
-  // untuk dialog "Gabung Kelas"
   final TextEditingController _kodeController = TextEditingController();
 
   @override
@@ -41,7 +44,6 @@ class _HomepageMhsState extends State<HomepageMhs> {
     if (widget.user.id == null) {
       if (mounted) {
         setState(() => _isLoading = false);
-
         final snackBarContent = AwesomeSnackbarContent(
           title: "Error",
           message: "User ID tidak ditemukan.",
@@ -59,11 +61,17 @@ class _HomepageMhsState extends State<HomepageMhs> {
           ..hideCurrentSnackBar()
           ..showSnackBar(snackBar);
       }
+
       return;
     }
 
-    final dataKelas = await DbHelper.getKelasByMahasiswa(widget.user.id!);
-    final dataProfil = await DbHelper.getMahasiswaProfile(widget.user.id!);
+    final dataKelas = await _kelasDataSource.getKelasByMahasiswa(
+      widget.user.id!,
+    );
+    final dataProfil = await _kelasDataSource.getMahasiswaProfile(
+      widget.user.id!,
+    );
+
     bool profileComplete =
         dataProfil != null &&
         (dataProfil['nim'] != null && dataProfil['nim'].isNotEmpty) &&
@@ -79,7 +87,6 @@ class _HomepageMhsState extends State<HomepageMhs> {
     }
   }
 
-  // navigasi ke detail
   void _navigateToDetail(KelasModel kelas) async {
     final result = await Navigator.push(
       context,
@@ -91,11 +98,25 @@ class _HomepageMhsState extends State<HomepageMhs> {
     if (result == true && mounted) {
       _loadData();
     }
-
     print("Buka detail untuk kelas ID: ${kelas.id}");
   }
 
-  // dialog gabung kelas
+  void _handleMenuAction(String action, KelasModel kelas) {
+    if (action == 'Salin Kode') {
+      Clipboard.setData(ClipboardData(text: kelas.kodeKelas));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Kode kelas disalin"),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 1),
+        ),
+      );
+    } else if (action == 'Keluar Kelas') {
+      _showExitClassDialog(kelas);
+    }
+  }
+
   Future<void> _showGabungKelasDialog() async {
     _kodeController.clear();
     return showDialog<void>(
@@ -112,15 +133,20 @@ class _HomepageMhsState extends State<HomepageMhs> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Batal'),
+              child: Text(
+                'Batal',
+                style: TextStyle(color: AppColor.kAccentColor),
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('Gabung'),
+              child: Text(
+                'Gabung',
+                style: TextStyle(color: AppColor.kAccentColor),
+              ),
               onPressed: () async {
                 if (widget.user.id == null) return;
 
-                // Jika kode kosong
                 if (_kodeController.text.isEmpty) {
                   final snackBarContent = AwesomeSnackbarContent(
                     title: "Peringatan",
@@ -133,48 +159,39 @@ class _HomepageMhsState extends State<HomepageMhs> {
                     backgroundColor: Colors.transparent,
                     content: snackBarContent,
                   );
-
                   mainMessenger
                     ..hideCurrentSnackBar()
                     ..showSnackBar(snackBar);
                   return;
                 }
 
-                // Panggil DB Helper
-                final String hasil = await DbHelper.joinKelas(
+                final String hasil = await _kelasDataSource.joinKelas(
                   widget.user.id!,
                   _kodeController.text,
                 );
                 if (!mounted) return;
 
-                // Tutup dialog
                 Navigator.of(context).pop();
 
-                // Siapkan konten snackbar
                 AwesomeSnackbarContent snackBarContent;
 
                 if (hasil.startsWith("Sukses:")) {
-                  // Jika berhasil
                   snackBarContent = AwesomeSnackbarContent(
                     title: "Berhasil!",
                     message: hasil,
                     contentType: ContentType.success,
                   );
 
-                  // Refresh list HANYA jika sukses
                   setState(() => _isLoading = true);
                   _loadData();
                 } else {
-                  // Kode salah / Sudah gabung
                   snackBarContent = AwesomeSnackbarContent(
                     title: "Gagal Bergabung",
-
                     message: hasil,
                     contentType: ContentType.failure,
                   );
                 }
 
-                // Buat SnackBar
                 final snackBar = SnackBar(
                   elevation: 0,
                   behavior: SnackBarBehavior.floating,
@@ -185,6 +202,71 @@ class _HomepageMhsState extends State<HomepageMhs> {
                 mainMessenger
                   ..hideCurrentSnackBar()
                   ..showSnackBar(snackBar);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showExitClassDialog(KelasModel kelas) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Keluar Kelas'),
+          content: Text(
+            'Apakah Anda yakin ingin keluar dari kelas "${kelas.namaKelas}"?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Keluar', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                Navigator.of(context).pop();
+
+                if (widget.user.id == null || kelas.id == null) return;
+
+                try {
+                  final deletedRows = await _kelasDataSource.leaveKelas(
+                    widget.user.id!,
+                    kelas.id!,
+                  );
+
+                  if (mounted) {
+                    final snackBarContent = AwesomeSnackbarContent(
+                      title: "Sukses",
+                      message: deletedRows > 0
+                          ? "Anda berhasil keluar dari kelas"
+                          : "Gagal keluar kelas. Data tidak ditemukan.",
+                      contentType: ContentType.success,
+                    );
+
+                    ScaffoldMessenger.of(context)
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(
+                        SnackBar(
+                          elevation: 0,
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: Colors.transparent,
+                          content: snackBarContent,
+                        ),
+                      );
+
+                    setState(() => _isLoading = true);
+                    _loadData();
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Gagal keluar kelas: $e")),
+                    );
+                  }
+                }
               },
             ),
           ],
@@ -229,24 +311,32 @@ class _HomepageMhsState extends State<HomepageMhs> {
         backgroundColor: AppColor.kAppBar,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(color: AppColor.kAccentColor),
+            )
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
               icon: Icons.school_outlined,
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
+              iconColor: AppColor.kAccentColor,
               message:
                   "Anda belum bergabung dengan kelas manapun. Silakan gabung kelas dengan menekan tombol (+).",
             )
-          : ClassList(daftarKelas: _daftarKelas, onKelasTap: _navigateToDetail),
+          : ClassList(
+              daftarKelas: _daftarKelas,
+              onKelasTap: _navigateToDetail,
+              isDosen: false,
+              onMenuAction: _handleMenuAction,
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _isProfileComplete
             ? _showGabungKelasDialog
             : _showProfileWarning,
         backgroundColor: _isProfileComplete
-            ? AppColor.kPrimaryColor
-            : Colors.grey,
+            ? AppColor.kAccentColor
+            : AppColor.kDisabledColor,
         tooltip: 'Gabung Kelas Baru',
-        child: Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: AppColor.kWhiteColor),
       ),
     );
   }

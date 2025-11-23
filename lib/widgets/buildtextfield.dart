@@ -56,10 +56,10 @@ class _BuildTextFieldState extends State<BuildTextField> {
         ),
 
         errorBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red, width: 1.0),
+          borderSide: BorderSide(color: AppColor.kErrorColor, width: 1.0),
         ),
         focusedErrorBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red, width: 2.0),
+          borderSide: BorderSide(color: AppColor.kErrorColor, width: 2.0),
         ),
 
         suffixIcon: widget.isPassword

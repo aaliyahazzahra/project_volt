@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/buildtextfield.dart';
-import 'package:project_volt/common_widgets/primary_auth_button.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/primary_auth_button.dart';
+import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/data/auth_data_source.dart';
 import 'package:project_volt/core/utils/preference_handler.dart';
-import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/user_model.dart';
 import 'package:project_volt/features/2_dashboard/bottom_nav_dosen.dart';
 import 'package:project_volt/features/2_dashboard/bottom_nav_mhs.dart';
@@ -16,6 +17,9 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
+  final AuthDataSource _authDataSource = AuthDataSource();
+
+  bool _isLoading = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -25,6 +29,52 @@ class _LoginFormState extends State<LoginForm> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    UserModel? user = await _authDataSource.loginUser(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Email atau Password salah.'),
+          backgroundColor: AppColor.kErrorColor,
+        ),
+      );
+    } else {
+      await PreferenceHandler.saveUser(user);
+      String userRole = user.role;
+
+      Widget nextScreen;
+      if (userRole == UserRole.mahasiswa.toString()) {
+        nextScreen = BottomNavMhs(user: user);
+      } else if (userRole == UserRole.dosen.toString()) {
+        nextScreen = BottomNavDosen(user: user);
+      } else {
+        return;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => nextScreen),
+      );
+    }
   }
 
   @override
@@ -63,15 +113,12 @@ class _LoginFormState extends State<LoginForm> {
                 if (value == null || value.isEmpty) {
                   return 'Password tidak boleh kosong';
                 }
-
                 final bool passValid = RegExp(
                   r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}$',
                 ).hasMatch(value);
-
                 if (!passValid) {
                   return 'Password tidak sesuai ketentuan.';
                 }
-
                 return null;
               },
             ),
@@ -81,52 +128,15 @@ class _LoginFormState extends State<LoginForm> {
               alignment: Alignment.centerRight,
               child: Text(
                 'Lupa Password?',
-                style: TextStyle(color: Colors.blueAccent),
+                style: TextStyle(color: AppColor.kAccentColor),
               ),
             ),
             SizedBox(height: 30),
+
             PrimaryAuthButton(
               text: 'Masuk Sekarang',
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  UserModel? user = await DbHelper.loginUser(
-                    email: _emailController.text,
-                    password: _passwordController.text,
-                  );
-
-                  if (!mounted) return;
-
-                  if (user == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Email atau Password salah.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  } else {
-                    await PreferenceHandler.saveUser(user);
-                    String userRole = user.role;
-
-                    if (userRole == UserRole.mahasiswa.toString()) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BottomNavMhs(user: user),
-                        ),
-                      );
-                      print("NAVIGASI KE DASHBOARD MAHASISWA");
-                    } else if (userRole == UserRole.dosen.toString()) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BottomNavDosen(user: user),
-                        ),
-                      );
-                      print("NAVIGASI KE DASHBOARD DOSEN");
-                    }
-                  }
-                }
-              },
+              isLoading: _isLoading,
+              onPressed: _handleLogin,
             ),
           ],
         ),

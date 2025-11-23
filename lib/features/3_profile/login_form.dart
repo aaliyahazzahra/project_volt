@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/buildtextfield.dart';
-import 'package:project_volt/common_widgets/primary_auth_button.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/primary_auth_button.dart';
 import 'package:project_volt/core/utils/preference_handler.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/user_model.dart';
@@ -72,7 +72,7 @@ class _LoginFormState extends State<LoginForm> {
                   return 'Password tidak sesuai ketentuan.';
                 }
 
-                return null; // Lolos validasi
+                return null;
               },
             ),
 

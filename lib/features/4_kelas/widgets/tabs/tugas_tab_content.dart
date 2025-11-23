@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/emptystate.dart';
+import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/kelas_model.dart';
@@ -10,6 +10,7 @@ import 'package:project_volt/features/4_kelas/widgets/list_views/tugas_list_view
 
 class TugasTabContent extends StatefulWidget {
   final KelasModel kelas;
+  final Color rolePrimaryColor = AppColor.kPrimaryColor;
   const TugasTabContent({super.key, required this.kelas});
 
   @override
@@ -27,7 +28,7 @@ class _TugasTabContentState extends State<TugasTabContent> {
   }
 
   void _refreshTugasList() {
-    setState(() => _isLoading = true); // Nyalakan loading
+    setState(() => _isLoading = true);
     _loadTugas();
   }
 
@@ -45,10 +46,7 @@ class _TugasTabContentState extends State<TugasTabContent> {
   void _navigateToDetailTugas(TugasModel tugas) async {
     final bool? isDataChanged = await Navigator.push(
       context,
-      MaterialPageRoute(
-        // Ganti tujuan navigasi
-        builder: (context) => TugasDetailDosen(tugas: tugas),
-      ),
+      MaterialPageRoute(builder: (context) => TugasDetailDosen(tugas: tugas)),
     );
 
     if (isDataChanged == true && mounted) {
@@ -70,26 +68,29 @@ class _TugasTabContentState extends State<TugasTabContent> {
 
   @override
   Widget build(BuildContext context) {
+    final Color rolePrimaryColor = AppColor.kPrimaryColor;
     return Scaffold(
       backgroundColor: AppColor.kWhiteColor,
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: rolePrimaryColor))
           : _daftarTugas.isEmpty
           ? EmptyStateWidget(
               icon: Icons.assignment_late_outlined,
               title: "Belum Ada Tugas",
               message:
                   "Tekan tombol (+) di bawah untuk membuat tugas pertama di kelas ini.",
+              iconColor: rolePrimaryColor,
             )
           : TugasListView(
               daftarTugas: _daftarTugas,
               onTugasTap: _navigateToDetailTugas,
+              roleColor: rolePrimaryColor,
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToCreateTugas,
         backgroundColor: AppColor.kPrimaryColor,
         tooltip: 'Buat Tugas Baru',
-        child: Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: AppColor.kWhiteColor),
       ),
     );
   }

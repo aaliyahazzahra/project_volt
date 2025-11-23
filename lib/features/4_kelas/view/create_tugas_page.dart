@@ -1,7 +1,7 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:project_volt/common_widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/tugas_model.dart';
@@ -92,7 +92,7 @@ class _CreateTugasPageState extends State<CreateTugasPage> {
           ..hideCurrentSnackBar()
           ..showSnackBar(snackBar);
         if (mounted) {
-          Navigator.pop(context); // Kembali ke halaman detail kelas
+          Navigator.pop(context);
         }
       } catch (e) {
         final snackBarContent = AwesomeSnackbarContent(
@@ -206,7 +206,7 @@ class _CreateTugasPageState extends State<CreateTugasPage> {
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColor.kPrimaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColor.kWhiteColor,
                     minimumSize: Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

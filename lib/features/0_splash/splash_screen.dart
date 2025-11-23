@@ -25,8 +25,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _startAnimationAndNavigation() {
-    // timer animasi
-
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {

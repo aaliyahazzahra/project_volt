@@ -508,7 +508,7 @@ class _SimulationPageState extends State<SimulationPage> {
         height: 60,
         width: 80,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColor.kWhiteColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColor.kPrimaryColor, width: 2),
         ),
@@ -540,7 +540,7 @@ class _SimulationPageState extends State<SimulationPage> {
         height: 60,
         width: 80,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColor.kWhiteColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.black54, width: 2),
         ),
@@ -575,7 +575,9 @@ class _SimulationPageState extends State<SimulationPage> {
         height: 60,
         width: 80,
         decoration: BoxDecoration(
-          color: isDragging ? Colors.blueAccent.withOpacity(0.5) : Colors.white,
+          color: isDragging
+              ? Colors.blueAccent.withOpacity(0.5)
+              : AppColor.kWhiteColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColor.kPrimaryColor, width: 2),
           boxShadow: isDragging ? [/* ...boxShadow... */] : null,
@@ -725,7 +727,7 @@ class _SimulationPageState extends State<SimulationPage> {
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(color: AppColor.kWhiteColor, width: 2),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4),
         ],

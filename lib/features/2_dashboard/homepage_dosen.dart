@@ -1,13 +1,14 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:project_volt/common_widgets/emptystate.dart';
+import 'package:project_volt/widgets/emptystate.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/database/db_helper.dart';
+import 'package:project_volt/data/kelas_data_source.dart';
 import 'package:project_volt/data/models/kelas_model.dart';
 import 'package:project_volt/data/models/user_model.dart';
 import 'package:project_volt/features/4_kelas/view/class_detail_page.dart';
 import 'package:project_volt/features/4_kelas/view/create_class_page.dart';
+import 'package:project_volt/features/4_kelas/view/edit_class_page.dart';
 import 'package:project_volt/features/4_kelas/widgets/class_list.dart';
 
 class HomepageDosen extends StatefulWidget {
@@ -19,8 +20,9 @@ class HomepageDosen extends StatefulWidget {
 }
 
 class _HomepageDosenState extends State<HomepageDosen> {
-  List<KelasModel> _daftarKelas = [];
+  final KelasDataSource _kelasDataSource = KelasDataSource();
 
+  List<KelasModel> _daftarKelas = [];
   bool _isLoading = true;
   bool _isProfileComplete = false;
 
@@ -55,14 +57,16 @@ class _HomepageDosenState extends State<HomepageDosen> {
       return;
     }
 
-    final dataKelas = await DbHelper.getKelasByDosen(widget.user.id!);
-    final dataProfil = await DbHelper.getDosenProfile(widget.user.id!);
+    final dataKelas = await _kelasDataSource.getKelasByDosen(widget.user.id!);
+    final dataProfil = await _kelasDataSource.getDosenProfile(widget.user.id!);
+
     bool profileComplete =
         dataProfil != null &&
         (dataProfil['nidn_nidk'] != null &&
             dataProfil['nidn_nidk'].isNotEmpty) &&
         (dataProfil['nama_kampus'] != null &&
             dataProfil['nama_kampus'].isNotEmpty);
+
     if (mounted) {
       setState(() {
         _daftarKelas = dataKelas;
@@ -72,12 +76,89 @@ class _HomepageDosenState extends State<HomepageDosen> {
     }
   }
 
+  void _handleMenuAction(String action, KelasModel kelas) {
+    switch (action) {
+      case 'Salin Kode':
+        _copyClassCode(kelas.kodeKelas);
+        break;
+      case 'Edit':
+        _navigateToEditClass(kelas);
+        break;
+      case 'Hapus':
+        _showDeleteConfirmDialog(kelas);
+        break;
+    }
+  }
+
+  void _copyClassCode(String kode) {
+    Clipboard.setData(ClipboardData(text: kode));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Kode kelas '$kode' disalin ke clipboard"),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _navigateToEditClass(KelasModel kelas) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditClass(kelas: kelas)),
+    );
+
+    if (result == true && mounted) {
+      setState(() => _isLoading = true);
+      _loadData();
+    }
+  }
+
+  Future<void> _showDeleteConfirmDialog(KelasModel kelas) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Hapus Kelas?', style: TextStyle(color: Colors.red)),
+          content: Text(
+            'Anda yakin ingin menghapus kelas "${kelas.namaKelas}"?\nData tidak dapat dikembalikan.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                try {
+                  setState(() => _isLoading = true);
+
+                  await _kelasDataSource.deleteKelas(kelas.id!);
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Kelas berhasil dihapus")),
+                    );
+                    _loadData();
+                  }
+                } catch (e) {
+                  setState(() => _isLoading = false);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _navigateToBuatKelas() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateClass(user: widget.user)),
     ).then((newKelas) {
-      // Muat ulang daftar kelas agar data baru tampil
       setState(() => _isLoading = true);
       _loadData();
 
@@ -113,7 +194,7 @@ class _HomepageDosenState extends State<HomepageDosen> {
                 Container(
                   padding: EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: AppColor.kDividerColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -130,6 +211,7 @@ class _HomepageDosenState extends State<HomepageDosen> {
                       IconButton(
                         icon: Icon(Icons.copy),
                         tooltip: 'Salin Kode',
+                        color: AppColor.kPrimaryColor,
                         onPressed: () {
                           Clipboard.setData(
                             ClipboardData(text: newKelas.kodeKelas),
@@ -160,7 +242,10 @@ class _HomepageDosenState extends State<HomepageDosen> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Tutup'),
+              child: Text(
+                'Tutup',
+                style: TextStyle(color: AppColor.kPrimaryColor),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -171,7 +256,6 @@ class _HomepageDosenState extends State<HomepageDosen> {
     );
   }
 
-  // fungsi untuk navigasi detail
   void _navigateToDetail(KelasModel kelas) async {
     final result = await Navigator.push(
       context,
@@ -180,10 +264,9 @@ class _HomepageDosenState extends State<HomepageDosen> {
       ),
     );
 
-    // Cek jika ada sinyal 'true'
     if (result == true && mounted) {
       setState(() => _isLoading = true);
-      _loadData(); // Muat ulang
+      _loadData();
     }
   }
 
@@ -219,28 +302,35 @@ class _HomepageDosenState extends State<HomepageDosen> {
             fontSize: 22,
           ),
         ),
-
         centerTitle: true,
         backgroundColor: AppColor.kAppBar,
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(color: AppColor.kPrimaryColor),
+            )
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
               icon: Icons.menu_book,
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
               message:
                   "Anda belum membuat kelas. Silakan buat kelas dengan menekan tombol (+).",
+              iconColor: AppColor.kPrimaryColor,
             )
-          : ClassList(daftarKelas: _daftarKelas, onKelasTap: _navigateToDetail),
+          : ClassList(
+              daftarKelas: _daftarKelas,
+              onKelasTap: _navigateToDetail,
+              isDosen: true,
+              onMenuAction: _handleMenuAction,
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _isProfileComplete
             ? _navigateToBuatKelas
             : _showProfileWarning,
         backgroundColor: _isProfileComplete
             ? AppColor.kPrimaryColor
-            : Colors.grey,
-        child: Icon(Icons.add, color: Colors.white),
+            : AppColor.kDisabledColor,
+        child: Icon(Icons.add, color: AppColor.kWhiteColor),
       ),
     );
   }

@@ -6,11 +6,13 @@ import 'package:project_volt/data/models/materi_model.dart';
 class MateriListView extends StatelessWidget {
   final List<MateriModel> daftarMateri;
   final Function(MateriModel) onMateriTap;
+  final Color roleColor;
 
   const MateriListView({
     super.key,
     required this.daftarMateri,
     required this.onMateriTap,
+    required this.roleColor,
   });
 
   @override
@@ -36,10 +38,11 @@ class MateriListView extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          color: AppColor.kBackgroundColor,
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: AppColor.kIconBgColor,
-              child: Icon(Icons.menu_book, color: AppColor.kPrimaryColor),
+              child: Icon(Icons.menu_book, color: roleColor),
             ),
             title: Text(
               materi.judul,
@@ -47,9 +50,12 @@ class MateriListView extends StatelessWidget {
             ),
             subtitle: Text(
               tglPosting,
-              style: TextStyle(color: Colors.grey[600]),
+              style: const TextStyle(color: AppColor.kTextSecondaryColor),
             ),
-            trailing: Icon(Icons.chevron_right),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: AppColor.kTextSecondaryColor,
+            ),
             onTap: () => onMateriTap(materi),
           ),
         );

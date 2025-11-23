@@ -1,6 +1,6 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/database/db_helper.dart';
 import 'package:project_volt/data/models/kelas_model.dart';
@@ -16,8 +16,7 @@ class EditClass extends StatefulWidget {
 class _EditClassState extends State<EditClass> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _deskripsiController;
-  late KelasModel _currentKelasData; // state lokal
-
+  late KelasModel _currentKelasData;
   @override
   void initState() {
     super.initState();
@@ -149,7 +148,7 @@ class _EditClassState extends State<EditClass> {
                     ..hideCurrentSnackBar()
                     ..showSnackBar(snackBar);
 
-                  dialogNavigator.pop(); // Tutup dialog
+                  dialogNavigator.pop();
                   mainNavigator.pop(true);
                 } catch (e) {
                   if (!mounted) return;
@@ -226,7 +225,7 @@ class _EditClassState extends State<EditClass> {
                 onPressed: _submitUpdate,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.kPrimaryColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColor.kWhiteColor,
                   minimumSize: Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

@@ -74,11 +74,21 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Batal'),
+            child: Text(
+              'Batal',
+              style: TextStyle(
+                color: _isDosen
+                    ? AppColor.kPrimaryColor
+                    : AppColor.kAccentColor,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Keluar', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Keluar',
+              style: TextStyle(color: AppColor.kErrorColor),
+            ),
           ),
         ],
       ),
@@ -134,12 +144,18 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Color scaffoldBgColor = _isDosen
+    final Color rolePrimaryColor = _isDosen
+        ? AppColor.kPrimaryColor
+        : AppColor.kAccentColor;
+    final Color roleLightBgColor = _isDosen
         ? AppColor.kBackgroundColor
-        : AppColor.kIconBgColor;
+        : AppColor.kLightAccentColor;
+
+    final Color scaffoldBgColor = roleLightBgColor;
     final Color appBarBgColor = AppColor.kBackgroundColor;
+
     final TextStyle appBarTitleStyle = TextStyle(
-      color: AppColor.kPrimaryColor,
+      color: rolePrimaryColor,
       fontWeight: FontWeight.bold,
       fontSize: 20,
     );
@@ -169,7 +185,6 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
             actionsIconTheme: appBarIconTheme,
             title: Text(_currentKelasData.namaKelas),
 
-            // Perbedaan Tombol Aksi
             actions: _isDosen
                 ? [
                     // Dosen
@@ -198,9 +213,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   ],
 
             bottom: TabBar(
-              labelColor: AppColor.kPrimaryColor,
+              labelColor: rolePrimaryColor,
               unselectedLabelColor: AppColor.kTextSecondaryColor,
-              indicatorColor: AppColor.kPrimaryColor,
+              indicatorColor: rolePrimaryColor,
               isScrollable: true,
               tabs: [
                 Tab(icon: Icon(Icons.info_outline), text: "Info"),
@@ -214,7 +229,10 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
           body: TabBarView(
             children: [
               // Tab 1: Info (SAMA)
-              InfoTabContent(kelas: _currentKelasData),
+              InfoTabContent(
+                kelas: _currentKelasData,
+                roleColor: rolePrimaryColor,
+              ),
 
               // Tab 2: Materi (SAMA)
               MateriTabContent(
@@ -229,7 +247,10 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   : TugasTabMhs(kelas: _currentKelasData, user: widget.user),
 
               // Tab 4: Anggota (SAMA)
-              AnggotaTabContent(kelas: _currentKelasData),
+              AnggotaTabContent(
+                kelas: _currentKelasData,
+                rolePrimaryColor: rolePrimaryColor,
+              ),
             ],
           ),
         ),

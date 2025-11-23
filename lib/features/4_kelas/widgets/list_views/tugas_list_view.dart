@@ -6,11 +6,13 @@ import 'package:project_volt/data/models/tugas_model.dart';
 class TugasListView extends StatelessWidget {
   final List<TugasModel> daftarTugas;
   final Function(TugasModel) onTugasTap;
+  final Color roleColor;
 
   const TugasListView({
     super.key,
     required this.daftarTugas,
     required this.onTugasTap,
+    required this.roleColor,
   });
 
   @override

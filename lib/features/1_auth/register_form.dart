@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:project_volt/common_widgets/buildtextfield.dart';
-import 'package:project_volt/common_widgets/primary_auth_button.dart';
-import 'package:project_volt/common_widgets/rolebutton.dart';
-import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/database/db_helper.dart';
+import 'package:project_volt/data/auth_data_source.dart';
 import 'package:project_volt/data/models/user_model.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/primary_auth_button.dart';
+import 'package:project_volt/widgets/rolebutton.dart';
+import 'package:project_volt/core/constants/app_color.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
@@ -15,20 +15,140 @@ class RegisterForm extends StatefulWidget {
 
 class _RegisterFormState extends State<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
+  final AuthDataSource _authDataSource = AuthDataSource();
 
   UserRole _selectedRole = UserRole.mahasiswa;
-  final TextEditingController namaLengkapController = TextEditingController();
+  bool _isLoading = false;
 
+  final TextEditingController namaLengkapController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   @override
   void dispose() {
     namaLengkapController.dispose();
-
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // 1. Set State Loading
+    setState(() {
+      _isLoading = true;
+    });
+
+    // 2. Buat Model
+    UserModel newUser = UserModel(
+      namaLengkap: namaLengkapController.text,
+      email: emailController.text,
+      password: passwordController.text,
+      role: _selectedRole.toString(),
+    );
+
+    // 3. Panggil Data Layer via AuthDataSource
+    bool isSuccess = await _authDataSource.registerUser(newUser);
+
+    // Stop Loading sebelum tampilkan UI Feedback
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+    });
+
+    // 4. Logika Respons (UI Feedback)
+    if (isSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registrasi Berhasil! Silakan Login.'),
+          backgroundColor: AppColor.kSuccessColor,
+        ),
+      );
+      // Clear field setelah sukses
+      namaLengkapController.clear();
+      emailController.clear();
+      passwordController.clear();
+      // *Opsional: Navigasi ke tab Login jika menggunakan TabController di Authenticator
+      // TabController.of(context).animateTo(0);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Email ini sudah terdaftar.'),
+          backgroundColor: AppColor.kErrorColor,
+        ),
+      );
+    }
+  }
+
+  // Logika UI: Dialog Konfirmasi
+  Future<void> _showDosenConfirmationDialog() async {
+    bool isChecked = false;
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Konfirmasi Pilihan'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    Text(
+                      'Apakah Anda yakin ingin mendaftar sebagai Dosen? Pilihan ini hanya untuk Dosen/Staf Pengajar.',
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isChecked,
+                          activeColor: AppColor.kPrimaryColor,
+                          onChanged: (bool? value) {
+                            setDialogState(() {
+                              isChecked = value ?? false;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Saya mengerti dan saya adalah seorang Dosen.',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Batal'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  onPressed: isChecked
+                      ? () {
+                          // Update State RegisterForm
+                          setState(() {
+                            _selectedRole = UserRole.dosen;
+                          });
+                          Navigator.of(context).pop();
+                        }
+                      : null,
+                  child: const Text('Yakin'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -78,7 +198,6 @@ class _RegisterFormState extends State<RegisterForm> {
                   }
 
                   List<String> errors = [];
-
                   if (value.length < 7) {
                     errors.add('minimal 7 karakter');
                   }
@@ -92,22 +211,21 @@ class _RegisterFormState extends State<RegisterForm> {
                     errors.add('1 angka');
                   }
 
-                  // Jika ada error, gabungkan pesannya
                   if (errors.isNotEmpty) {
                     return 'Password harus mengandung setidaknya:\n- ${errors.join('\n- ')}';
                   }
 
-                  return null; // Tidak ada error
+                  return null;
                 },
               ),
+
               SizedBox(height: 20),
+
               Text(
                 "Mendaftar Sebagai:",
-                style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                style: TextStyle(color: AppColor.kTextColor, fontSize: 12),
               ),
               SizedBox(height: 10),
-
-              // Bagian Toogle
               Row(
                 children: [
                   // Tombol Mahasiswa
@@ -141,118 +259,21 @@ class _RegisterFormState extends State<RegisterForm> {
                   ),
                 ],
               ),
-
               SizedBox(height: 30),
+
+              // Tombol Daftar
               PrimaryAuthButton(
                 text: 'Daftar Sekarang',
+                isLoading: _isLoading,
                 backgroundColor: _selectedRole == UserRole.mahasiswa
-                    ? AppColor.colorMahasiswa
-                    : AppColor.colorDosen,
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    UserModel newUser = UserModel(
-                      namaLengkap: namaLengkapController.text,
-                      email: emailController.text,
-                      password: passwordController.text,
-                      role: _selectedRole.toString(),
-                    );
-                    bool isSuccess = await DbHelper.registerUser(newUser);
-                    if (!mounted) return;
-                    if (isSuccess) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Registrasi Berhasil! Silakan Login.'),
-                        ),
-                      );
-                      namaLengkapController.clear();
-                      emailController.clear();
-                      passwordController.clear();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Email ini sudah terdaftar.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                    print("Mendaftar sebagai: $_selectedRole");
-                    print("Email: ${emailController.text}");
-                  }
-                },
+                    ? AppColor.kAccentColor
+                    : AppColor.kPrimaryColor,
+                onPressed: _handleRegister,
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Future<void> _showDosenConfirmationDialog() async {
-    bool isChecked = false; // State lokal untuk checkbox di dalam dialog
-
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // User harus menekan tombol
-      builder: (BuildContext context) {
-        // Gunakan StatefulBuilder agar dialog bisa update state checkbox-nya sendiri
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Konfirmasi Pilihan'),
-              content: SingleChildScrollView(
-                child: ListBody(
-                  children: <Widget>[
-                    Text(
-                      'Apakah Anda yakin ingin mendaftar sebagai Dosen? Pilihan ini hanya untuk Dosen/Staf Pengajar.',
-                    ),
-                    SizedBox(height: 20),
-                    // Checkbox
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: isChecked,
-                          onChanged: (bool? value) {
-                            setDialogState(() {
-                              isChecked = value ?? false;
-                            });
-                          },
-                        ),
-                        Expanded(
-                          child: Text(
-                            'Saya mengerti dan saya adalah seorang Dosen.',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Batal'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Tutup dialog
-                  },
-                ),
-                TextButton(
-                  // Tombol 'Yakin' akan nonaktif jika checkbox belum dicentang
-                  onPressed: isChecked
-                      ? () {
-                          // Jika yakin dan sudah centang:
-                          setState(() {
-                            _selectedRole = UserRole.dosen; // GANTI STATE UTAMA
-                          });
-                          Navigator.of(context).pop(); // Tutup dialog
-                        }
-                      : null, // <-- Ini membuat tombol nonaktif
-                  child: const Text('Yakin'),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }

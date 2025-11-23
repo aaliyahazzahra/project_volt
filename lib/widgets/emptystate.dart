@@ -5,12 +5,14 @@ class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
   final String title;
   final String message;
+  final Color? iconColor;
 
   const EmptyStateWidget({
     super.key,
     required this.icon,
     required this.title,
     required this.message,
+    this.iconColor,
   });
 
   @override
@@ -24,7 +26,11 @@ class EmptyStateWidget extends StatelessWidget {
           CircleAvatar(
             radius: 55,
             backgroundColor: AppColor.kIconBgColor,
-            child: Icon(icon, size: 55, color: AppColor.kPrimaryColor),
+            child: Icon(
+              icon,
+              size: 55,
+              color: iconColor ?? AppColor.kPrimaryColor,
+            ),
           ),
           SizedBox(height: 24),
           Text(

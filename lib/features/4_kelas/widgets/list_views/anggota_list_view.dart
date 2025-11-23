@@ -5,11 +5,13 @@ import 'package:project_volt/data/models/user_model.dart';
 class AnggotaListView extends StatelessWidget {
   final List<UserModel> daftarAnggota;
   final Function(UserModel)? onAnggotaTap;
+  final Color roleColor;
 
   const AnggotaListView({
     super.key,
     required this.daftarAnggota,
     this.onAnggotaTap,
+    required this.roleColor,
   });
 
   @override
@@ -26,16 +28,23 @@ class AnggotaListView extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          color: AppColor.kBackgroundColor,
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: AppColor.kIconBgColor,
-              child: Icon(Icons.person_outline, color: AppColor.kPrimaryColor),
+              child: Icon(Icons.person_outline, color: roleColor),
             ),
             title: Text(
               anggota.namaLengkap,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColor.kTextColor,
+              ),
             ),
-            subtitle: Text(anggota.nim ?? "NIM belum diatur"),
+            subtitle: Text(
+              anggota.nim ?? "",
+              style: TextStyle(color: AppColor.kTextSecondaryColor),
+            ),
             onTap: () {
               // Hanya panggil fungsi jika onTap tidak null
               if (onAnggotaTap != null) {
