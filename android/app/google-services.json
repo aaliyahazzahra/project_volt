@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "743170706938",
+    "project_id": "project-volt-aaliyah",
+    "storage_bucket": "project-volt-aaliyah.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743170706938:android:5dae2e283178317219e843",
+        "android_client_info": {
+          "package_name": "com.aaliyah.project_volt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApxFV0-B_RCqMLDkxEsehVSMdcPq-U0iE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
