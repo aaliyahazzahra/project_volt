@@ -1,9 +1,9 @@
 import 'package:path/path.dart';
-import 'package:project_volt/data/models/kelas_model.dart';
-import 'package:project_volt/data/models/materi_model.dart';
-import 'package:project_volt/data/models/submisi_model.dart';
-import 'package:project_volt/data/models/tugas_model.dart';
-import 'package:project_volt/data/models/user_model.dart';
+import 'package:project_volt/data/SQF/models/kelas_model.dart';
+import 'package:project_volt/data/SQF/models/materi_model.dart';
+import 'package:project_volt/data/SQF/models/submisi_model.dart';
+import 'package:project_volt/data/SQF/models/tugas_model.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DbHelper {

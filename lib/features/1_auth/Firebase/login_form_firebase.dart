@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
+// import 'package:project_volt/data/SQF/models/user_model.dart'; // <-- HAPUS: Model SQF lama
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart'; // <-- TAMBAH: Import Model Firebase
+import 'package:project_volt/data/firebase/service/firebase.dart';
+// Catatan: Anda mungkin perlu mengubah path import di atas sesuai struktur project Anda
+
+import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
+import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
-import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/auth_data_source.dart';
-import 'package:project_volt/core/utils/preference_handler.dart';
-import 'package:project_volt/data/models/user_model.dart';
-import 'package:project_volt/features/2_dashboard/bottom_nav_dosen.dart';
-import 'package:project_volt/features/2_dashboard/bottom_nav_mhs.dart';
 
-class LoginForm extends StatefulWidget {
-  const LoginForm({super.key});
+// Tambahkan enum Role jika belum ada, atau gunakan string 'mahasiswa'/'dosen'
+// Jika UserRole Anda didefinisikan di tempat lain, pastikan itu diimport.
+
+class LoginFormFirebase extends StatefulWidget {
+  const LoginFormFirebase({super.key});
 
   @override
-  State<LoginForm> createState() => _LoginFormState();
+  State<LoginFormFirebase> createState() => _LoginFormFirebaseState();
 }
 
-class _LoginFormState extends State<LoginForm> {
+class _LoginFormFirebaseState extends State<LoginFormFirebase> {
   final _formKey = GlobalKey<FormState>();
-  final AuthDataSource _authDataSource = AuthDataSource();
+  // final AuthDataSource _authDataSource = AuthDataSource(); // <-- HAPUS: Tidak digunakan lagi
 
   bool _isLoading = false;
 
@@ -31,6 +37,8 @@ class _LoginFormState extends State<LoginForm> {
     super.dispose();
   }
 
+  // File: project_volt/features/1_auth/login_form_firebase.dart (Bagian _handleLogin)
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -40,33 +48,47 @@ class _LoginFormState extends State<LoginForm> {
       _isLoading = true;
     });
 
-    UserModel? user = await _authDataSource.loginUser(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
+    UserFirebaseModel? user;
+
+    try {
+      // 1. Panggil Service Firebase
+      user = await FirebaseService.loginUser(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+    } catch (e) {
+      // 2. Tampilkan pesan error jika login gagal (termasuk error koneksi/password salah)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceAll('Exception: ', ''),
+            ), // Membersihkan prefix
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
 
     if (!mounted) return;
     setState(() {
       _isLoading = false;
     });
 
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Email atau Password salah.'),
-          backgroundColor: AppColor.kErrorColor,
-        ),
-      );
-    } else {
-      await PreferenceHandler.saveUser(user);
-      String userRole = user.role;
+    // 3. Jika user berhasil didapatkan: Lanjutkan proses navigasi
+    if (user != null) {
+      // Simpan status sesi secara lokal
+      await PreferenceHandlerFirebase.saveUser(user);
+
+      String userRole = user.role ?? 'unknown';
 
       Widget nextScreen;
-      if (userRole == UserRole.mahasiswa.toString()) {
-        nextScreen = BottomNavMhs(user: user);
-      } else if (userRole == UserRole.dosen.toString()) {
-        nextScreen = BottomNavDosen(user: user);
+      if (userRole == 'mahasiswa') {
+        nextScreen = BottomNavMhsFirebase(user: user);
+      } else if (userRole == 'dosen') {
+        nextScreen = BottomNavDosenFirebase(user: user);
       } else {
+        // Role tidak dikenal, mungkin arahkan ke halaman error atau logout
         return;
       }
 

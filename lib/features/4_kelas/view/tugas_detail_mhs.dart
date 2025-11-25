@@ -6,10 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/database/db_helper.dart';
-import 'package:project_volt/data/models/submisi_model.dart';
-import 'package:project_volt/data/models/tugas_model.dart';
-import 'package:project_volt/data/models/user_model.dart';
+import 'package:project_volt/data/SQF/database/db_helper.dart';
+import 'package:project_volt/data/SQF/models/submisi_model.dart';
+import 'package:project_volt/data/SQF/models/tugas_model.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
 
 class TugasDetailMhs extends StatefulWidget {
   final TugasModel tugas;

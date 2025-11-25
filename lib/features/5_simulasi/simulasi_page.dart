@@ -1,137 +1,15 @@
-import 'package:flutter/foundation.dart'; // <-- PERUBAHAN 1: WAJIB ADA
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:project_volt/core/constants/app_color.dart'; // Ganti dengan path AppColor Anda
+import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/data/SQF/models/simulation_models.dart';
+import 'package:project_volt/features/5_simulasi/simulation_logic.dart';
+import 'package:project_volt/features/5_simulasi/simulation_painters.dart';
 import 'package:uuid/uuid.dart';
 
-// --- 1. MODEL DATA UNTUK KOMPONEN ---
-class SimulationComponent {
-  final String id;
-  final String type;
-  Offset position;
-  Map<String, bool> inputs;
-  bool outputValue; // 'true' = 1, 'false' = 0
+// ----------------------------------------------------------------------
+// --- HALAMAN UTAMA SIMULASI (SimulationPage) ---
+// ----------------------------------------------------------------------
 
-  SimulationComponent({
-    required this.id,
-    required this.type,
-    required this.position,
-    required this.inputs,
-    this.outputValue = false,
-  });
-}
-
-// --- 2. MODEL DATA UNTUK KABEL ---
-class WireConnection {
-  final String fromComponentId;
-  final String fromNodeId;
-  final String toComponentId;
-  final String toNodeId;
-
-  WireConnection({
-    required this.fromComponentId,
-    required this.fromNodeId,
-    required this.toComponentId,
-    required this.toNodeId,
-  });
-}
-
-// --- 3. FUNGSI HELPER UNTUK DEFAULT INPUT ---
-Map<String, bool> getDefaultInputs(String type) {
-  switch (type) {
-    case 'AND':
-    case 'OR':
-    case 'NAND':
-    case 'NOR':
-      return {'input_a': false, 'input_b': false};
-    case 'NOT':
-      return {'input_a': false};
-    case 'INPUT':
-      return {};
-    case 'OUTPUT':
-      return {'input_a': false};
-    default:
-      return {};
-  }
-}
-
-// --- 1. Letakkan ini di LUAR SEMUA CLASS ---
-
-// Ini adalah data "payload" yang akan kita kirim ke background
-class SimulationPayload {
-  final List<SimulationComponent> components;
-  final List<WireConnection> wires;
-  SimulationPayload(this.components, this.wires);
-}
-
-// Ini adalah FUNGSI YANG BERJALAN DI BACKGROUND
-List<SimulationComponent> _runSimulationInBackground(
-  SimulationPayload payload,
-) {
-  // Ambil data (ini adalah SALINAN, aman untuk dimodifikasi)
-  final components = payload.components;
-  final wires = payload.wires;
-
-  // ⭐️ OPTIMASI KUNCI: Buat Map untuk pencarian cepat
-  // Ini mengubah pencarian O(n) -> O(1)
-  final componentMap = <String, SimulationComponent>{};
-  for (final c in components) {
-    componentMap[c.id] = c;
-  }
-
-  // Jalankan beberapa kali untuk menstabilkan sinyal
-  for (int i = 0; i < 10; i++) {
-    for (final component in components) {
-      // 1. Update input komponen berdasarkan kabel
-      for (final wire in wires) {
-        if (wire.toComponentId == component.id) {
-          // ⭐️ JAUH LEBIH CEPAT: Langsung ambil dari Map
-          final sourceComponent = componentMap[wire.fromComponentId];
-
-          if (sourceComponent != null) {
-            component.inputs[wire.toNodeId] = sourceComponent.outputValue;
-          }
-        }
-      }
-
-      // 2. Hitung output baru komponen (Logika switch-case Anda)
-      bool newOutput = false;
-      switch (component.type) {
-        case 'INPUT':
-          newOutput = component.outputValue;
-          break;
-        case 'AND':
-          newOutput =
-              component.inputs['input_a']! && component.inputs['input_b']!;
-          break;
-        case 'OR':
-          newOutput =
-              component.inputs['input_a']! || component.inputs['input_b']!;
-          break;
-        case 'NOT':
-          newOutput = !component.inputs['input_a']!;
-          break;
-        case 'NAND':
-          newOutput =
-              !(component.inputs['input_a']! && component.inputs['input_b']!);
-          break;
-        case 'NOR':
-          newOutput =
-              !(component.inputs['input_a']! || component.inputs['input_b']!);
-          break;
-        case 'OUTPUT':
-          component.outputValue = component.inputs['input_a']!;
-          newOutput = component.outputValue;
-          break;
-      }
-      component.outputValue = newOutput;
-    }
-  }
-
-  // 3. Kembalikan data yang sudah di-update
-  return components;
-}
-
-// --- 4. HALAMAN UTAMA SIMULASI ---
 class SimulationPage extends StatefulWidget {
   const SimulationPage({super.key});
 
@@ -143,30 +21,47 @@ class _SimulationPageState extends State<SimulationPage> {
   final Uuid _uuid = Uuid();
   final GlobalKey _canvasKey = GlobalKey();
 
-  final List<SimulationComponent> _componentsOnCanvas = [];
-  final List<WireConnection> _wires = [];
+  // State untuk Multiple Canvas
+  final List<SimulationProject> _projects = [];
+  int _activeIndex = 0;
+
+  SimulationProject get _activeProject => _projects[_activeIndex];
+  List<SimulationComponent> get _componentsOnCanvas =>
+      _activeProject.components;
+  List<WireConnection> get _wires => _activeProject.wires;
 
   // State untuk melacak kabel yang sedang ditarik
   String? _draggingFromComponentId;
   String? _draggingFromNodeId;
   Offset? _draggingOffset;
 
-  // State untuk melacak komponen yang sedang digeser
-  String? _draggingComponentId;
-  Offset? _dragStartOffset;
-
-  // --- PERUBAHAN 2: Variabel status untuk mencegah simulasi tumpang tindih ---
+  // State untuk mencegah simulasi tumpang tindih
   bool _isSimulating = false;
 
-  // -- FUNGSI HELPER ---
+  // State untuk drag-to-delete (sebagai indikator visual)
+  bool _isDraggingComponentForDelete = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi Proyek Pertama
+    _projects.add(
+      SimulationProject(
+        id: _uuid.v4(),
+        name: "Sirkuit 1",
+        components: [],
+        wires: [],
+      ),
+    );
+  }
+
+  // --- FUNGSI HELPER (UI) ---
 
   void _resetDragging() {
     setState(() {
       _draggingFromComponentId = null;
       _draggingFromNodeId = null;
       _draggingOffset = null;
-      _draggingComponentId = null;
-      _dragStartOffset = null;
     });
   }
 
@@ -197,9 +92,8 @@ class _SimulationPageState extends State<SimulationPage> {
       if (nodeId == 'output') {
         return Offset(componentPosition.dx + 80, componentPosition.dy + 30);
       }
-      return Offset(componentPosition.dx + 40, componentPosition.dy + 30);
+      return Offset(componentPosition.dx + 80, componentPosition.dy + 30);
     } catch (e) {
-      // Komponen mungkin baru saja dihapus
       return Offset.zero;
     }
   }
@@ -224,45 +118,79 @@ class _SimulationPageState extends State<SimulationPage> {
     return null;
   }
 
-  // --- ⭐️⭐️⭐️ LOGIC ENGINE ⭐️⭐️⭐️ ---
+  // --- LOGIC ENGINE CALLER ---
 
-  // --- PERUBAHAN 3: Mengganti fungsi _runSimulation ---
   void _runSimulation() async {
-    // 1. Mencegah simulasi berjalan tumpang tindih
     if (_isSimulating) return;
 
     setState(() {
       _isSimulating = true;
-      // Anda bisa tambahkan loading spinner di sini jika mau
-      // misalnya di dalam build() check if (_isSimulating) show spinner
     });
 
-    // 2. Siapkan "payload" untuk dikirim ke background
-    // Kita buat salinan list agar aman saat proses background berjalan
-    final payload = SimulationPayload(
-      List<SimulationComponent>.from(_componentsOnCanvas),
-      List<WireConnection>.from(_wires),
-    );
+    final payload = SimulationPayload(_activeProject.copyWith());
 
-    // 3. JALANKAN DI BACKGROUND THREAD!
-    // UI Anda TIDAK AKAN FREEZE
-    final List<SimulationComponent> updatedComponents = await compute(
-      _runSimulationInBackground,
+    // Panggil fungsi logic dari file eksternal
+    final SimulationProject updatedProject = await compute(
+      runSimulationInBackground,
       payload,
     );
 
-    // 4. Setelah selesai, update UI dengan data baru
-    // Cek jika widget masih 'mounted' (ada di tree) untuk menghindari error
     if (!mounted) return;
 
     setState(() {
-      // Ganti list lama dengan list baru yang sudah di-update
-      _componentsOnCanvas.clear();
-      _componentsOnCanvas.addAll(updatedComponents);
+      _projects[_activeIndex] = updatedProject;
       _isSimulating = false;
     });
   }
-  // --- ⭐️⭐️⭐️ AKHIR LOGIC ENGINE ⭐️⭐️⭐️ ---
+
+  // --- LOGIC HAPUS & CANVAS MANAGEMENT ---
+  void _deleteComponent(String componentId) {
+    setState(() {
+      _componentsOnCanvas.removeWhere((c) => c.id == componentId);
+      _wires.removeWhere(
+        (wire) =>
+            wire.fromComponentId == componentId ||
+            wire.toComponentId == componentId,
+      );
+    });
+    _runSimulation();
+  }
+
+  void _addCanvas() {
+    setState(() {
+      final newProject = SimulationProject(
+        id: _uuid.v4(),
+        name: "Sirkuit ${_projects.length + 1}",
+        components: [],
+        wires: [],
+      );
+      _projects.add(newProject);
+      _activeIndex = _projects.length - 1;
+    });
+  }
+
+  void _switchCanvas(int index) {
+    if (_activeIndex == index) return;
+    setState(() {
+      _activeIndex = index;
+      _resetDragging();
+    });
+    _runSimulation();
+  }
+
+  void _deleteCanvas(int index) {
+    if (_projects.length <= 1) {
+      return;
+    }
+    setState(() {
+      _projects.removeAt(index);
+      if (_activeIndex >= _projects.length) {
+        _activeIndex = _projects.length - 1;
+      }
+      _resetDragging();
+    });
+    _runSimulation();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +198,7 @@ class _SimulationPageState extends State<SimulationPage> {
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "Simulation",
+          "Simulation: ${_activeProject.name}",
           style: TextStyle(
             color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
@@ -288,97 +216,148 @@ class _SimulationPageState extends State<SimulationPage> {
             tooltip: "Reset Canvas",
             onPressed: () {
               setState(() {
-                _componentsOnCanvas.clear();
-                _wires.clear();
+                _activeProject.components.clear();
+                _activeProject.wires.clear();
                 _resetDragging();
               });
             },
           ),
         ],
+        // TAB BAR untuk SWITCH CANVAS
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(48.0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ..._projects.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  SimulationProject project = entry.value;
+                  bool isSelected = index == _activeIndex;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
+                    child: GestureDetector(
+                      onTap: () => _switchCanvas(index),
+                      onLongPress: _projects.length > 1
+                          ? () => _deleteCanvas(index)
+                          : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColor.kPrimaryColor
+                              : AppColor.kDividerColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: isSelected
+                              ? Border.all(color: AppColor.kTextColor, width: 1)
+                              : null,
+                        ),
+                        child: Text(
+                          project.name,
+                          style: TextStyle(
+                            color: isSelected
+                                ? AppColor.kWhiteColor
+                                : AppColor.kTextColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                // Tombol Add Canvas
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
+                  child: IconButton(
+                    icon: Icon(Icons.add_box, color: AppColor.kPrimaryColor),
+                    onPressed: _addCanvas,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [
-          Expanded(
-            child: DragTarget<String>(
-              onAcceptWithDetails: (details) {
-                final Offset localOffset = _convertGlobalToLocal(
-                  details.offset,
-                );
-                final newComponent = SimulationComponent(
-                  id: _uuid.v4(),
-                  type: details.data,
-                  position: Offset(localOffset.dx - 40, localOffset.dy - 30),
-                  inputs: getDefaultInputs(details.data),
-                );
-                setState(() {
-                  _componentsOnCanvas.add(newComponent);
-                });
-                _runSimulation(); // Jalankan simulasi
-              },
-              builder: (context, candidateData, rejectedData) {
-                return Stack(
-                  key: _canvasKey,
-                  children: [
-                    // 1. Gambar kabel
-                    CustomPaint(
-                      painter: WirePainter(
-                        components: _componentsOnCanvas,
-                        wires: _wires,
-                        getNodePosition: getNodePosition,
-                      ),
-                      size: Size.infinite,
-                    ),
+          // AREA SAMPAH (Drag Target untuk Hapus)
+          _buildTrashArea(),
 
-                    // 2. Gambar kabel sementara
-                    if (_draggingFromComponentId != null &&
-                        _draggingOffset != null)
+          Expanded(
+            // InteractiveViewer untuk ZOOM/PAN
+            child: InteractiveViewer(
+              boundaryMargin: const EdgeInsets.all(double.infinity),
+              minScale: 0.5,
+              maxScale: 3.0,
+              // DragTarget untuk menjatuhkan komponen dari toolbox
+              child: DragTarget<String>(
+                onAcceptWithDetails: (details) {
+                  final Offset localOffset = _convertGlobalToLocal(
+                    details.offset,
+                  );
+                  final newComponent = SimulationComponent(
+                    id: _uuid.v4(),
+                    type: details.data,
+                    position: Offset(localOffset.dx - 40, localOffset.dy - 30),
+                    inputs: getDefaultInputs(details.data),
+                  );
+                  setState(() {
+                    _componentsOnCanvas.add(newComponent);
+                  });
+                  _runSimulation();
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return Stack(
+                    key: _canvasKey,
+                    children: [
+                      // 1. Gambar kabel
                       CustomPaint(
-                        painter: TemporaryWirePainter(
-                          startOffset: getNodePosition(
-                            _draggingFromComponentId!,
-                            _draggingFromNodeId!,
-                          ),
-                          endOffset: _draggingOffset!,
+                        painter: WirePainter(
+                          components: _componentsOnCanvas,
+                          wires: _wires,
+                          getNodePosition: getNodePosition,
                         ),
                         size: Size.infinite,
                       ),
 
-                    // 3. Gambar komponen
-                    ..._componentsOnCanvas.map((component) {
-                      return Positioned(
-                        left: component.position.dx,
-                        top: component.position.dy,
-                        // --- ⭐️ TAMBAHAN: GESTURE DETECTOR UNTUK GESER KOMPONEN ⭐️ ---
-                        child: GestureDetector(
-                          onPanStart: (details) {
-                            setState(() {
-                              _draggingComponentId = component.id;
-                              _dragStartOffset = details.localPosition;
-                            });
-                          },
-                          onPanUpdate: (details) {
-                            if (_draggingComponentId == component.id) {
-                              setState(() {
-                                component.position += details.delta;
-                              });
-                            }
-                          },
-                          onPanEnd: (_) => _resetDragging(),
-                          child: _buildComponentWidget(component: component),
+                      // 2. Gambar kabel sementara
+                      if (_draggingFromComponentId != null &&
+                          _draggingOffset != null)
+                        CustomPaint(
+                          painter: TemporaryWirePainter(
+                            startOffset: getNodePosition(
+                              _draggingFromComponentId!,
+                              _draggingFromNodeId!,
+                            ),
+                            endOffset: _draggingOffset!,
+                          ),
+                          size: Size.infinite,
                         ),
-                      );
-                    }),
 
-                    // (Opsional) Tampilkan loading saat simulasi berjalan
-                    if (_isSimulating)
-                      Center(
-                        child: CircularProgressIndicator(
-                          color: AppColor.kPrimaryColor,
+                      // 3. Gambar komponen (dengan logika drag untuk geser/hapus)
+                      ..._componentsOnCanvas.map((component) {
+                        return Positioned(
+                          left: component.position.dx,
+                          top: component.position.dy,
+                          child: _buildComponentWithGesture(component),
+                        );
+                      }),
+
+                      // (Opsional) Tampilkan loading saat simulasi berjalan
+                      if (_isSimulating)
+                        Center(
+                          child: CircularProgressIndicator(
+                            color: AppColor.kPrimaryColor,
+                          ),
                         ),
-                      ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
           ),
           _buildToolbox(),
@@ -387,6 +366,82 @@ class _SimulationPageState extends State<SimulationPage> {
     );
   }
 
+  // --- WIDGET AREA SAMPAH (DRAG TARGET) ---
+  Widget _buildTrashArea() {
+    return DragTarget<String>(
+      onWillAcceptWithDetails: (data) {
+        if (data is String) {
+          setState(() => _isDraggingComponentForDelete = true);
+          return true;
+        }
+        return false;
+      },
+      onLeave: (data) {
+        setState(() => _isDraggingComponentForDelete = false);
+      },
+      onAcceptWithDetails: (details) {
+        final componentId = details.data;
+        _deleteComponent(componentId);
+        setState(() => _isDraggingComponentForDelete = false);
+      },
+      builder: (context, candidateData, rejectedData) {
+        final bool isCandidate = candidateData.isNotEmpty;
+        return Container(
+          height: 50,
+          width: double.infinity,
+          color: isCandidate
+              ? AppColor.kErrorColor.withOpacity(0.8)
+              : AppColor.kErrorColor.withOpacity(0.3),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.delete_forever, color: AppColor.kWhiteColor, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                isCandidate
+                    ? "LEPAS UNTUK MENGHAPUS"
+                    : "Tarik Komponen Ke Sini Untuk Menghapus",
+                style: TextStyle(
+                  color: AppColor.kWhiteColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // --- WIDGET WRAPPER GESER/HAPUS (DRAGGABLE) ---
+  Widget _buildComponentWithGesture(SimulationComponent component) {
+    return Draggable<String>(
+      data: component.id,
+      feedback: Opacity(
+        opacity: 0.7,
+        child: _buildComponentWidget(component: component),
+      ),
+      childWhenDragging: Container(
+        width: 80,
+        height: 60,
+        decoration: BoxDecoration(
+          // Border solid (menggantikan dashed yang error)
+          border: Border.all(color: AppColor.kDividerColor, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      onDragUpdate: (details) {
+        setState(() {
+          component.position += details.delta;
+        });
+      },
+      onDragEnd: (details) => _runSimulation(),
+      child: _buildComponentWidget(component: component),
+    );
+  }
+
+  // --- WIDGET TOOLBOX ---
   Widget _buildToolbox() {
     return Container(
       height: 100,
@@ -410,6 +465,10 @@ class _SimulationPageState extends State<SimulationPage> {
             _buildDraggableComponent("NAND"),
             SizedBox(width: 16),
             _buildDraggableComponent("NOR"),
+            SizedBox(width: 16),
+            _buildDraggableComponent("Ex-OR"),
+            SizedBox(width: 16),
+            _buildDraggableComponent("Ex-NOR"),
           ],
         ),
       ),
@@ -421,45 +480,45 @@ class _SimulationPageState extends State<SimulationPage> {
       data: type,
       feedback: _buildComponentVisual(type, isDragging: true, value: false),
       child: _buildComponentVisual(type, value: false),
+      onDragStarted: () => _resetDragging(),
     );
   }
 
-  // Widget INTERAKTIF di canvas
+  // --- WIDGET KOMPONEN DI CANVAS ---
   Widget _buildComponentWidget({required SimulationComponent component}) {
-    // --- ⭐️ PERUBAHAN: BUAT INPUT BISA DI-TAP ⭐️ ---
-    if (component.type == 'INPUT') {
-      return GestureDetector(
+    final bool isInputComponent = component.type == 'INPUT';
+    Widget componentVisual = _buildComponentVisual(
+      component.type,
+      value: component.outputValue,
+    );
+
+    if (isInputComponent) {
+      componentVisual = GestureDetector(
         onTap: () {
           setState(() {
-            // Balik nilainya (0 jadi 1, 1 jadi 0)
             component.outputValue = !component.outputValue;
           });
-          _runSimulation(); // Jalankan ulang simulasi
+          _runSimulation();
         },
-        child: _buildComponentVisual(
-          component.type,
-          value: component.outputValue, // Kirim state 'value'
-        ),
+        child: componentVisual,
       );
     }
-
-    // Tampilan visual untuk gerbang lain
-    final visualWidget = _buildComponentVisual(
-      component.type,
-      value: component.outputValue, // Kirim state 'value'
-    );
-    // ---------------------------------------------
 
     final type = component.type;
     final bool showInputA = type != 'INPUT';
     final bool showInputB =
-        type == 'AND' || type == 'OR' || type == 'NAND' || type == 'NOR';
+        type == 'AND' ||
+        type == 'OR' ||
+        type == 'NAND' ||
+        type == 'NOR' ||
+        type == 'Ex-OR' ||
+        type == 'Ex-NOR';
     final bool showOutput = type != 'OUTPUT';
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        visualWidget,
+        componentVisual,
         if (showInputA)
           Positioned(
             left: -8,
@@ -494,15 +553,12 @@ class _SimulationPageState extends State<SimulationPage> {
     );
   }
 
-  // Widget HANYA VISUAL (kotak, LED, saklar)
+  // --- WIDGET VISUAL KOMPONEN (GERBANG, INPUT, OUTPUT) ---
   Widget _buildComponentVisual(
     String type, {
     bool isDragging = false,
     required bool value,
   }) {
-    // --- ⭐️ PERUBAHAN: WIDGET KHUSUS INPUT/OUTPUT ⭐️ ---
-
-    // 1. WIDGET UNTUK INPUT (SAKLAR)
     if (type == 'INPUT') {
       return Container(
         height: 60,
@@ -525,16 +581,13 @@ class _SimulationPageState extends State<SimulationPage> {
             ),
             Switch(
               value: value,
-              onChanged:
-                  null, // Dibuat null agar hanya bisa dikontrol oleh GestureDetector
+              onChanged: null,
               activeThumbColor: AppColor.kPrimaryColor,
             ),
           ],
         ),
       );
     }
-
-    // 2. WIDGET UNTUK OUTPUT (LED)
     if (type == 'OUTPUT') {
       return Container(
         height: 60,
@@ -550,7 +603,6 @@ class _SimulationPageState extends State<SimulationPage> {
             Icon(
               Icons.lightbulb,
               size: 30,
-              // LED menyala (kuning) jika 'value' true, mati (abu-abu) jika false
               color: value ? Colors.yellow[600] : Colors.grey,
             ),
             SizedBox(height: 4),
@@ -566,9 +618,6 @@ class _SimulationPageState extends State<SimulationPage> {
         ),
       );
     }
-    // --------------------------------------------------
-
-    // 3. WIDGET UNTUK GERBANG LOGIKA (AND, OR, dll)
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -580,7 +629,6 @@ class _SimulationPageState extends State<SimulationPage> {
               : AppColor.kWhiteColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColor.kPrimaryColor, width: 2),
-          boxShadow: isDragging ? [/* ...boxShadow... */] : null,
         ),
         child: Stack(
           clipBehavior: Clip.none,
@@ -591,54 +639,23 @@ class _SimulationPageState extends State<SimulationPage> {
                 type,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 14,
                   color: AppColor.kPrimaryColor,
                 ),
               ),
             ),
-            // Node visual (tampilan di toolbox)
-            if (isDragging) ...[
-              if (type != 'INPUT')
-                Positioned(
-                  left: -8,
-                  top:
-                      (type == 'AND' ||
-                          type == 'OR' ||
-                          type == 'NAND' ||
-                          type == 'NOR')
-                      ? 10
-                      : (60 / 2) - 8,
-                  child: _buildConnectionNode(isInput: true, value: false),
-                ),
-              if (type == 'AND' ||
-                  type == 'OR' ||
-                  type == 'NAND' ||
-                  type == 'NOR')
-                Positioned(
-                  left: -8,
-                  bottom: 10,
-                  child: _buildConnectionNode(isInput: true, value: false),
-                ),
-              if (type != 'OUTPUT')
-                Positioned(
-                  right: -8,
-                  top: (60 / 2) - 8,
-                  child: _buildConnectionNode(isInput: false, value: false),
-                ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  // Node yang BISA DI-DRAG
+  // --- WIDGET NODE KONEKSI (BULATAN) ---
   Widget _buildDraggableConnectionNode({
     required String componentId,
     required String nodeId,
     required bool isInputNode,
   }) {
-    // Cari tahu value dari node ini untuk visualisasi
     bool nodeValue = false;
     try {
       final component = _componentsOnCanvas.firstWhere(
@@ -653,7 +670,13 @@ class _SimulationPageState extends State<SimulationPage> {
 
     return GestureDetector(
       onPanStart: (details) {
-        if (isInputNode) return; // Hanya drag dari OUTPUT
+        final component = _componentsOnCanvas.firstWhere(
+          (c) => c.id == componentId,
+        );
+
+        if (isInputNode) {
+          if (component.type != 'INPUT') return;
+        }
 
         final Offset localPosition = _convertGlobalToLocal(
           details.globalPosition,
@@ -681,17 +704,14 @@ class _SimulationPageState extends State<SimulationPage> {
 
         final targetNode = _findNodeAt(_draggingOffset!);
         if (targetNode != null) {
-          // Cek agar tidak menyambung ke diri sendiri
           if (targetNode.componentId != _draggingFromComponentId) {
             setState(() {
-              // Hapus kabel lama (jika ada) di node input yang sama
               _wires.removeWhere(
                 (wire) =>
                     wire.toComponentId == targetNode.componentId &&
                     wire.toNodeId == targetNode.nodeId,
               );
 
-              // Tambah kabel baru
               _wires.add(
                 WireConnection(
                   fromComponentId: _draggingFromComponentId!,
@@ -701,7 +721,7 @@ class _SimulationPageState extends State<SimulationPage> {
                 ),
               );
             });
-            _runSimulation(); // Jalankan simulasi
+            _runSimulation();
           }
         }
         _resetDragging();
@@ -714,11 +734,9 @@ class _SimulationPageState extends State<SimulationPage> {
   Widget _buildConnectionNode({required bool isInput, required bool value}) {
     Color color;
     if (isInput) {
-      color = value ? Colors.cyan[200]! : Colors.blue; // Input (0=biru, 1=cyan)
+      color = value ? Colors.cyan[200]! : Colors.blue;
     } else {
-      color = value
-          ? Colors.orange[200]!
-          : Colors.red; // Output (0=merah, 1=orange)
+      color = value ? Colors.orange[200]! : Colors.red;
     }
 
     return Container(
@@ -734,112 +752,4 @@ class _SimulationPageState extends State<SimulationPage> {
       ),
     );
   }
-}
-
-// --- 5. PAINTER UNTUK KABEL YANG TERSIMPAN ---
-class WirePainter extends CustomPainter {
-  final List<SimulationComponent> components;
-  final List<WireConnection> wires;
-  final Function(String, String) getNodePosition;
-
-  WirePainter({
-    required this.components,
-    required this.wires,
-    required this.getNodePosition,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (final wire in wires) {
-      try {
-        final startPoint = getNodePosition(
-          wire.fromComponentId,
-          wire.fromNodeId,
-        );
-        final endPoint = getNodePosition(wire.toComponentId, wire.toNodeId);
-
-        // Cek nilai sinyal
-        final sourceComponent = components.firstWhere(
-          (c) => c.id == wire.fromComponentId,
-        );
-        final bool value = sourceComponent.outputValue;
-
-        final paint = Paint()
-          ..color = value
-              ? Colors.orange
-              : Colors
-                    .black87 // Kabel menyala jika 'value' true
-          ..strokeWidth = 3
-          ..style = PaintingStyle.stroke;
-
-        final path = Path();
-        path.moveTo(startPoint.dx, startPoint.dy);
-        final controlPoint1 = Offset(
-          startPoint.dx + (endPoint.dx - startPoint.dx).abs() * 0.5,
-          startPoint.dy,
-        );
-        final controlPoint2 = Offset(
-          endPoint.dx - (endPoint.dx - startPoint.dx).abs() * 0.5,
-          endPoint.dy,
-        );
-        path.cubicTo(
-          controlPoint1.dx,
-          controlPoint1.dy,
-          controlPoint2.dx,
-          controlPoint2.dy,
-          endPoint.dx,
-          endPoint.dy,
-        );
-
-        canvas.drawPath(path, paint);
-      } catch (e) {
-        // print("Error drawing wire: $e");
-        // Kita sembunyikan print-nya agar tidak menuh-menuhin konsol
-        // Error ini wajar terjadi sesaat ketika komponen dihapus
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-// --- 6. PAINTER UNTUK KABEL SEMENTARA (SAAT DRAG) ---
-class TemporaryWirePainter extends CustomPainter {
-  final Offset startOffset;
-  final Offset endOffset;
-
-  TemporaryWirePainter({required this.startOffset, required this.endOffset});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.blue.withOpacity(0.7)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    path.moveTo(startOffset.dx, startOffset.dy);
-    final controlPoint1 = Offset(
-      startOffset.dx + (endOffset.dx - startOffset.dx).abs() * 0.5,
-      startOffset.dy,
-    );
-    final controlPoint2 = Offset(
-      endOffset.dx - (endOffset.dx - startOffset.dx).abs() * 0.5,
-      endOffset.dy,
-    );
-    path.cubicTo(
-      controlPoint1.dx,
-      controlPoint1.dy,
-      controlPoint2.dx,
-      controlPoint2.dy,
-      endOffset.dx,
-      endOffset.dy,
-    );
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_gradients/flutter_animated_gradients.dart';
 import 'package:project_volt/core/constants/app_image.dart';
-import 'package:project_volt/features/1_auth/login_form.dart';
-import 'package:project_volt/features/1_auth/register_form.dart';
+import 'package:project_volt/features/1_auth/SQF/login_form.dart';
+import 'package:project_volt/features/1_auth/SQF/register_form.dart';
 
 class Authenticator extends StatelessWidget {
   const Authenticator({super.key});

@@ -1,10 +1,11 @@
 import 'dart:math';
+
 import 'package:flutter/material.dart';
-import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/database/db_helper.dart';
-import 'package:project_volt/data/models/kelas_model.dart';
-import 'package:project_volt/data/models/user_model.dart';
+import 'package:project_volt/data/SQF/database/db_helper.dart';
+import 'package:project_volt/data/SQF/models/kelas_model.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
+import 'package:project_volt/widgets/buildtextfield.dart';
 
 class CreateClass extends StatefulWidget {
   final UserModel user;

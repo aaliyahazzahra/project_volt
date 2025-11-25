@@ -1,5 +1,5 @@
-import 'package:project_volt/data/database/db_helper.dart';
-import 'package:project_volt/data/models/kelas_model.dart';
+import 'package:project_volt/data/SQF/database/db_helper.dart';
+import 'package:project_volt/data/SQF/models/kelas_model.dart';
 
 class KelasDataSource {
   // 1. Mengambil Daftar Kelas Dosen

@@ -1,6 +1,6 @@
-import 'package:project_volt/core/utils/preference_handler.dart';
-import 'package:project_volt/data/database/db_helper.dart';
-import 'package:project_volt/data/models/user_model.dart';
+import 'package:project_volt/core/utils/SQF/preference_handler.dart';
+import 'package:project_volt/data/SQF/database/db_helper.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
 
 class AuthDataSource {
   // Method untuk Pendaftaran

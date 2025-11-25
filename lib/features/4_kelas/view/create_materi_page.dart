@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/database/db_helper.dart';
-import 'package:project_volt/data/models/materi_model.dart';
+import 'package:project_volt/data/SQF/database/db_helper.dart';
+import 'package:project_volt/data/SQF/models/materi_model.dart';
 
 class CreateMateriPage extends StatefulWidget {
   final int kelasId;

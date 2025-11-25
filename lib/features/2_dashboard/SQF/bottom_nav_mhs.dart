@@ -2,8 +2,8 @@ import 'package:bottom_bar_matu/bottom_bar/bottom_bar_bubble.dart';
 import 'package:bottom_bar_matu/bottom_bar_item.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/models/user_model.dart';
-import 'package:project_volt/features/2_dashboard/homepage_mhs.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
+import 'package:project_volt/features/2_dashboard/SQF/homepage_mhs.dart';
 import 'package:project_volt/features/3_profile/profile_page.dart';
 import 'package:project_volt/features/5_simulasi/simulasi_page.dart';
 

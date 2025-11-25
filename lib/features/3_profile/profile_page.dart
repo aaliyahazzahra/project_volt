@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/data/auth_data_source.dart';
-import 'package:project_volt/features/3_profile/widgets/profile_header_card.dart';
-import 'package:project_volt/features/3_profile/widgets/settings_group.dart';
-import 'package:project_volt/features/3_profile/widgets/settings_list_tile.dart';
-import 'package:project_volt/features/3_profile/widgets/settings_switch_tile.dart';
-import 'package:project_volt/features/3_profile/widgets/section_header.dart';
-import 'package:project_volt/features/3_profile/widgets/badge_showcase.dart';
-import 'package:project_volt/data/models/user_model.dart';
-import 'package:project_volt/features/1_auth/authenticator.dart';
+import 'package:project_volt/features/1_auth/SQF/authenticator.dart';
 import 'package:project_volt/features/3_profile/about_page.dart';
 import 'package:project_volt/features/3_profile/edit_profile_page.dart';
 import 'package:project_volt/features/3_profile/ganti_password.dart';
+import 'package:project_volt/features/3_profile/widgets/badge_showcase.dart';
+import 'package:project_volt/features/3_profile/widgets/profile_header_card.dart';
+import 'package:project_volt/features/3_profile/widgets/section_header.dart';
+import 'package:project_volt/features/3_profile/widgets/settings_group.dart';
+import 'package:project_volt/features/3_profile/widgets/settings_list_tile.dart';
+import 'package:project_volt/features/3_profile/widgets/settings_switch_tile.dart';
 
 class ProfilePage extends StatefulWidget {
   final UserModel user;

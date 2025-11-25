@@ -2,8 +2,8 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_data.dart';
-import 'package:project_volt/data/database/db_helper.dart';
-import 'package:project_volt/data/models/user_model.dart';
+import 'package:project_volt/data/SQF/database/db_helper.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
 
 class EditProfilePage extends StatefulWidget {
   final UserModel user;

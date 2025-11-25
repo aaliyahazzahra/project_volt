@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/models/user_model.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
   final UserModel user;

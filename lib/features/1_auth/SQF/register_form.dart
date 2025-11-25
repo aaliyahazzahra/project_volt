@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/core/utils/preference_handler.dart';
+import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/data/auth_data_source.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/data/firebase/service/firebase.dart';
-import 'package:project_volt/data/models/user_model.dart';
-import 'package:project_volt/features/1_auth/login_form.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
 import 'package:project_volt/widgets/rolebutton.dart';
@@ -28,8 +24,6 @@ class _RegisterFormState extends State<RegisterForm> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  UserFirebaseModel user = UserFirebaseModel();
-
   @override
   void dispose() {
     namaLengkapController.dispose();
@@ -43,89 +37,50 @@ class _RegisterFormState extends State<RegisterForm> {
       return;
     }
 
-    try {
-      // // Panggil API
-      // final Register result = await AuthAPI.registerUser(
-      //   email: _emailController.text,
-      //   name: _nameController.text,
-      //   password: _passwordController.text,
-      // );
+    // 1. Set State Loading
+    setState(() {
+      _isLoading = true;
+    });
 
-      final result = await FirebaseService.registerUser(
-        email: emailController.text.trim(),
-        username: namaLengkapController.text.trim(),
-        password: passwordController.text,
-        role: 'mahasiswa',
+    // 2. Buat Model
+    UserModel newUser = UserModel(
+      namaLengkap: namaLengkapController.text,
+      email: emailController.text,
+      password: passwordController.text,
+      role: _selectedRole.toString(),
+    );
+
+    // 3. Panggil Data Layer via AuthDataSource
+    bool isSuccess = await _authDataSource.registerUser(newUser);
+
+    // Stop Loading sebelum tampilkan UI Feedback
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+    });
+
+    // 4. Logika Respons (UI Feedback)
+    if (isSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registrasi Berhasil! Silakan Login.'),
+          backgroundColor: AppColor.kSuccessColor,
+        ),
       );
-
-      // simpan token kalau ada
-      if (result.uid != null) {
-        await PreferenceHandler.saveUser();
-      }
-
-      setState(() {
-        _isLoading = true;
-        user = result;
-      });
-      _showSuccessSnackbar('Registrasi berhasil!');
-
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginForm()),
+      // Clear field setelah sukses
+      namaLengkapController.clear();
+      emailController.clear();
+      passwordController.clear();
+      // *Opsional: Navigasi ke tab Login jika menggunakan TabController di Authenticator
+      // TabController.of(context).animateTo(0);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Email ini sudah terdaftar.'),
+          backgroundColor: AppColor.kErrorColor,
+        ),
       );
-    } catch (e) {
-      _showErrorSnackbar(e.toString().replaceAll('Exception: ', ''));
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
-
-    // // 1. Set State Loading
-
-    // // 2. Buat Model
-    // UserModel newUser = UserModel(
-    //   namaLengkap: namaLengkapController.text,
-    //   email: emailController.text,
-    //   password: passwordController.text,
-    //   role: _selectedRole.toString(),
-    // );
-
-    // // 3. Panggil Data Layer via AuthDataSource
-    // bool isSuccess = await _authDataSource.registerUser(newUser);
-
-    // // Stop Loading sebelum tampilkan UI Feedback
-    // if (!mounted) return;
-    // setState(() {
-    //   _isLoading = false;
-    // });
-
-    // // 4. Logika Respons (UI Feedback)
-    // if (isSuccess) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(
-    //       content: Text('Registrasi Berhasil! Silakan Login.'),
-    //       backgroundColor: AppColor.kSuccessColor,
-    //     ),
-    //   );
-    //   // Clear field setelah sukses
-    //   namaLengkapController.clear();
-    //   emailController.clear();
-    //   passwordController.clear();
-    //   // *Opsional: Navigasi ke tab Login jika menggunakan TabController di Authenticator
-    //   // TabController.of(context).animateTo(0);
-    // } else {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(
-    //       content: Text('Email ini sudah terdaftar.'),
-    //       backgroundColor: AppColor.kErrorColor,
-    //     ),
-    //   );
-    // }
   }
 
   // Logika UI: Dialog Konfirmasi

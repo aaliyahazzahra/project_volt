@@ -1,0 +1,92 @@
+// File: project_volt/data/firebase/service/materi_firebase_service.dart
+
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
+
+class MateriFirebaseService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Koleksi utama untuk Materi
+  static const String _collectionName = 'materi';
+
+  // ----------------------------------------------------
+  // 1. CREATE: Membuat Materi Baru
+  // ----------------------------------------------------
+  /// Menyimpan objek MateriFirebaseModel baru ke Firestore.
+  Future<MateriFirebaseModel> createMateri(MateriFirebaseModel materi) async {
+    try {
+      final docRef = await _firestore
+          .collection(_collectionName)
+          .add(materi.toMap());
+
+      // Mengembalikan model lengkap dengan ID dokumen
+      return materi.copyWith(materiId: docRef.id);
+    } catch (e) {
+      log('Error creating material: $e');
+      throw Exception('Gagal membuat materi di Firestore.');
+    }
+  }
+
+  // ----------------------------------------------------
+  // 2. READ: Mengambil Daftar Materi Berdasarkan Kelas ID
+  // ----------------------------------------------------
+  /// Mengambil semua materi untuk Kelas tertentu.
+  Future<List<MateriFirebaseModel>> getMateriByKelas(String kelasId) async {
+    try {
+      // Query berdasarkan kelasId (Foreign Key)
+      final QuerySnapshot snapshot = await _firestore
+          .collection(_collectionName)
+          .where('kelasId', isEqualTo: kelasId)
+          .orderBy(
+            'tglPosting',
+            descending: true,
+          ) // Tampilkan yang terbaru di atas
+          .get();
+
+      // Mapping data dari snapshot Firestore
+      return snapshot.docs.map((doc) {
+        return MateriFirebaseModel.fromMap(
+          doc.data() as Map<String, dynamic>,
+          id: doc.id, // Menyediakan ID dokumen sebagai materiId
+        );
+      }).toList();
+    } catch (e) {
+      log('Error getting materials by class: $e');
+      throw Exception('Gagal memuat daftar materi.');
+    }
+  }
+
+  // ----------------------------------------------------
+  // 3. UPDATE: Memperbarui Materi
+  // ----------------------------------------------------
+  /// Memperbarui data materi berdasarkan materiId.
+  Future<void> updateMateri(MateriFirebaseModel materi) async {
+    if (materi.materiId == null) {
+      throw Exception("Materi ID tidak ditemukan untuk pembaruan.");
+    }
+    try {
+      await _firestore
+          .collection(_collectionName)
+          .doc(materi.materiId)
+          .update(materi.toMap());
+    } catch (e) {
+      log('Error updating material: $e');
+      throw Exception('Gagal memperbarui materi.');
+    }
+  }
+
+  // ----------------------------------------------------
+  // 4. DELETE: Menghapus Materi
+  // ----------------------------------------------------
+  /// Menghapus materi berdasarkan materiId.
+  Future<void> deleteMateri(String materiId) async {
+    try {
+      await _firestore.collection(_collectionName).doc(materiId).delete();
+    } catch (e) {
+      log('Error deleting material: $e');
+      throw Exception('Gagal menghapus materi.');
+    }
+  }
+}

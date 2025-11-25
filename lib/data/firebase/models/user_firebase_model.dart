@@ -1,28 +1,48 @@
+// File: project_volt/data/firebase/models/user_firebase_model.dart
+
 import 'dart:convert';
 
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 class UserFirebaseModel {
-  String? uid;
-  String? username;
-  String? email;
-  String? role;
-  String? createdAt;
-  String? updatedAt;
+  // Properti Wajib dari Firebase Auth & Data Sesi
+  final String? uid;
+  final String? token;
+  final String? email;
+
+  // Properti Data Profil dari Firestore
+  final String? namaLengkap;
+  final String? role;
+
+  // 🔥 TAMBAHAN: Data Profil Kritis (diperlukan untuk fungsi inti aplikasi)
+  final String? nimNidn; // NIM untuk Mahasiswa, NIDN/NIDK untuk Dosen
+  final String? namaKampus;
+
+  // Properti Tambahan (Metadata Firestore)
+  final String? createdAt;
+  final String? updatedAt;
+
   UserFirebaseModel({
     this.uid,
-    this.username,
+    this.token,
+    this.namaLengkap,
     this.email,
     this.role,
+    this.nimNidn, // <-- Tambah di constructor
+    this.namaKampus, // <-- Tambah di constructor
     this.createdAt,
     this.updatedAt,
   });
 
+  // --- Konversi ke/dari Map ---
+
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'uid': uid,
-      'username': username,
+      'token': token,
+      'namaLengkap': namaLengkap,
       'email': email,
       'role': role,
+      'nimNidn': nimNidn, // <-- Tambah di toMap
+      'namaKampus': namaKampus, // <-- Tambah di toMap
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -30,14 +50,19 @@ class UserFirebaseModel {
 
   factory UserFirebaseModel.fromMap(Map<String, dynamic> map) {
     return UserFirebaseModel(
-      uid: map['uid'] != null ? map['uid'] as String : null,
-      username: map['username'] != null ? map['username'] as String : null,
-      email: map['email'] != null ? map['email'] as String : null,
-      role: map['role'] != null ? map['role'] as String : null,
-      createdAt: map['createdAt'] != null ? map['createdAt'] as String : null,
-      updatedAt: map['updatedAt'] != null ? map['updatedAt'] as String : null,
+      uid: map['uid'] as String?,
+      token: map['token'] as String?,
+      namaLengkap: map['namaLengkap'] as String?,
+      email: map['email'] as String?,
+      role: map['role'] as String?,
+      nimNidn: map['nimNidn'] as String?, // <-- Tambah di fromMap
+      namaKampus: map['namaKampus'] as String?, // <-- Tambah di fromMap
+      createdAt: map['createdAt'] as String?,
+      updatedAt: map['updatedAt'] as String?,
     );
   }
+
+  // --- Konversi ke/dari JSON String (untuk penyimpanan SharedPreferences) ---
 
   String toJson() => json.encode(toMap());
 

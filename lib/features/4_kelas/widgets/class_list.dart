@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/models/kelas_model.dart';
+import 'package:project_volt/data/SQF/models/kelas_model.dart';
 
 class ClassList extends StatelessWidget {
   final List<KelasModel> daftarKelas;

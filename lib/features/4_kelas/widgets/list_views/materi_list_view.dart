@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/models/materi_model.dart';
+import 'package:project_volt/data/SQF/models/materi_model.dart';
 
 class MateriListView extends StatelessWidget {
   final List<MateriModel> daftarMateri;
