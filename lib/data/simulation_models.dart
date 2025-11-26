@@ -1,4 +1,4 @@
-// lib/features/simulasi/simulation_models.dart (MODIFIED)
+// File: lib/data/simulation_models.dart (KOREKSI LENGKAP)
 
 import 'package:flutter/material.dart';
 
@@ -20,12 +20,9 @@ class SimulationComponent {
     this.outputValue = false,
   });
 
-  // Konversi dari Map (untuk parsing JSON/Firebase)
+  //   TAMBAH: fromMap
   factory SimulationComponent.fromMap(Map<String, dynamic> map) {
-    // Posisi disimpan sebagai List [x, y] di Firebase
     final List<dynamic> posList = map['position'] ?? [0.0, 0.0];
-
-    // Inputs harus di-cast ke Map<String, bool>
     final Map<String, bool> inputsMap =
         (map['inputs'] as Map<String, dynamic>?)?.map(
           (key, value) => MapEntry(key, value as bool),
@@ -41,12 +38,11 @@ class SimulationComponent {
     );
   }
 
-  // Konversi ke Map (untuk penyimpanan JSON/Firebase)
+  //   TAMBAH: toMap
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'type': type,
-      // Simpan Offset sebagai List agar mudah disimpan di Firestore
       'position': [position.dx, position.dy],
       'inputs': inputs,
       'outputValue': outputValue,
@@ -84,7 +80,7 @@ class WireConnection {
     required this.toNodeId,
   });
 
-  // Konversi dari Map
+  //   TAMBAH: fromMap
   factory WireConnection.fromMap(Map<String, dynamic> map) {
     return WireConnection(
       fromComponentId: map['fromComponentId'] ?? '',
@@ -94,7 +90,7 @@ class WireConnection {
     );
   }
 
-  // Konversi ke Map
+  //   TAMBAH: toMap
   Map<String, dynamic> toMap() {
     return {
       'fromComponentId': fromComponentId,
@@ -117,8 +113,6 @@ class WireConnection {
 // ========================================================================
 // 3. SimulationProject
 // ========================================================================
-
-// Model BARU: Merepresentasikan satu proyek/canvas lengkap
 class SimulationProject {
   final String id;
   String name;
@@ -132,7 +126,36 @@ class SimulationProject {
     required this.wires,
   });
 
-  //  KOREKSI DI SINI: Tambahkan parameter opsional
+  //   TAMBAH: fromMap
+  factory SimulationProject.fromMap(Map<String, dynamic> map) {
+    return SimulationProject(
+      id: map['id'] ?? '',
+      name: map['name'] ?? 'Project Baru',
+      components:
+          (map['components'] as List<dynamic>?)
+              ?.map(
+                (c) => SimulationComponent.fromMap(c as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      wires:
+          (map['wires'] as List<dynamic>?)
+              ?.map((w) => WireConnection.fromMap(w as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  //   TAMBAH: toMap
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'components': components.map((c) => c.toMap()).toList(),
+      'wires': wires.map((w) => w.toMap()).toList(),
+    };
+  }
+
   SimulationProject copyWith({
     String? id,
     String? name,
@@ -140,20 +163,11 @@ class SimulationProject {
     List<WireConnection>? wires,
   }) {
     return SimulationProject(
-      id: id ?? this.id, // Gunakan ID baru jika ada
-      name: name ?? this.name, // Gunakan nama baru jika ada
-      // Pastikan List di-clone jika parameter components/wires tidak disediakan
+      id: id ?? this.id,
+      name: name ?? this.name,
       components:
           components ?? this.components.map((c) => c.copyWith()).toList(),
       wires: wires ?? this.wires.map((w) => w.copyWith()).toList(),
     );
   }
-}
-
-// ========================================================================
-// 4. SimulationPayload (Payload tetap OK)
-// ========================================================================
-class SimulationPayload {
-  final SimulationProject project;
-  SimulationPayload(this.project);
 }

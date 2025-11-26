@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/data/firebase/models/submisi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/submisi_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart';
 import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
 // Asumsi Anda telah menambahkan library file_picker
@@ -52,7 +52,7 @@ class _TugasSubmissionFirebasePageState
   // --- FUNGSI MUAT STATUS SUBMISI (Implementasi) ---
 
   Future<void> _loadCurrentSubmisi() async {
-    if (widget.tugas.tugasId == null || widget.user.uid == null) {
+    if (widget.tugas.tugasId == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
@@ -60,7 +60,7 @@ class _TugasSubmissionFirebasePageState
     // Panggil service untuk mendapatkan Submisi Mahasiswa berdasarkan tugasId dan userId.
     final submisi = await _submisiService.getSubmisiByTugasAndMahasiswa(
       widget.tugas.tugasId!,
-      widget.user.uid!,
+      widget.user.uid,
     );
 
     if (mounted) {
@@ -76,7 +76,7 @@ class _TugasSubmissionFirebasePageState
 
   // --- LOGIKA SUBMIT ---
 
-  // 🎯 FUNGSI UNTUK TUGAS NON-SIMULASI (Placeholder File Picker)
+  //   FUNGSI UNTUK TUGAS NON-SIMULASI (Placeholder File Picker)
   void _pickAndSubmitFile() async {
     // 💡 Implementasi File Picker (Menggunakan Path Dummy untuk saat ini)
     if (_isSubmitting) return;
@@ -89,7 +89,7 @@ class _TugasSubmissionFirebasePageState
     }
   }
 
-  // 🎯 FUNGSI UNTUK TUGAS SIMULASI (Kerjakan Proyek)
+  //   FUNGSI UNTUK TUGAS SIMULASI (Kerjakan Proyek)
   void _navigateToSimulationWorkspace() async {
     if (_isSubmitting || widget.tugas.simulasiId == null) return;
 
@@ -119,10 +119,7 @@ class _TugasSubmissionFirebasePageState
     String? simulasiId,
     required String status,
   }) async {
-    if (_isSubmitting ||
-        widget.tugas.tugasId == null ||
-        widget.user.uid == null)
-      return;
+    if (_isSubmitting || widget.tugas.tugasId == null) return;
 
     setState(() => _isSubmitting = true);
 
@@ -141,7 +138,7 @@ class _TugasSubmissionFirebasePageState
           : SubmisiFirebaseModel(
               // Buat baru
               tugasId: widget.tugas.tugasId!,
-              mahasiswaId: widget.user.uid!,
+              mahasiswaId: widget.user.uid,
               tglSubmit: DateTime.now(),
               filePathSubmisi: filePath,
               simulasiSubmisiId: simulasiId,

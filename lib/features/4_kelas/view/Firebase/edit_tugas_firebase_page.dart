@@ -41,11 +41,7 @@ class _EditTugasFirebasePageState extends State<EditTugasFirebasePage> {
 
     // Isi tanggal tenggat jika ada
     if (_currentTugasData.tglTenggat != null) {
-      try {
-        _selectedDateTime = DateTime.parse(_currentTugasData.tglTenggat!);
-      } catch (e) {
-        _selectedDateTime = null;
-      }
+      _selectedDateTime = widget.tugas.tglTenggat;
     }
   }
 
@@ -109,36 +105,45 @@ class _EditTugasFirebasePageState extends State<EditTugasFirebasePage> {
 
   void _submitUpdate() async {
     final navigator = Navigator.of(context);
+    // Cek apakah ada proses update yang sedang berjalan
     if (_isUpdating) return;
 
     if (_formKey.currentState!.validate()) {
       setState(() => _isUpdating = true);
 
-      final String? tglTenggat = _selectedDateTime?.toIso8601String();
+      // Properti copyWith pada TugasFirebaseModel mengharapkan tipe DateTime?.
+      final DateTime? newTglTenggat = _selectedDateTime;
 
-      // Buat model baru dengan data yang diupdate
-      final updatedTugas = _currentTugasData.copyWith(
+      final updatedTugas = widget.tugas.copyWith(
         judul: _judulController.text.trim(),
         deskripsi: _deskripsiController.text.trim(),
-        tglTenggat: tglTenggat,
+        tglTenggat: newTglTenggat,
+        // Catatan: Jika ada Simulasi, Anda juga harus menyertakan _currentSimulasiId di sini.
+        // simulasiId: _currentSimulasiId,
       );
 
       // Cek ID Tugas
       if (updatedTugas.tugasId == null) {
+        if (!mounted) return;
         _showMessage("Error: Tugas ID tidak ditemukan.", isError: true);
         setState(() => _isUpdating = false);
         return;
       }
 
       try {
-        //  Panggil Service Firebase: Update Tugas
+        // Panggil Service Firebase: Update Tugas
         await _tugasService.updateTugas(updatedTugas);
 
         if (!mounted) return;
 
+        // 3. Update State Lokal (optional, tapi disarankan)
+        // setState(() {
+        //   _currentTugasData = updatedTugas;
+        // });
+
         _showMessage("Tugas berhasil diperbarui", isError: false);
 
-        // Kirim sinyal refresh kembali ke halaman daftar tugas
+        // Kirim sinyal refresh kembali ke halaman detail tugas
         navigator.pop(true);
       } catch (e) {
         if (!mounted) return;
@@ -148,6 +153,7 @@ class _EditTugasFirebasePageState extends State<EditTugasFirebasePage> {
         );
         print("Update Tugas Error: $e");
       } finally {
+        // Pastikan status loading direset
         if (mounted) setState(() => _isUpdating = false);
       }
     }

@@ -12,6 +12,7 @@ class MateriFirebaseModel {
   final String? linkMateri;
   final String? filePathMateri;
   final String tglPosting; // ISO String format
+  final String? simulasiId;
 
   MateriFirebaseModel({
     this.materiId,
@@ -21,6 +22,7 @@ class MateriFirebaseModel {
     this.linkMateri,
     this.filePathMateri,
     required this.tglPosting,
+    this.simulasiId,
   });
 
   // --- Konversi ke/dari Map (untuk Firestore) ---
@@ -37,6 +39,7 @@ class MateriFirebaseModel {
       linkMateri: map['linkMateri'] as String?,
       filePathMateri: map['filePathMateri'] as String?,
       tglPosting: map['tglPosting'] as String,
+      simulasiId: map['simulasiId'] as String?,
     );
   }
 
@@ -50,6 +53,7 @@ class MateriFirebaseModel {
       'linkMateri': linkMateri,
       'filePathMateri': filePathMateri,
       'tglPosting': tglPosting,
+      'simulasiId': simulasiId,
     };
   }
 
@@ -62,6 +66,7 @@ class MateriFirebaseModel {
     String? linkMateri,
     String? filePathMateri,
     String? tglPosting,
+    String? simulasiId,
   }) {
     return MateriFirebaseModel(
       materiId: materiId ?? this.materiId,
@@ -71,6 +76,7 @@ class MateriFirebaseModel {
       linkMateri: linkMateri ?? this.linkMateri,
       filePathMateri: filePathMateri ?? this.filePathMateri,
       tglPosting: tglPosting ?? this.tglPosting,
+      simulasiId: simulasiId ?? this.simulasiId,
     );
   }
 

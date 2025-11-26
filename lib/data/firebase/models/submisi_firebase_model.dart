@@ -8,11 +8,11 @@ class SubmisiFirebaseModel {
   final String tugasId;
   final String mahasiswaId;
 
-  // 🎯 FILE SUBMISI STANDAR
+  //   FILE SUBMISI STANDAR
   final String? linkSubmisi;
   final String? filePathSubmisi; // Path ke file di Storage (jika ada)
 
-  // 🎯 FIELD BARU: ID SIMULASI HASIL KERJA MAHASISWA
+  //   FIELD BARU: ID SIMULASI HASIL KERJA MAHASISWA
   final String? simulasiSubmisiId;
 
   //  KOREKSI TIPE DATA: Gunakan DateTime untuk submission date

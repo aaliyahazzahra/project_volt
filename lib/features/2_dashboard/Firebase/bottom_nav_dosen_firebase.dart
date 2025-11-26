@@ -32,7 +32,7 @@ class _BottomNavDosenFirebaseState extends State<BottomNavDosenFirebase> {
           controller: controller,
           children: [
             HomepageDosenFirebase(user: widget.user),
-            CreateSimulasiFirebasePage(kelasId: kelasId),
+            CreateSimulasiFirebasePage(user: widget.user),
             ProfilePageFirebase(user: widget.user),
           ],
         ),

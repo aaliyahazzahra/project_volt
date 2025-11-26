@@ -18,16 +18,17 @@ import 'package:uuid/uuid.dart';
 // ----------------------------------------------------------------------
 
 class CreateSimulasiFirebasePage extends StatefulWidget {
-  final String kelasId;
+  final String? kelasId;
   final UserFirebaseModel user;
-  // 🎯 PARAMETER BARU: ID Simulasi yang akan dimuat sebagai template
   final String? loadSimulasiId;
+  final bool isReadOnly;
 
   const CreateSimulasiFirebasePage({
     super.key,
-    required this.kelasId,
+    this.kelasId,
     required this.user,
     this.loadSimulasiId, // Optional ID
+    this.isReadOnly = false,
   });
 
   @override
@@ -61,7 +62,7 @@ class _CreateSimulasiFirebasePageState
 
   bool _isSimulating = false;
   bool _isSaving = false;
-  bool _isTemplateLoading = false; // 🎯 STATE BARU: Loading template
+  bool _isTemplateLoading = false; //   STATE BARU: Loading template
   bool _isDraggingComponentForDelete = false;
 
   // ID dari simulasi yang sedang diedit (null jika baru)
@@ -218,7 +219,7 @@ class _CreateSimulasiFirebasePageState
   }
 
   Future<void> _saveProject(BuildContext dialogContext) async {
-    if (_judulController.text.isEmpty || widget.user.uid == null) return;
+    if (_judulController.text.isEmpty) return;
 
     setState(() => _isSaving = true);
 
@@ -226,11 +227,25 @@ class _CreateSimulasiFirebasePageState
       final SimulasiFirebaseModel simulasiToSave = SimulasiFirebaseModel(
         simulasiId: _currentSimulasiId,
         kelasId: widget.kelasId,
-        dosenId: widget.user.uid!,
+        dosenId: widget.user.uid,
         judul: _judulController.text,
         deskripsi: _deskripsiController.text,
         projectData: _activeProject,
       );
+
+      if (widget.kelasId == null || widget.kelasId!.isEmpty) {
+        // Tampilkan peringatan, tapi jangan lanjutkan proses simpan ke Firebase.
+        if (mounted) {
+          _showSnackbar(
+            "Peringatan",
+            "Simulasi tidak dapat disimpan tanpa ID Kelas yang jelas.",
+            ContentType.warning,
+          );
+          Navigator.of(dialogContext).pop();
+          if (mounted) setState(() => _isSaving = false);
+        }
+        return;
+      }
 
       String resultId;
       if (_currentSimulasiId != null) {
@@ -252,7 +267,7 @@ class _CreateSimulasiFirebasePageState
           ContentType.success,
         );
         Navigator.of(dialogContext).pop(); // Tutup dialog
-        // 🎯 KEMBALIKAN ID SIMULASI untuk dilampirkan ke Tugas/Submisi
+        //   KEMBALIKAN ID SIMULASI untuk dilampirkan ke Tugas/Submisi
         Navigator.of(context).pop(resultId);
       }
     } catch (e) {
@@ -697,63 +712,69 @@ class _CreateSimulasiFirebasePageState
     } catch (e) {}
 
     return GestureDetector(
-      onPanStart: (details) {
-        final component = _componentsOnCanvas.firstWhere(
-          (c) => c.id == componentId,
-        );
-
-        if (isInputNode) {
-          if (component.type != 'INPUT') return;
-        }
-
-        final Offset localPosition = _convertGlobalToLocal(
-          details.globalPosition,
-        );
-        setState(() {
-          _draggingFromComponentId = componentId;
-          _draggingFromNodeId = nodeId;
-          _draggingOffset = localPosition;
-        });
-      },
-      onPanUpdate: (details) {
-        if (_draggingFromComponentId == null) return;
-        final Offset localPosition = _convertGlobalToLocal(
-          details.globalPosition,
-        );
-        setState(() {
-          _draggingOffset = localPosition;
-        });
-      },
-      onPanEnd: (details) {
-        if (_draggingFromComponentId == null) {
-          _resetDragging();
-          return;
-        }
-
-        final targetNode = _findNodeAt(_draggingOffset!);
-        if (targetNode != null) {
-          if (targetNode.componentId != _draggingFromComponentId) {
-            setState(() {
-              _wires.removeWhere(
-                (wire) =>
-                    wire.toComponentId == targetNode.componentId &&
-                    wire.toNodeId == targetNode.nodeId,
+      onPanStart: widget.isReadOnly
+          ? null
+          : (details) {
+              final component = _componentsOnCanvas.firstWhere(
+                (c) => c.id == componentId,
               );
 
-              _wires.add(
-                WireConnection(
-                  fromComponentId: _draggingFromComponentId!,
-                  fromNodeId: _draggingFromNodeId!,
-                  toComponentId: targetNode.componentId,
-                  toNodeId: targetNode.nodeId,
-                ),
+              if (isInputNode) {
+                if (component.type != 'INPUT') return;
+              }
+
+              final Offset localPosition = _convertGlobalToLocal(
+                details.globalPosition,
               );
-            });
-            _runSimulation();
-          }
-        }
-        _resetDragging();
-      },
+              setState(() {
+                _draggingFromComponentId = componentId;
+                _draggingFromNodeId = nodeId;
+                _draggingOffset = localPosition;
+              });
+            },
+      onPanUpdate: widget.isReadOnly
+          ? null
+          : (details) {
+              if (_draggingFromComponentId == null) return;
+              final Offset localPosition = _convertGlobalToLocal(
+                details.globalPosition,
+              );
+              setState(() {
+                _draggingOffset = localPosition;
+              });
+            },
+      onPanEnd: widget.isReadOnly
+          ? null
+          : (details) {
+              if (_draggingFromComponentId == null) {
+                _resetDragging();
+                return;
+              }
+
+              final targetNode = _findNodeAt(_draggingOffset!);
+              if (targetNode != null) {
+                if (targetNode.componentId != _draggingFromComponentId) {
+                  setState(() {
+                    _wires.removeWhere(
+                      (wire) =>
+                          wire.toComponentId == targetNode.componentId &&
+                          wire.toNodeId == targetNode.nodeId,
+                    );
+
+                    _wires.add(
+                      WireConnection(
+                        fromComponentId: _draggingFromComponentId!,
+                        fromNodeId: _draggingFromNodeId!,
+                        toComponentId: targetNode.componentId,
+                        toNodeId: targetNode.nodeId,
+                      ),
+                    );
+                  });
+                  _runSimulation();
+                }
+              }
+              _resetDragging();
+            },
       child: _buildConnectionNode(isInput: isInputNode, value: nodeValue),
     );
   }
@@ -809,13 +830,16 @@ class _CreateSimulasiFirebasePageState
         ),
         actions: [
           //   TOMBOL SIMPAN
-          IconButton(
-            icon: Icon(Icons.save, color: AppColor.kPrimaryColor),
-            tooltip: _currentSimulasiId != null
-                ? "Update Simulasi"
-                : "Simpan Simulasi Baru",
-            onPressed: _showSaveDialog,
-          ),
+          if (!widget.isReadOnly) //   Hanya tampilkan jika TIDAK read-only
+            IconButton(
+              icon: Icon(Icons.save, color: AppColor.kPrimaryColor),
+              tooltip: _currentSimulasiId != null
+                  ? "Update Simulasi"
+                  : "Simpan Simulasi Baru",
+              onPressed: widget.isReadOnly
+                  ? null
+                  : _showSaveDialog, //   Nonaktifkan tombol
+            ),
           IconButton(
             icon: Icon(Icons.refresh, color: AppColor.kTextColor),
             tooltip: "Reset Canvas",
@@ -890,7 +914,7 @@ class _CreateSimulasiFirebasePageState
       body: Column(
         children: [
           // AREA SAMPAH (Drag Target untuk Hapus)
-          _buildTrashArea(),
+          if (!widget.isReadOnly) _buildTrashArea(),
 
           Expanded(
             // InteractiveViewer untuk ZOOM/PAN
@@ -900,21 +924,26 @@ class _CreateSimulasiFirebasePageState
               maxScale: 3.0,
               // DragTarget untuk menjatuhkan komponen dari toolbox
               child: DragTarget<String>(
-                onAcceptWithDetails: (details) {
-                  final Offset localOffset = _convertGlobalToLocal(
-                    details.offset,
-                  );
-                  final newComponent = SimulationComponent(
-                    id: _uuid.v4(),
-                    type: details.data,
-                    position: Offset(localOffset.dx - 40, localOffset.dy - 30),
-                    inputs: getDefaultInputs(details.data),
-                  );
-                  setState(() {
-                    _componentsOnCanvas.add(newComponent);
-                  });
-                  _runSimulation();
-                },
+                onAcceptWithDetails: widget.isReadOnly
+                    ? null
+                    : (details) {
+                        final Offset localOffset = _convertGlobalToLocal(
+                          details.offset,
+                        );
+                        final newComponent = SimulationComponent(
+                          id: _uuid.v4(),
+                          type: details.data,
+                          position: Offset(
+                            localOffset.dx - 40,
+                            localOffset.dy - 30,
+                          ),
+                          inputs: getDefaultInputs(details.data),
+                        );
+                        setState(() {
+                          _componentsOnCanvas.add(newComponent);
+                        });
+                        _runSimulation();
+                      },
                 builder: (context, candidateData, rejectedData) {
                   return Stack(
                     key: _canvasKey,
@@ -965,7 +994,7 @@ class _CreateSimulasiFirebasePageState
               ),
             ),
           ),
-          _buildToolbox(),
+          if (!widget.isReadOnly) _buildToolbox(),
         ],
       ),
     );

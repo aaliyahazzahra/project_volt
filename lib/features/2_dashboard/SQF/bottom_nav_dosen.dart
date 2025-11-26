@@ -5,7 +5,6 @@ import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/features/2_dashboard/SQF/homepage_dosen.dart';
 import 'package:project_volt/features/3_profile/SQF/profile_page.dart';
-import 'package:project_volt/features/5_simulasi/simulasi_page.dart';
 
 class BottomNavDosen extends StatefulWidget {
   final UserModel user;

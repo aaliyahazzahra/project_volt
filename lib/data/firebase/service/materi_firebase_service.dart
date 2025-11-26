@@ -2,9 +2,10 @@
 
 import 'dart:developer';
 import 'dart:io';
-import 'package:path/path.dart' as p;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as p;
 import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 
 class MateriFirebaseService {
@@ -57,6 +58,30 @@ class MateriFirebaseService {
     } catch (e) {
       log('Error getting materials by class: $e');
       throw Exception('Gagal memuat daftar materi.');
+    }
+  }
+
+  // ----------------------------------------------------
+  // 2.5. READ: Mengambil Materi Tunggal Berdasarkan ID
+  // ----------------------------------------------------
+  /// Mengambil satu Materi berdasarkan materiId.
+  Future<MateriFirebaseModel?> getMateriById(String materiId) async {
+    try {
+      final docSnapshot = await _firestore
+          .collection(_collectionName)
+          .doc(materiId)
+          .get();
+
+      if (docSnapshot.exists) {
+        return MateriFirebaseModel.fromMap(
+          docSnapshot.data() as Map<String, dynamic>,
+          id: docSnapshot.id,
+        );
+      }
+      return null;
+    } catch (e) {
+      log('Error getting material by ID: $e');
+      throw Exception('Gagal memuat detail materi.');
     }
   }
 
