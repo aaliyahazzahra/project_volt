@@ -1,22 +1,16 @@
+// lib/features/4_kelas/view/Firebase/tugas_detail_dosen_firebase.dart (MODIFIED)
+
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/firebase/models/submisi_firebase_model.dart';
-//  Import Model dan Services Firebase
+// Import Model dan Services Firebase
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart';
 import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/edit_tugas_firebase_page.dart';
-import 'package:project_volt/widgets/emptystate.dart';
-
-// Helper Class (diulang di sini agar Tab List bisa diakses jika di-split file)
-// Asumsi SubmisiDetailFirebase didefinisikan di service, kita definisikan ulang strukturnya di sini
-class SubmisiDetailFirebase {
-  final SubmisiFirebaseModel submisi;
-  final UserFirebaseModel mahasiswa;
-  SubmisiDetailFirebase({required this.submisi, required this.mahasiswa});
-}
+import 'package:project_volt/features/4_kelas/widgets/Firebase/tugas_submisi_list_tab_firebase.dart';
+import 'package:project_volt/widgets/dialogs/confirmation_dialog_helper.dart';
+//    IMPORT BARU: Tab daftar submisi yang sudah dipecah
 
 class TugasDetailDosenFirebase extends StatefulWidget {
   final TugasFirebaseModel tugas;
@@ -44,6 +38,7 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
   }
 
   void _navigateToEditTugas() async {
+    // ... (logic navigasi tetap sama)
     final isSuccess = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -58,6 +53,7 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
   }
 
   Future<void> _refreshTugasData() async {
+    // ... (logic refresh tetap sama)
     final String? tugasId = _currentTugasData.tugasId;
     if (tugasId == null) return;
 
@@ -70,7 +66,6 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
             _currentTugasData = updatedTugas;
           });
         } else {
-          // Tugas sudah dihapus
           Navigator.of(context).pop(true);
         }
       }
@@ -79,13 +74,13 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
     }
   }
 
-  // Widget untuk Tab 1 (Info Tugas) - Diambil dari kode Anda
+  // Widget untuk Tab 1 (Info Tugas)
   Widget _buildInfoTugasTab(TugasFirebaseModel tugas) {
     String tenggat = "Tidak ada tenggat waktu.";
     Color tenggatColor = Colors.grey[600]!;
     if (tugas.tglTenggat != null) {
       try {
-        final tgl = tugas.tglTenggat!; // tglTenggat sekarang adalah DateTime
+        final tgl = tugas.tglTenggat!;
         tenggat = "Tenggat: ${DateFormat.yMd().add_Hm().format(tgl)}";
 
         final now = DateTime.now();
@@ -101,7 +96,6 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
       }
     }
 
-    // Asumsi: Tugas Firebase Model sudah memiliki properti simulasiId
     final isSimulasi = tugas.simulasiId != null;
 
     return SingleChildScrollView(
@@ -136,7 +130,6 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
               ),
             ],
           ),
-          // 🎯 Tampilan status Simulasi
           if (isSimulasi)
             Padding(
               padding: const EdgeInsets.only(top: 12.0),
@@ -180,6 +173,57 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
     );
   }
 
+  Future<void> _deleteTugas() async {
+    // 1. Tampilkan dialog konfirmasi
+    final bool? confirm = await showConfirmationDialog(
+      context: context,
+      title: 'Hapus Tugas',
+      content:
+          'Apakah Anda yakin ingin menghapus tugas "${_currentTugasData.judul}"? Tindakan ini tidak dapat dibatalkan.',
+      confirmText: 'HAPUS',
+      confirmColor: AppColor.kErrorColor,
+    );
+
+    if (confirm == true) {
+      if (_currentTugasData.tugasId == null) return;
+
+      try {
+        // 2. Panggil service delete
+        await _tugasService.deleteTugas(_currentTugasData.tugasId!);
+
+        // 3. Keluar dari halaman dengan sinyal refresh
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      } catch (e) {
+        if (mounted) {
+          // Asumsi: Anda memiliki fungsi _showSnackbar di sini
+
+          _showSnackbar("Gagal menghapus tugas: $e", ContentType.failure);
+        }
+      }
+    }
+  }
+
+  void _showSnackbar(String message, ContentType type) {
+    final snackBarContent = AwesomeSnackbarContent(
+      title: type == ContentType.success ? "Sukses" : "Error",
+      message: message.replaceAll('Exception: ', ''),
+      contentType: type,
+    );
+
+    final snackBar = SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      content: snackBarContent,
+    );
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -207,6 +251,14 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
                 onPressed: _navigateToEditTugas,
                 tooltip: 'Edit Tugas',
               ),
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: AppColor.kErrorColor,
+                ),
+                onPressed: _deleteTugas,
+                tooltip: 'Hapus Tugas',
+              ),
             ],
             bottom: TabBar(
               labelColor: AppColor.kPrimaryColor,
@@ -226,135 +278,12 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
               // Tab 1: Info Tugas
               _buildInfoTugasTab(_currentTugasData),
 
-              // Tab 2: Daftar Submisi
-              _SubmisiListTab(tugasId: _currentTugasData.tugasId!),
+              //    KOREKSI: Gunakan widget SubmisiListTab yang sudah dipecah
+              SubmisiListTab(tugasId: _currentTugasData.tugasId!),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-// -------------------------------------------------------------------
-// --- WIDGET TAB SUBMISI (Integrasi Daftar dan Navigasi Penilaian) ---
-// -------------------------------------------------------------------
-
-class _SubmisiListTab extends StatefulWidget {
-  final String tugasId;
-  const _SubmisiListTab({required this.tugasId});
-
-  @override
-  State<_SubmisiListTab> createState() => _SubmisiListTabState();
-}
-
-class _SubmisiListTabState extends State<_SubmisiListTab> {
-  final SubmisiFirebaseService _submisiService = SubmisiFirebaseService();
-  late Future<List<SubmisiDetailFirebase>> _futureSubmisi;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSubmisi();
-  }
-
-  void _loadSubmisi() {
-    _futureSubmisi = _submisiService.getSubmisiDetailByTugas(widget.tugasId);
-  }
-
-  // 🎯 FUNGSI AKTIF: Navigasi ke halaman penilaian
-  void _navigateToSubmisiDetail(SubmisiDetailFirebase detail) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SubmisiDetailFirebase(detail: detail),
-      ),
-    );
-
-    // Refresh daftar jika penilaian berhasil (result == true)
-    if (result == true && mounted) {
-      setState(() {
-        _loadSubmisi();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<SubmisiDetailFirebase>>(
-      future: _futureSubmisi,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text("Error: ${snapshot.error}"));
-        }
-
-        final daftarSubmisi = snapshot.data ?? [];
-
-        if (daftarSubmisi.isEmpty) {
-          return const EmptyStateWidget(
-            icon: Icons.group_off_outlined,
-            title: "Belum Ada Submisi",
-            message: "Belum ada mahasiswa yang mengumpulkan tugas ini.",
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(8.0),
-          itemCount: daftarSubmisi.length,
-          itemBuilder: (context, index) {
-            final item = daftarSubmisi[index];
-            final bool dinilai =
-                item.submisi.nilai != null && item.submisi.status == 'DINILAI';
-            final Color statusColor = dinilai
-                ? Colors.green[700]!
-                : Colors.orange[700]!;
-
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColor.kIconBgColor,
-                  child: Text(
-                    item.mahasiswa.namaLengkap.substring(0, 1),
-                    style: TextStyle(
-                      color: AppColor.kPrimaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                title: Text(
-                  item.mahasiswa.namaLengkap ?? 'Mahasiswa',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  item.mahasiswa.nimNidn ??
-                      item.mahasiswa.email ??
-                      'Tidak ada data',
-                ),
-                trailing: Chip(
-                  label: Text(
-                    dinilai
-                        ? "Nilai: ${item.submisi.nilai}"
-                        : "Status: ${item.submisi.status}",
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: dinilai
-                      ? Colors.green[100]
-                      : Colors.orange[100],
-                ),
-                onTap: () => _navigateToSubmisiDetail(item),
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }

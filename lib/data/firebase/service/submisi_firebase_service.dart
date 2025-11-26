@@ -154,7 +154,8 @@ class SubmisiFirebaseService {
                 uid: submisiData.mahasiswaId,
                 role: 'mhs',
                 namaLengkap: 'User Tidak Ditemukan',
-                email: 'email',
+                email:
+                    'mahasiswa_${submisiData.mahasiswaId.substring(0, 5)}@volt.app',
               ),
             ),
           );

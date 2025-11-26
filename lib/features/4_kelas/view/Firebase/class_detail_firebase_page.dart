@@ -6,11 +6,11 @@ import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/edit_class_firebase_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/anggota_tab_content_firebase.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/info_tab_content_firebase.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/materi_tab_content_firebase.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/tugas_tab_content_firebase.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/tugas_tab_mhs_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/anggota_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/info_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/materi_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/tugas_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/tugas_tab_mhs_firebase.dart';
 
 class ClassDetailFirebasePage extends StatefulWidget {
   final KelasFirebaseModel kelas;
@@ -286,7 +286,10 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
 
               // Tab 3: Tugas (BERBEDA)
               _isDosen
-                  ? TugasTabContentFirebase(kelas: _currentKelasData)
+                  ? TugasTabContentFirebase(
+                      user: widget.user,
+                      kelas: _currentKelasData,
+                    )
                   : TugasTabMhsFirebase(
                       kelas: _currentKelasData,
                       user: widget.user,

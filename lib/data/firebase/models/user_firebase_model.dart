@@ -1,6 +1,6 @@
-// File: project_volt/data/firebase/models/user_firebase_model.dart
-
 import 'dart:convert';
+
+enum UserRole { mahasiswa, dosen }
 
 class UserFirebaseModel {
   // Properti Wajib dari Firebase Auth & Data Sesi

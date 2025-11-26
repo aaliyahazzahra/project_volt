@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/data/auth_data_source.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/features/1_auth/SQF/authenticator.dart';
-import 'package:project_volt/features/3_profile/Firebase/badge_showcase_firebase.dart';
+import 'package:project_volt/features/1_auth/Firebase/authenticator_firebase.dart';
+import 'package:project_volt/features/3_profile/Firebase/widgets/badge_showcase_firebase.dart';
 import 'package:project_volt/features/3_profile/Firebase/edit_profile_firebase_page.dart';
+import 'package:project_volt/features/3_profile/Firebase/widgets/section_header_firebase.dart';
 import 'package:project_volt/features/3_profile/Firebase/widgets/profile_header_card_firebase.dart';
 import 'package:project_volt/features/3_profile/about_page.dart';
 import 'package:project_volt/features/3_profile/ganti_password.dart';
-import 'package:project_volt/features/3_profile/widgets/profile_header_card.dart';
-import 'package:project_volt/features/3_profile/SQF/section_header.dart';
+import 'package:project_volt/widgets/dialogs/confirmation_dialog_helper.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_group.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_list_tile.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_switch_tile.dart';
@@ -43,27 +42,18 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
   Color get _roleColor =>
       _isMahasiswa ? AppColor.kAccentColor : AppColor.kPrimaryColor;
 
+  // Di dalam class _ProfilePageFirebaseState
+
   // LOGIKA SESI (Logout)
   Future<void> _logout() async {
-    final bool? confirm = await showDialog<bool>(
+    // 🔥 KOREKSI 1: Menggunakan fungsi showConfirmationDialog yang reusable
+    final bool? confirm = await showConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Keluar'),
-        content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Batal', style: TextStyle(color: AppColor.kTextColor)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Keluar',
-              style: TextStyle(color: AppColor.kErrorColor),
-            ),
-          ),
-        ],
-      ),
+      title: 'Keluar',
+      content: 'Apakah Anda yakin ingin keluar dari akun ini?',
+      confirmText: 'Keluar',
+      confirmColor:
+          AppColor.kErrorColor, // Mengirim warna merah untuk tombol Keluar
     );
 
     if (confirm == true) {
@@ -71,7 +61,9 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const Authenticator()),
+          MaterialPageRoute(
+            builder: (context) => const AuthenticatorFirebase(),
+          ),
           (route) => false,
         );
       }
@@ -127,7 +119,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
 
             // 2. PENCAPAIAN SAYA (Khusus Mahasiswa)
             if (_isMahasiswa) ...[
-              SectionHeader(
+              SectionHeaderFirebase(
                 title: "Pencapaian Saya",
                 roleColor: _roleColor,
                 onSeeAll: () {

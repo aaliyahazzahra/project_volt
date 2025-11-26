@@ -5,18 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/simulasi_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/submisi_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/simulasi_firebase_service.dart';
 import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart';
 import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
 import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
-
-class SubmisiDetailFirebase {
-  final SubmisiFirebaseModel submisi;
-  final UserFirebaseModel mahasiswa;
-  SubmisiDetailFirebase({required this.submisi, required this.mahasiswa});
-}
 
 class SubmisiDetailPage extends StatefulWidget {
   final SubmisiDetailFirebase detail;
@@ -85,7 +77,7 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
   void _viewSimulasiJawaban() async {
     if (_simulasiJawaban == null) return; // Harus punya ID Tugas
 
-    // 🔥 LANGKAH 1: Dapatkan data Tugas untuk mendapatkan kelasId
+    //    LANGKAH 1: Dapatkan data Tugas untuk mendapatkan kelasId
     final tugas = await _tugasService.getTugasById(
       widget.detail.submisi.tugasId,
     );
@@ -105,7 +97,7 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
       context,
       MaterialPageRoute(
         builder: (context) => CreateSimulasiFirebasePage(
-          // 🔥 KOREKSI: Ambil kelasId dari Tugas yang dimuat
+          //    KOREKSI: Ambil kelasId dari Tugas yang dimuat
           kelasId: tugas.kelasId,
           user: widget.detail.mahasiswa,
           loadSimulasiId: _simulasiJawaban!.simulasiId,

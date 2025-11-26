@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 
 import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
@@ -7,15 +8,23 @@ import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 
 import 'package:project_volt/features/4_kelas/view/Firebase/create_tugas_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/tugas_detail_dosen_firebase.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/list_views/tugas_list_view_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/list_views/tugas_list_view_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
+
+// Di dalam class TugasTabContentFirebase
 
 class TugasTabContentFirebase extends StatefulWidget {
   final KelasFirebaseModel kelas;
-  // Final field rolePrimaryColor sudah dideklarasikan di sini, kita biarkan saja
   final Color rolePrimaryColor = AppColor.kPrimaryColor;
 
-  const TugasTabContentFirebase({super.key, required this.kelas});
+  //    KOREKSI 1: TAMBAHKAN PROPERTI USER
+  final UserFirebaseModel user;
+
+  const TugasTabContentFirebase({
+    super.key,
+    required this.kelas,
+    required this.user, //    JADIKAN REQUIRED DI KONSTRUKTOR
+  });
 
   @override
   State<TugasTabContentFirebase> createState() =>
@@ -93,7 +102,11 @@ class _TugasTabContentFirebaseState extends State<TugasTabContentFirebase> {
       context,
       MaterialPageRoute(
         //  GANTI: Panggil widget Create Tugas versi Firebase
-        builder: (context) => CreateTugasFirebasePage(kelasId: kelasId),
+        builder: (context) => CreateTugasFirebasePage(
+          kelasId: kelasId,
+          //    KOREKSI: Akses User Model melalui widget
+          user: widget.user,
+        ),
       ),
     ).then((_) {
       _refreshTugasList(); // Selalu refresh setelah kembali

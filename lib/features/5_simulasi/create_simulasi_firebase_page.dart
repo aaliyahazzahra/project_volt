@@ -221,31 +221,29 @@ class _CreateSimulasiFirebasePageState
   Future<void> _saveProject(BuildContext dialogContext) async {
     if (_judulController.text.isEmpty) return;
 
+    if (widget.kelasId == null || widget.kelasId!.isEmpty) {
+      // Tampilkan peringatan, tapi jangan lanjutkan proses simpan ke Firebase.
+      if (mounted) {
+        _showSnackbar(
+          "Peringatan",
+          "Simulasi tidak dapat disimpan tanpa ID Kelas yang jelas.",
+          ContentType.warning,
+        );
+        Navigator.of(dialogContext).pop();
+        if (mounted) setState(() => _isSaving = false);
+      }
+      return;
+    }
     setState(() => _isSaving = true);
-
     try {
       final SimulasiFirebaseModel simulasiToSave = SimulasiFirebaseModel(
         simulasiId: _currentSimulasiId,
-        kelasId: widget.kelasId,
+        kelasId: widget.kelasId!,
         dosenId: widget.user.uid,
         judul: _judulController.text,
         deskripsi: _deskripsiController.text,
         projectData: _activeProject,
       );
-
-      if (widget.kelasId == null || widget.kelasId!.isEmpty) {
-        // Tampilkan peringatan, tapi jangan lanjutkan proses simpan ke Firebase.
-        if (mounted) {
-          _showSnackbar(
-            "Peringatan",
-            "Simulasi tidak dapat disimpan tanpa ID Kelas yang jelas.",
-            ContentType.warning,
-          );
-          Navigator.of(dialogContext).pop();
-          if (mounted) setState(() => _isSaving = false);
-        }
-        return;
-      }
 
       String resultId;
       if (_currentSimulasiId != null) {

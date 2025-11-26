@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 
 class ProfileHeaderCardFirebase extends StatelessWidget {

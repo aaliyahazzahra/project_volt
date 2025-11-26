@@ -3,7 +3,7 @@ import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/SQF/database/db_helper.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
-import 'package:project_volt/features/4_kelas/widgets/list_views/anggota_list_view.dart';
+import 'package:project_volt/features/4_kelas/widgets/SQF/list_views/anggota_list_view.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class AnggotaTabContent extends StatefulWidget {

@@ -1,21 +1,22 @@
+// file: HomepageDosenFirebase.dart
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 
-//  Import Service Firebase
+//  Import Service Firebase
 import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart'; //  GANTI: UserModel -> UserFirebaseModel
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 
-//  Import Widget Firebase yang sudah dikonversi
+//  Import Widget Firebase yang sudah dikonversi
 import 'package:project_volt/features/4_kelas/view/Firebase/class_detail_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/create_class_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/edit_class_firebase_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/class_list_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/class_list_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
-//  UBAH NAMA CLASS & ARGUMENT MODEL
+//  UBAH NAMA CLASS & ARGUMENT MODEL
 class HomepageDosenFirebase extends StatefulWidget {
   final UserFirebaseModel user;
   const HomepageDosenFirebase({super.key, required this.user});
@@ -25,10 +26,10 @@ class HomepageDosenFirebase extends StatefulWidget {
 }
 
 class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
-  //  INISIASI SERVICE FIREBASE
+  //  INISIASI SERVICE FIREBASE
   final KelasFirebaseService _kelasService = KelasFirebaseService();
 
-  List<KelasFirebaseModel> _daftarKelas = []; //  UBAH TIPE LIST
+  List<KelasFirebaseModel> _daftarKelas = []; //  UBAH TIPE LIST
   bool _isLoading = true;
   bool _isProfileComplete = false;
 
@@ -49,12 +50,12 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
       return;
     }
 
-    //  Cek Kelengkapan Profil dari Model Sesi (nimNidn dan namaKampus sudah ada di user object)
+    //  Cek Kelengkapan Profil dari Model Sesi (nimNidn dan namaKampus sudah ada di user object)
     bool profileComplete =
         widget.user.nimNidn?.isNotEmpty == true &&
         widget.user.namaKampus?.isNotEmpty == true;
 
-    //  Ambil Data Kelas dari Firestore
+    //  Ambil Data Kelas dari Firestore
     try {
       final dataKelas = await _kelasService.getKelasByDosen(userUid);
 
@@ -92,7 +93,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
       ..showSnackBar(snackBar);
   }
 
-  //  UBAH TIPE MODEL
+  //  UBAH TIPE MODEL
   void _handleMenuAction(String action, KelasFirebaseModel kelas) {
     switch (action) {
       case 'Salin Kode':
@@ -110,22 +111,21 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
   void _copyClassCode(String kode) {
     Clipboard.setData(ClipboardData(text: kode));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Kode kelas disalin ke clipboard"),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
-    );
+    // PERBAIKAN SNACKBAR: Gunakan _showSnackbar untuk konsistensi
+    _showSnackbar(
+      "Kode kelas disalin ke clipboard",
+      ContentType.success,
+    ); //perubahan
   }
 
-  //  UBAH TIPE MODEL & WIDGET
+  //  UBAH TIPE MODEL & WIDGET
   void _navigateToEditClass(KelasFirebaseModel kelas) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditClassFirebasePage(kelas: kelas),
-      ), //  Widget Firebase
+        builder: (context) =>
+            EditClassFirebasePage(kelas: kelas), //  Widget Firebase
+      ),
     );
 
     if (result == true && mounted) {
@@ -134,7 +134,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
     }
   }
 
-  //  UBAH TIPE MODEL
+  //  UBAH TIPE MODEL
   Future<void> _showDeleteConfirmDialog(KelasFirebaseModel kelas) async {
     return showDialog<void>(
       context: context,
@@ -142,30 +142,41 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
         return AlertDialog(
           title: const Text(
             'Hapus Kelas?',
-            style: TextStyle(color: Colors.red),
+            // Mengganti Colors.red dengan kErrorColor
+            style: TextStyle(color: AppColor.kErrorColor), //perubahan
           ),
           content: Text(
             'Anda yakin ingin menghapus kelas "${kelas.namaKelas}"?\nData tidak dapat dikembalikan.',
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Batal'),
+              // Warna tombol Batal
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: AppColor.kTextColor),
+              ), //perubahan
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              // Mengganti Colors.red dengan kErrorColor
+              child: const Text(
+                'Hapus',
+                style: TextStyle(color: AppColor.kErrorColor),
+              ), //perubahan
               onPressed: () async {
                 Navigator.of(context).pop();
                 try {
                   setState(() => _isLoading = true);
 
-                  //  Panggil delete dari service Firebase (ID adalah kelasId)
+                  //  Panggil delete dari service Firebase (ID adalah kelasId)
                   await _kelasService.deleteKelas(kelas.kelasId!);
 
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Kelas berhasil dihapus")),
-                    );
+                    // PERBAIKAN SNACKBAR: Gunakan _showSnackbar untuk konsistensi
+                    _showSnackbar(
+                      "Kelas berhasil dihapus",
+                      ContentType.success,
+                    ); //perubahan
                     _loadData();
                   }
                 } catch (e) {
@@ -186,7 +197,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
   void _navigateToBuatKelas() {
     Navigator.push(
       context,
-      //  Panggil CreateClass versi Firebase
+      //  Panggil CreateClass versi Firebase
       MaterialPageRoute(
         builder: (context) => CreateClassFirebasePage(user: widget.user),
       ),
@@ -194,7 +205,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
       setState(() => _isLoading = true);
       _loadData();
 
-      //  UBAH TIPE MODEL: newKelas sekarang bertipe KelasFirebaseModel
+      //  UBAH TIPE MODEL: newKelas sekarang bertipe KelasFirebaseModel
       if (newKelas != null && newKelas is KelasFirebaseModel) {
         if (mounted) {
           final messenger = ScaffoldMessenger.of(context);
@@ -204,13 +215,12 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
     });
   }
 
-  //  UBAH TIPE MODEL
+  //  UBAH TIPE MODEL
   Future<void> _showSuccessDialog(
     KelasFirebaseModel newKelas,
     ScaffoldMessengerState messenger,
   ) async {
     // Logika showSuccessDialog tetap sama, hanya tipe datanya disesuaikan.
-    // ... (kode dialog sukses)
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -247,7 +257,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
                       IconButton(
                         icon: const Icon(Icons.copy),
                         tooltip: 'Salin Kode',
-                        color: AppColor.kPrimaryColor,
+                        color: AppColor.kPrimaryColor, // Warna Dosen
                         onPressed: () {
                           Clipboard.setData(
                             ClipboardData(text: newKelas.kodeKelas),
@@ -268,7 +278,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
             TextButton(
               child: Text(
                 'Tutup',
-                style: TextStyle(color: AppColor.kPrimaryColor),
+                style: TextStyle(color: AppColor.kPrimaryColor), // Warna Dosen
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -280,12 +290,12 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
     );
   }
 
-  //  UBAH TIPE MODEL & WIDGET
+  //  UBAH TIPE MODEL & WIDGET
   void _navigateToDetail(KelasFirebaseModel kelas) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        //  GANTI: Panggil ClassDetailPage versi Firebase
+        //  GANTI: Panggil ClassDetailPage versi Firebase
         builder: (context) =>
             ClassDetailFirebasePage(kelas: kelas, user: widget.user),
       ),
@@ -327,18 +337,20 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
               icon: Icons.menu_book,
-              //  Menggunakan namaLengkap dari user firebase
+              //  Menggunakan namaLengkap dari user firebase
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
               message:
                   "Anda belum membuat kelas. Silakan buat kelas dengan menekan tombol (+).",
               iconColor: AppColor.kPrimaryColor,
             )
           : ClassListFirebase(
-              //  Menggunakan ClassListFirebase
+              //  Menggunakan ClassListFirebase
               daftarKelas: _daftarKelas,
               onKelasTap: _navigateToDetail,
               isDosen: true,
               onMenuAction: _handleMenuAction,
+              roleColor: AppColor
+                  .kPrimaryColor, //perubahan: Pastikan roleColor disupply
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _isProfileComplete

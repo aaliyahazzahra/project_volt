@@ -171,3 +171,13 @@ class SimulationProject {
     );
   }
 }
+
+// ========================================================================
+// 4. SimulationPayload (HARUS ADA DI simulation_models.dart)
+// ========================================================================
+class SimulationPayload {
+  final SimulationProject project;
+
+  // Konstruktor menerima objek SimulationProject yang akan dikerjakan di background
+  SimulationPayload(this.project);
+}

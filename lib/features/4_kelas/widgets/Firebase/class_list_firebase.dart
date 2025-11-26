@@ -7,6 +7,7 @@ class ClassListFirebase extends StatelessWidget {
   final Function(KelasFirebaseModel) onKelasTap;
   final Function(String action, KelasFirebaseModel kelas)? onMenuAction;
   final bool isDosen;
+  final Color roleColor;
 
   const ClassListFirebase({
     super.key,
@@ -14,6 +15,7 @@ class ClassListFirebase extends StatelessWidget {
     required this.onKelasTap,
     this.onMenuAction,
     this.isDosen = false,
+    required this.roleColor,
   });
 
   // 1. KOLEKSI WARNA (GRADIENT)

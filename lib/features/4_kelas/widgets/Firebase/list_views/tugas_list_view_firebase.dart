@@ -31,7 +31,7 @@ class TugasListViewFirebase extends StatelessWidget {
 
         if (tugas.tglTenggat != null) {
           try {
-            final tgl = DateTime.parse(tugas.tglTenggat!);
+            final tgl = tugas.tglTenggat!;
             tenggat = "Tenggat: ${DateFormat.yMd().add_Hm().format(tgl)}";
 
             final now = DateTime.now();

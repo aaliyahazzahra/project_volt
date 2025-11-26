@@ -8,7 +8,7 @@ import 'package:project_volt/data/kelas_data_source.dart';
 import 'package:project_volt/features/4_kelas/view/class_detail_page.dart';
 import 'package:project_volt/features/4_kelas/view/create_class_page.dart';
 import 'package:project_volt/features/4_kelas/view/edit_class_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/SQF/class_list.dart';
+import 'package:project_volt/features/4_kelas/widgets/SQF/list_views/class_list.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class HomepageDosen extends StatefulWidget {

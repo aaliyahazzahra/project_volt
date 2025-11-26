@@ -4,7 +4,7 @@ import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 //  Import Service Manajemen Pengguna
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/list_views/anggota_list_view_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/Firebase/list_views/anggota_list_view_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class AnggotaTabContentFirebase extends StatefulWidget {

@@ -23,21 +23,16 @@ class TugasDetailMhsFirebase extends StatefulWidget {
 }
 
 class _TugasDetailMhsFirebaseState extends State<TugasDetailMhsFirebase> {
-  // State untuk melacak perubahan status submisi (jika ada refresh)
+  // Flag ini akan disetel TRUE jika Mahasiswa berhasil submit/update tugas
+  // di halaman TugasSubmissionFirebasePage
   bool _submisiUpdated = false;
 
-  @override
-  void initState() {
-    super.initState();
-    // Asumsi: Kita bisa memuat status submisi Mahasiswa di sini
-    // untuk menampilkan status awal (Sudah Dikerjakan/Belum)
-  }
-
-  // --- LOGIC NAVIGASI KE SUBMISI ---
+  // --- LOGIC NAVIGASI KE SUBMISI (Menyelesaikan TODO) ---
 
   void _navigateToSubmissionPage() async {
     // Navigasi ke halaman pengumpulan tugas dan tunggu hasilnya
-    final result = await Navigator.push(
+    // Hasil 'true' akan didapatkan jika Mahasiswa berhasil submit/update
+    final bool? result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
@@ -45,13 +40,13 @@ class _TugasDetailMhsFirebaseState extends State<TugasDetailMhsFirebase> {
       ),
     );
 
-    // Jika Mahasiswa berhasil submit/update tugas, kita set flag untuk refresh list tugas
+    // Jika Mahasiswa berhasil submit/update, set flag untuk refresh di parent widget
     if (result == true && mounted) {
       setState(() {
         _submisiUpdated = true;
-        // 💡 TODO: Anda mungkin ingin memuat ulang status submisi di sini
-        // tanpa memuat ulang seluruh halaman
       });
+      // 💡 TODO TAMBAHAN: Anda bisa memuat ulang status submisi Mahasiswa di sini
+      // jika ingin mengupdate UI di halaman ini sebelum di-pop.
     }
   }
 
@@ -144,7 +139,7 @@ class _TugasDetailMhsFirebaseState extends State<TugasDetailMhsFirebase> {
       canPop: false,
       onPopInvoked: (bool didPop) {
         if (didPop) return;
-        // Kirim sinyal perubahan ke halaman parent (TugasTabMhsFirebase)
+        //    TODO SELESAI: Kirim sinyal perubahan ke halaman parent (TugasTabMhsFirebase)
         Navigator.of(context).pop(_submisiUpdated);
       },
       child: Scaffold(
@@ -164,7 +159,7 @@ class _TugasDetailMhsFirebaseState extends State<TugasDetailMhsFirebase> {
 
               const SizedBox(height: 40),
 
-              // ⭐️ CTA UTAMA: KE HALAMAN SUBMISI
+              // ⭐️ CTA UTAMA: KE HALAMAN SUBMISI (Menyelesaikan TODO)
               ElevatedButton.icon(
                 onPressed: _navigateToSubmissionPage,
                 icon: const Icon(Icons.assignment_turned_in_outlined),
@@ -181,8 +176,8 @@ class _TugasDetailMhsFirebaseState extends State<TugasDetailMhsFirebase> {
 
               const SizedBox(height: 16),
 
-              // 💡 TODO: Tampilkan status submisi Mahasiswa di sini
-              // Misal: Status: Belum Dikerjakan / Sudah Dinilai (85/100)
+              // 💡 TODO TAMBAHAN: Tampilkan status submisi Mahasiswa di sini
+              // Status: Belum Dikerjakan / Sudah Dinilai (85/100)
             ],
           ),
         ),

@@ -5,7 +5,7 @@ import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/materi_model.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/features/4_kelas/view/create_materi_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/list_views/materi_list_view.dart';
+import 'package:project_volt/features/4_kelas/widgets/SQF/list_views/materi_list_view.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 // TODO: Buat halaman CreateMateriPage
 // import 'package:project_volt/view/kelas/dosen/create_materi_page.dart';

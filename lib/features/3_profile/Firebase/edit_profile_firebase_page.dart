@@ -1,11 +1,11 @@
+// file: EditProfileFirebasePage.dart
+
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_data.dart' as AppData;
-// HAPUS SQF IMPORT: import 'package:project_volt/data/SQF/database/db_helper.dart';
-// HAPUS SQF IMPORT: import 'package:project_volt/data/SQF/models/user_model.dart';
 
-//  TAMBAH: Import Service Manajemen Pengguna
+//  TAMBAH: Import Service Manajemen Pengguna
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
@@ -22,7 +22,7 @@ class EditProfileFirebasePage extends StatefulWidget {
 class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
   final _formKey = GlobalKey<FormState>();
 
-  //  INISIASI SERVICE FIREBASE
+  //  INISIASI SERVICE FIREBASE
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
 
@@ -55,7 +55,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     super.dispose();
   }
 
-  //  UPDATE: Menggunakan data dari model sesi (BUKAN query DB terpisah)
+  //  UPDATE: Menggunakan data dari model sesi (BUKAN query DB terpisah)
   Future<void> _loadProfileData() async {
     setState(() {
       _isLoading = true;
@@ -77,8 +77,19 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     } catch (e) {
       print("Error loading profile: $e");
       if (mounted) {
+        // PERBAIKAN SNACKBAR: Menggunakan AwesomeSnackbar untuk konsistensi
+        final snackBarContent = AwesomeSnackbarContent(
+          title: "Error",
+          message: "Gagal memuat data profil.",
+          contentType: ContentType.failure,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal memuat data profil.')),
+          SnackBar(
+            elevation: 0,
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.transparent,
+            content: snackBarContent,
+          ), //perubahan
         );
       }
     } finally {
@@ -90,7 +101,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     }
   }
 
-  //  UPDATE: Menyimpan data ke Firestore (TANPA DbHelper)
+  //  UPDATE: Menyimpan data ke Firestore (TANPA DbHelper)
   Future<void> _saveProfileData() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -141,7 +152,8 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
           title: "Error",
           message:
               "Gagal menyimpan profil: ${e.toString().replaceAll('Exception: ', '')}",
-          contentType: ContentType.warning,
+          // Mengganti ContentType.warning menjadi ContentType.failure untuk error yang lebih serius
+          contentType: ContentType.failure, //perubahan
         );
 
         ScaffoldMessenger.of(context)
@@ -166,23 +178,32 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Tentukan warna tema peran secara dinamis
+    final Color rolePrimaryColor = _isDosen
+        ? AppColor.kPrimaryColor
+        : AppColor.kAccentColor; //perubahan
+
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
         title: Text(
           "Ubah Profil Akademik",
           style: TextStyle(
-            color: AppColor.kPrimaryColor,
+            color: rolePrimaryColor, //perubahan
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: IconThemeData(color: AppColor.kPrimaryColor),
+        // Ikon kembali menggunakan warna peran
+        iconTheme: IconThemeData(color: rolePrimaryColor), //perubahan
         backgroundColor: AppColor.kBackgroundColor,
         elevation: 0,
       ),
       body: _isLoading
           ? Center(
-              child: CircularProgressIndicator(color: AppColor.kPrimaryColor),
+              // Loading indicator menggunakan warna peran
+              child: CircularProgressIndicator(
+                color: rolePrimaryColor,
+              ), //perubahan
             )
           : ListView(
               padding: const EdgeInsets.all(16.0),
@@ -198,11 +219,37 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                         isExpanded: true,
                         decoration: InputDecoration(
                           labelText: 'Nama Kampus / Universitas',
+                          // Warna border saat fokus menggunakan warna peran
+                          focusedBorder: OutlineInputBorder(
+                            //perubahan
+                            borderRadius: BorderRadius.circular(
+                              12.0,
+                            ), //perubahan
+                            borderSide: BorderSide(
+                              color: rolePrimaryColor,
+                              width: 2.0,
+                            ), //perubahan
+                          ), //perubahan
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: AppColor.kDividerColor,
+                            ), //perubahan
                           ),
+                          enabledBorder: OutlineInputBorder(
+                            //perubahan
+                            borderRadius: BorderRadius.circular(
+                              12.0,
+                            ), //perubahan
+                            borderSide: BorderSide(
+                              color: AppColor.kDividerColor,
+                            ), //perubahan
+                          ), //perubahan
                           filled: true,
-                          fillColor: AppColor.kWhiteColor,
+                          fillColor: AppColor.kWhiteColor, // Sudah benar
+                          labelStyle: TextStyle(
+                            color: AppColor.kTextColor,
+                          ), //perubahan
                         ),
                         hint: const Text('Pilih Kampus'),
                         items: daftarKampus.map((String kampus) {
@@ -234,11 +281,37 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                         controller: _nomorIndukController,
                         decoration: InputDecoration(
                           labelText: _nomorIndukLabel,
+                          // Warna border saat fokus menggunakan warna peran
+                          focusedBorder: OutlineInputBorder(
+                            //perubahan
+                            borderRadius: BorderRadius.circular(
+                              12.0,
+                            ), //perubahan
+                            borderSide: BorderSide(
+                              color: rolePrimaryColor,
+                              width: 2.0,
+                            ), //perubahan
+                          ), //perubahan
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: AppColor.kDividerColor,
+                            ), //perubahan
                           ),
+                          enabledBorder: OutlineInputBorder(
+                            //perubahan
+                            borderRadius: BorderRadius.circular(
+                              12.0,
+                            ), //perubahan
+                            borderSide: BorderSide(
+                              color: AppColor.kDividerColor,
+                            ), //perubahan
+                          ), //perubahan
                           filled: true,
-                          fillColor: AppColor.kWhiteColor,
+                          fillColor: AppColor.kWhiteColor, // Sudah benar
+                          labelStyle: TextStyle(
+                            color: AppColor.kTextColor,
+                          ), //perubahan
                         ),
                         keyboardType: TextInputType.number,
                         validator: (value) {
@@ -254,19 +327,22 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                       ElevatedButton(
                         onPressed: _saveProfileData,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.kPrimaryColor,
+                          // Background tombol menggunakan warna peran
+                          backgroundColor: rolePrimaryColor, //perubahan
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.0),
                           ),
+                          // Foreground (teks) sudah benar menggunakan kWhiteColor
+                          foregroundColor: AppColor.kWhiteColor, //perubahan
                         ),
-                        child: Text(
+                        child: const Text(
                           'Simpan Perubahan',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: AppColor.kWhiteColor,
                           ),
+                          // Warna teks sudah ditentukan oleh foregroundColor di styleFrom
                         ),
                       ),
                     ],

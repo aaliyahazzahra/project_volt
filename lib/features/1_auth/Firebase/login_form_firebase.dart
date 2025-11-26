@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
-// import 'package:project_volt/data/SQF/models/user_model.dart'; // <-- HAPUS: Model SQF lama
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart'; // <-- TAMBAH: Import Model Firebase
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
-// Catatan: Anda mungkin perlu mengubah path import di atas sesuai struktur project Anda
 
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
-
-// Tambahkan enum Role jika belum ada, atau gunakan string 'mahasiswa'/'dosen'
-// Jika UserRole Anda didefinisikan di tempat lain, pastikan itu diimport.
 
 class LoginFormFirebase extends StatefulWidget {
   const LoginFormFirebase({super.key});

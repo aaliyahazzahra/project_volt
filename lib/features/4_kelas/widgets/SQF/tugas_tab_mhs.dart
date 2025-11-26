@@ -5,7 +5,7 @@ import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/tugas_model.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/features/4_kelas/view/tugas_detail_mhs.dart';
-import 'package:project_volt/features/4_kelas/widgets/list_views/tugas_list_view.dart';
+import 'package:project_volt/features/4_kelas/widgets/SQF/list_views/tugas_list_view.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class TugasTabMhs extends StatefulWidget {

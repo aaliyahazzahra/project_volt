@@ -1,16 +1,12 @@
-// HAPUS SQF IMPORT: import 'package:project_volt/data/SQF/models/user_model.dart';
-// HAPUS SQF IMPORT: import 'package:project_volt/data/auth_data_source.dart';
-
-import 'package:firebase_auth/firebase_auth.dart'; // <-- TAMBAH: Import untuk error handling
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/SQF/models/user_model.dart';
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
-// Anda tidak perlu UserFirebaseModel di sini karena hanya memanggil Service
 
 import 'package:project_volt/widgets/buildtextfield.dart';
+import 'package:project_volt/widgets/firebase/rolebuttonfirebase.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
-import 'package:project_volt/widgets/rolebutton.dart';
 
 class RegisterFormFirebase extends StatefulWidget {
   const RegisterFormFirebase({super.key});
@@ -92,14 +88,10 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
       // *Opsional: Navigasi ke tab Login jika menggunakan TabController di Authenticator
       // TabController.of(context).animateTo(0);
     } on FirebaseAuthException catch (e) {
-      // <-- TAMBAH: Handle Firebase Auth Exception
-
       if (!mounted) return;
 
       String errorMessage;
-      // Handle error spesifik Firebase
       if (e.code == 'email-already-in-use') {
-        // SQF CODE: Dulu ini ditangani sebagai isSuccess = false
         errorMessage = 'Email ini sudah terdaftar.';
       } else if (e.code == 'weak-password') {
         errorMessage = 'Password terlalu lemah.';
@@ -131,7 +123,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
     });
   }
 
-  // Logika UI: Dialog Konfirmasi (Tidak ada perubahan karena ini hanya logika UI)
   Future<void> _showDosenConfirmationDialog() async {
     bool isChecked = false;
 
@@ -201,7 +192,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
 
   @override
   Widget build(BuildContext context) {
-    // Bagian Build tidak diubah
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -237,6 +227,7 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                 },
               ),
               SizedBox(height: 16),
+
               BuildTextField(
                 labelText: "Password",
                 controller: passwordController,
@@ -246,25 +237,19 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                     return 'Password tidak boleh kosong';
                   }
 
-                  List<String> errors = [];
-                  if (value.length < 7) {
-                    errors.add('minimal 7 karakter');
-                  }
-                  if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                    errors.add('1 huruf kapital');
-                  }
-                  if (!RegExp(r'[a-z]').hasMatch(value)) {
-                    errors.add('1 huruf kecil');
-                  }
-                  if (!RegExp(r'[0-9]').hasMatch(value)) {
-                    errors.add('1 angka');
-                  }
+                  final bool hasMinimumLength = value.length >= 8;
+                  final bool hasCapital = RegExp(r'[A-Z]').hasMatch(value);
+                  final bool hasLowercase = RegExp(r'[a-z]').hasMatch(value);
+                  final bool hasDigit = RegExp(r'[0-9]').hasMatch(value);
 
-                  if (errors.isNotEmpty) {
-                    return 'Password harus mengandung setidaknya:\n- ${errors.join('\n- ')}';
+                  if (hasMinimumLength &&
+                      hasCapital &&
+                      hasLowercase &&
+                      hasDigit) {
+                    return null;
+                  } else {
+                    return 'Password harus mengandung: minimal 8 karakter, 1 huruf kapital, 1 huruf kecil, dan 1 angka.';
                   }
-
-                  return null;
                 },
               ),
 
@@ -279,7 +264,7 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                 children: [
                   // Tombol Mahasiswa
                   Expanded(
-                    child: RoleButton(
+                    child: RoleButtonfirebase(
                       text: 'Mahasiswa',
                       icon: Icons.school,
                       role: UserRole.mahasiswa,
@@ -294,7 +279,7 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                   SizedBox(width: 10),
                   // Tombol Dosen
                   Expanded(
-                    child: RoleButton(
+                    child: RoleButtonfirebase(
                       text: 'Dosen',
                       icon: Icons.person,
                       role: UserRole.dosen,

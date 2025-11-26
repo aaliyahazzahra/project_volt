@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_gradients/flutter_animated_gradients.dart';
 import 'package:project_volt/core/constants/app_image.dart';
-import 'package:project_volt/features/1_auth/Firebase/login_form_firebase.dart';
-import 'package:project_volt/features/1_auth/Firebase/register_form_firebase.dart';
+// WAJIB import AppColor
+import 'package:project_volt/core/constants/app_color.dart'; //perubahan
+import 'package:project_volt/features/1_auth/SQF/login_form.dart';
+import 'package:project_volt/features/1_auth/SQF/register_form.dart';
 
 class AuthenticatorFirebase extends StatelessWidget {
   const AuthenticatorFirebase({super.key});
@@ -15,11 +17,12 @@ class AuthenticatorFirebase extends StatelessWidget {
         body: SizedBox(
           height: double.infinity,
           child: AnimatedGradientBackground(
+            // Mengganti hardcode warna gradasi
             colors: const [
-              Color(0xFF64B5F6),
-              Color(0xFFB3E5FC),
-              Color(0xFFFFE0B2),
-              Color(0xFFFFCC80),
+              AppColor.kGradationBlueDark, //perubahan
+              AppColor.kGradationBlueLight, //perubahan
+              AppColor.kGradationOrangeLight, //perubahan
+              AppColor.kGradationOrangeDark, //perubahan
             ],
             duration: const Duration(seconds: 10),
             child: SafeArea(
@@ -38,11 +41,17 @@ class AuthenticatorFirebase extends StatelessWidget {
                     Container(
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        // Mengganti Colors.white
+                        color: AppColor.kWhiteColor.withOpacity(
+                          0.9,
+                        ), //perubahan
                         borderRadius: BorderRadius.circular(25.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            // Mengganti Colors.black
+                            color: AppColor.kBlackColor.withOpacity(
+                              0.1,
+                            ), //perubahan
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),
@@ -50,12 +59,16 @@ class AuthenticatorFirebase extends StatelessWidget {
                       ),
                       child: TabBar(
                         indicator: BoxDecoration(
-                          color: Colors.blueAccent,
+                          // Mengganti Colors.blueAccent dengan kAccentColor (Biru)
+                          color: AppColor.kAccentColor, //perubahan
                           borderRadius: BorderRadius.circular(25.0),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.grey,
+                        // Mengganti Colors.white
+                        labelColor: AppColor.kWhiteColor, //perubahan
+                        // Mengganti Colors.grey
+                        unselectedLabelColor:
+                            AppColor.kTextSecondaryColor, //perubahan
                         tabs: const [
                           Tab(text: 'Login'),
                           Tab(text: 'Registrasi'),
@@ -68,12 +81,12 @@ class AuthenticatorFirebase extends StatelessWidget {
                     SizedBox(
                       height: 500,
                       child: TabBarView(
-                        children: [
+                        children: const [
                           // Halaman 1: Form Login
-                          const LoginFormFirebase(),
+                          LoginForm(),
 
                           // Halaman 2: Form Registrasi
-                          const RegisterFormFirebase(),
+                          RegisterForm(),
                         ],
                       ),
                     ),

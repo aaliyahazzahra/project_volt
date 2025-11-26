@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_image.dart'; // Asumsi path AppImages sudah benar
 import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/features/1_auth/SQF/authenticator.dart';
+import 'package:project_volt/features/1_auth/Firebase/authenticator_firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart'; // Asumsi ini adalah halaman Login/Register
 
@@ -53,7 +53,7 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
     if (!mounted) return;
 
     // Default navigasi jika sesi gagal
-    Widget nextPage = const Authenticator();
+    Widget nextPage = const AuthenticatorFirebase();
 
     // Cek apakah ada data lokal dan UID
     if (savedUser != null && savedUser.uid != null) {
@@ -70,7 +70,7 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
           nextPage = BottomNavDosenFirebase(user: savedUser);
         } else {
           // Role tidak dikenal, arahkan ke Login
-          nextPage = const Authenticator();
+          nextPage = const AuthenticatorFirebase();
         }
       } else {
         // Sesi Lokal ada, tapi Firebase Auth sudah logout/token kadaluarsa.
