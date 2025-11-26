@@ -5,7 +5,6 @@ import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/homepage_mhs_firebase.dart';
 import 'package:project_volt/features/3_profile/Firebase/profile_page_firebase.dart';
-import 'package:project_volt/features/5_simulasi/simulasi_page.dart';
 
 class BottomNavMhsFirebase extends StatefulWidget {
   final UserFirebaseModel user;

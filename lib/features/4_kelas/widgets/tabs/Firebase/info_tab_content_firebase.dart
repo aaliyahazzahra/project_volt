@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 
-class InfoTabContent extends StatelessWidget {
+class InfoTabContentFirebase extends StatelessWidget {
   final KelasFirebaseModel kelas;
   final Color roleColor;
 
-  const InfoTabContent({
+  const InfoTabContentFirebase({
     super.key,
     required this.kelas,
     required this.roleColor,

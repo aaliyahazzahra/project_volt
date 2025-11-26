@@ -4,11 +4,13 @@ import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/data/auth_data_source.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/features/1_auth/SQF/authenticator.dart';
+import 'package:project_volt/features/3_profile/Firebase/badge_showcase_firebase.dart';
+import 'package:project_volt/features/3_profile/Firebase/edit_profile_firebase_page.dart';
+import 'package:project_volt/features/3_profile/Firebase/widgets/profile_header_card_firebase.dart';
 import 'package:project_volt/features/3_profile/about_page.dart';
 import 'package:project_volt/features/3_profile/ganti_password.dart';
-import 'package:project_volt/features/3_profile/widgets/badge_showcase.dart';
 import 'package:project_volt/features/3_profile/widgets/profile_header_card.dart';
-import 'package:project_volt/features/3_profile/widgets/section_header.dart';
+import 'package:project_volt/features/3_profile/SQF/section_header.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_group.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_list_tile.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_switch_tile.dart';
@@ -81,7 +83,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditProfilePageFirebase(user: widget.user),
+        builder: (context) => EditProfileFirebasePage(user: widget.user),
       ),
     );
   }
@@ -115,7 +117,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. KARTU PROFIL UTAMA
-            ProfileHeaderCard(
+            ProfileHeaderCardFirebase(
               user: widget.user,
               onEdit: _navigateToEditProfile,
               roleColor: _roleColor,
@@ -127,7 +129,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
             if (_isMahasiswa) ...[
               SectionHeader(
                 title: "Pencapaian Saya",
-             leColor: _roleColor,
+                roleColor: _roleColor,
                 onSeeAll: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Halaman Badge Lengkap")),
@@ -135,7 +137,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
                 },
               ),
               const SizedBox(height: 10),
-              Badge   roShowcase(),
+              BadgeShowcaseFirebase(),
               const SizedBox(height: 24),
             ],
 

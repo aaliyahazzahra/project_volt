@@ -1,7 +1,7 @@
 // lib/features/simulasi/simulation_painters.dart
 
 import 'package:flutter/material.dart';
-import 'package:project_volt/data/SQF/models/simulation_models.dart';
+import 'package:project_volt/data/simulation_models.dart';
 
 // PAINTER UNTUK KABEL YANG TERSIMPAN
 class WirePainter extends CustomPainter {

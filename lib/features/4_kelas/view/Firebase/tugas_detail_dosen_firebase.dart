@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-// 🔥 Import Model dan Services Firebase
+//  Import Model dan Services Firebase
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart'; // Import service Submisi
 import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
@@ -21,7 +21,7 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
   late TugasFirebaseModel _currentTugasData;
   bool _dataTelahDiubah = false;
 
-  // 🔥 INISIASI SERVICE
+  //  INISIASI SERVICE
   final TugasFirebaseService _tugasService = TugasFirebaseService();
 
   @override
@@ -45,7 +45,7 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
     }
   }
 
-  // 🔥 UPDATE LOGIKA REFRESH DATA (Menggunakan FirebaseService)
+  //  UPDATE LOGIKA REFRESH DATA (Menggunakan FirebaseService)
   Future<void> _refreshTugasData() async {
     // Pastikan ID tugas (String) tersedia
     final String? tugasId = _currentTugasData.tugasId;
@@ -119,7 +119,7 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
               _buildInfoTugasTab(_currentTugasData),
 
               // Tab 2: Daftar Submisi
-              // 🔥 UBAH TIPE ID: Menggunakan tugasId (String)
+              //  UBAH TIPE ID: Menggunakan tugasId (String)
               _SubmisiListTab(tugasId: _currentTugasData.tugasId!),
             ],
           ),
@@ -206,9 +206,9 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
   }
 }
 
-//  Widget untuk Tab 2 (Submisi)
+//   Widget untuk Tab 2 (Submisi)
 class _SubmisiListTab extends StatefulWidget {
-  // 🔥 UBAH TIPE ID: tugasId dari int ke String
+  //  UBAH TIPE ID: tugasId dari int ke String
   final String tugasId;
   const _SubmisiListTab({required this.tugasId});
 
@@ -217,9 +217,9 @@ class _SubmisiListTab extends StatefulWidget {
 }
 
 class _SubmisiListTabState extends State<_SubmisiListTab> {
-  // 🔥 UBAH TIPE MODEL: SubmisiDetail -> SubmisiDetailFirebase
+  //  UBAH TIPE MODEL: SubmisiDetail -> SubmisiDetailFirebase
   late Future<List<SubmisiDetailFirebase>> _futureSubmisi;
-  // 🔥 INISIASI SERVICE
+  //  INISIASI SERVICE
   final SubmisiFirebaseService _submisiService = SubmisiFirebaseService();
 
   @override
@@ -229,22 +229,22 @@ class _SubmisiListTabState extends State<_SubmisiListTab> {
   }
 
   void _loadSubmisi() {
-    // 🔥 Panggil service Firebase dengan ID string
+    //  Panggil service Firebase dengan ID string
     _futureSubmisi = _submisiService.getSubmisiDetailByTugas(widget.tugasId);
   }
 
-  // 🔥 UBAH TIPE MODEL: SubmisiDetail -> SubmisiDetailFirebase
+  //  UBAH TIPE MODEL: SubmisiDetail -> SubmisiDetailFirebase
   void _navigateToSubmisiDetail(SubmisiDetailFirebase detail) {
     // TODO: (Poin #5) Arahkan ke halaman penilaian
     print("TODO: Buka halaman nilai untuk ${detail.mahasiswa.namaLengkap}");
     // Navigator.push(context, MaterialPageRoute(
-    //   builder: (context) => SubmisiDetailPage(detail: detail)
+    //    builder: (context) => SubmisiDetailPage(detail: detail)
     // )).then((_) => _loadSubmisi()); // Refresh jika ada penilaian
   }
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 UBAH TIPE MODEL: FutureBuilder<List<SubmisiDetailFirebase>>
+    //  UBAH TIPE MODEL: FutureBuilder<List<SubmisiDetailFirebase>>
     return FutureBuilder<List<SubmisiDetailFirebase>>(
       future: _futureSubmisi,
       builder: (context, snapshot) {
@@ -282,14 +282,14 @@ class _SubmisiListTabState extends State<_SubmisiListTab> {
                     color: AppColor.kPrimaryColor,
                   ),
                 ),
-                // 🔥 Menggunakan namaLengkap dari model UserFirebaseModel
+                //  Menggunakan namaLengkap dari model UserFirebaseModel
                 title: Text(
                   item.mahasiswa.namaLengkap ??
                       item.mahasiswa.namaLengkap ??
                       'Mahasiswa',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                // 🔥 Menggunakan nimNidn dari model UserFirebaseModel
+                //  Menggunakan nimNidn dari model UserFirebaseModel
                 subtitle: Text(
                   item.mahasiswa.nimNidn ??
                       item.mahasiswa.email ??

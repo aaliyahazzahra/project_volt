@@ -5,11 +5,11 @@ import 'package:project_volt/data/SQF/database/db_helper.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/features/4_kelas/view/edit_class_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/anggota_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/info_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/materi_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/tugas_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/tugas_tab_mhs.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/SQF/anggota_tab_content.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/SQF/info_tab_content.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/SQF/materi_tab_content.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/SQF/tugas_tab_content.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/SQF/tugas_tab_mhs.dart';
 
 class ClassDetailPage extends StatefulWidget {
   final KelasModel kelas;

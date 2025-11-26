@@ -3,9 +3,9 @@
 import 'dart:convert';
 
 class MateriFirebaseModel {
-  // 🔥 ID dokumen di Firestore (String unik)
+  //  ID dokumen di Firestore (String unik)
   final String? materiId;
-  // 🔥 Foreign Key ke KelasModelFirebase (UID/ID Dokumen Kelas)
+  //  Foreign Key ke KelasModelFirebase (UID/ID Dokumen Kelas)
   final String kelasId;
   final String judul;
   final String? deskripsi;

@@ -2,17 +2,22 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/SQF/models/kelas_model.dart';
+
+//  Import Service Manajemen Pengguna Firebase
+import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
+
+//  Import Model Firebase
+import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/data/kelas_data_source.dart';
-import 'package:project_volt/features/4_kelas/view/class_detail_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/class_list.dart';
+
+//  Import Widget Firebase
+import 'package:project_volt/features/4_kelas/view/Firebase/class_detail_firebase_page.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/class_list_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
-// TODO: Buat halaman DetailKelasMahasiswa
-
+//  UBAH NAMA CLASS & ARGUMENT MODEL: HomepageMhs -> HomepageMhsFirebase
 class HomepageMhsFirebase extends StatefulWidget {
-  final UserFirebaseModel user;
+  final UserFirebaseModel user; //  GANTI: UserModel -> UserFirebaseModel
   const HomepageMhsFirebase({super.key, required this.user});
 
   @override
@@ -20,9 +25,11 @@ class HomepageMhsFirebase extends StatefulWidget {
 }
 
 class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
-  final KelasDataSource _kelasDataSource = KelasDataSource();
+  //  INISIASI SERVICE FIREBASE
+  final UserManagementFirebaseService _userManagementService =
+      UserManagementFirebaseService();
 
-  List<KelasModel> _daftarKelas = [];
+  List<KelasFirebaseModel> _daftarKelas = []; //  UBAH TIPE LIST
   bool _isLoading = true;
   bool _isProfileComplete = false;
 
@@ -41,77 +48,85 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
   }
 
   Future<void> _loadData() async {
-    if (widget.user.id == null) {
+    final String? userUid = widget.user.uid;
+
+    // 1. Cek User ID
+    if (userUid == null) {
       if (mounted) {
         setState(() => _isLoading = false);
-        final snackBarContent = AwesomeSnackbarContent(
-          title: "Error",
-          message: "User ID tidak ditemukan.",
-          contentType: ContentType.warning,
-        );
-
-        final snackBar = SnackBar(
-          elevation: 0,
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
-          content: snackBarContent,
-        );
-
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(snackBar);
+        _showSnackbar("User ID tidak ditemukan.", ContentType.warning);
       }
-
       return;
     }
 
-    final dataKelas = await _kelasDataSource.getKelasByMahasiswa(
-      widget.user.id!,
-    );
-    final dataProfil = await _kelasDataSource.getMahasiswaProfile(
-      widget.user.id!,
-    );
-
+    // 2.  Cek Kelengkapan Profil dari Model Sesi (nimNidn dan namaKampus sudah ada di user object)
     bool profileComplete =
-        dataProfil != null &&
-        (dataProfil['nim'] != null && dataProfil['nim'].isNotEmpty) &&
-        (dataProfil['nama_kampus'] != null &&
-            dataProfil['nama_kampus'].isNotEmpty);
+        widget.user.nimNidn?.isNotEmpty == true &&
+        widget.user.namaKampus?.isNotEmpty == true;
 
-    if (mounted) {
-      setState(() {
-        _daftarKelas = dataKelas;
-        _isProfileComplete = profileComplete;
-        _isLoading = false;
-      });
+    // 3.  Ambil Data Kelas yang Diikuti dari Firebase Service
+    try {
+      final dataKelas = await _userManagementService.getKelasByMahasiswa(
+        userUid,
+      );
+
+      if (mounted) {
+        setState(() {
+          _daftarKelas = dataKelas;
+          _isProfileComplete = profileComplete;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showSnackbar("Gagal memuat data kelas: $e", ContentType.failure);
+      }
     }
   }
 
-  void _navigateToDetail(KelasModel kelas) async {
+  // Helper untuk menampilkan Awesome Snackbar
+  void _showSnackbar(String message, ContentType type) {
+    final snackBarContent = AwesomeSnackbarContent(
+      title: type == ContentType.success ? "Sukses" : "Peringatan",
+      message: message.replaceAll('Error: ', '').replaceAll('Exception: ', ''),
+      contentType: type,
+    );
+
+    final snackBar = SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      content: snackBarContent,
+    );
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(snackBar);
+  }
+
+  //  UBAH TIPE MODEL: KelasModel -> KelasFirebaseModel
+  void _navigateToDetail(KelasFirebaseModel kelas) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ClassDetailPage(kelas: kelas, user: widget.user),
+        //  GANTI: Panggil ClassDetailPage versi Firebase
+        builder: (context) =>
+            ClassDetailFirebasePage(kelas: kelas, user: widget.user),
       ),
     );
 
     if (result == true && mounted) {
-      _loadData();
+      setState(() => _isLoading = true);
+      _loadData(); // Refresh setelah kembali
     }
-    print("Buka detail untuk kelas ID: ${kelas.id}");
   }
 
-  void _handleMenuAction(String action, KelasModel kelas) {
+  //  UBAH TIPE MODEL: KelasModel -> KelasFirebaseModel
+  void _handleMenuAction(String action, KelasFirebaseModel kelas) {
     if (action == 'Salin Kode') {
       Clipboard.setData(ClipboardData(text: kelas.kodeKelas));
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Kode kelas disalin"),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 1),
-        ),
-      );
+      _showSnackbar("Kode kelas disalin", ContentType.success);
     } else if (action == 'Keluar Kelas') {
       _showExitClassDialog(kelas);
     }
@@ -122,13 +137,11 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        final mainMessenger = ScaffoldMessenger.of(context);
-
         return AlertDialog(
-          title: Text('Gabung Kelas Baru'),
+          title: const Text('Gabung Kelas Baru'),
           content: TextField(
             controller: _kodeController,
-            decoration: InputDecoration(hintText: "Masukkan Kode Kelas"),
+            decoration: const InputDecoration(hintText: "Masukkan Kode Kelas"),
             autofocus: true,
           ),
           actions: <Widget>[
@@ -145,63 +158,42 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
                 style: TextStyle(color: AppColor.kAccentColor),
               ),
               onPressed: () async {
-                if (widget.user.id == null) return;
+                final String? userUid = widget.user.uid;
+                if (userUid == null) return;
 
                 if (_kodeController.text.isEmpty) {
-                  final snackBarContent = AwesomeSnackbarContent(
-                    title: "Peringatan",
-                    message: "Kode kelas tidak boleh kosong",
-                    contentType: ContentType.warning,
+                  _showSnackbar(
+                    "Kode kelas tidak boleh kosong",
+                    ContentType.warning,
                   );
-                  final snackBar = SnackBar(
-                    elevation: 0,
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: Colors.transparent,
-                    content: snackBarContent,
-                  );
-                  mainMessenger
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(snackBar);
                   return;
                 }
 
-                final String hasil = await _kelasDataSource.joinKelas(
-                  widget.user.id!,
-                  _kodeController.text,
-                );
-                if (!mounted) return;
-
-                Navigator.of(context).pop();
-
-                AwesomeSnackbarContent snackBarContent;
-
-                if (hasil.startsWith("Sukses:")) {
-                  snackBarContent = AwesomeSnackbarContent(
-                    title: "Berhasil!",
-                    message: hasil,
-                    contentType: ContentType.success,
+                try {
+                  //  PANGGIL SERVICE FIREBASE: joinKelas
+                  final String hasil = await _userManagementService.joinKelas(
+                    userUid,
+                    _kodeController.text.trim(),
                   );
 
-                  setState(() => _isLoading = true);
-                  _loadData();
-                } else {
-                  snackBarContent = AwesomeSnackbarContent(
-                    title: "Gagal Bergabung",
-                    message: hasil,
-                    contentType: ContentType.failure,
-                  );
+                  if (!mounted) return;
+                  Navigator.of(context).pop(); // Tutup dialog
+
+                  if (hasil.startsWith("Sukses:")) {
+                    _showSnackbar(
+                      "Berhasil bergabung dengan kelas!",
+                      ContentType.success,
+                    );
+                    setState(() => _isLoading = true);
+                    _loadData(); // Refresh daftar kelas
+                  } else {
+                    _showSnackbar(hasil, ContentType.failure);
+                  }
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  _showSnackbar("Terjadi kesalahan: $e", ContentType.failure);
                 }
-
-                final snackBar = SnackBar(
-                  elevation: 0,
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.transparent,
-                  content: snackBarContent,
-                );
-
-                mainMessenger
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(snackBar);
               },
             ),
           ],
@@ -210,7 +202,8 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     );
   }
 
-  Future<void> _showExitClassDialog(KelasModel kelas) async {
+  //  UPDATE LOGIKA KELUAR KELAS (Menggunakan FirebaseService)
+  Future<void> _showExitClassDialog(KelasFirebaseModel kelas) async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -229,41 +222,28 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
               onPressed: () async {
                 Navigator.of(context).pop();
 
-                if (widget.user.id == null || kelas.id == null) return;
+                final String? userUid = widget.user.uid;
+                final String? kelasId =
+                    kelas.kelasId; //  ID Kelas sekarang String
+                if (userUid == null || kelasId == null) return;
 
                 try {
-                  final deletedRows = await _kelasDataSource.leaveKelas(
-                    widget.user.id!,
-                    kelas.id!,
-                  );
+                  //  PANGGIL SERVICE FIREBASE: leaveKelas
+                  await _userManagementService.leaveKelas(userUid, kelasId);
 
                   if (mounted) {
-                    final snackBarContent = AwesomeSnackbarContent(
-                      title: "Sukses",
-                      message: deletedRows > 0
-                          ? "Anda berhasil keluar dari kelas"
-                          : "Gagal keluar kelas. Data tidak ditemukan.",
-                      contentType: ContentType.success,
+                    _showSnackbar(
+                      "Anda berhasil keluar dari kelas",
+                      ContentType.success,
                     );
-
-                    ScaffoldMessenger.of(context)
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(
-                        SnackBar(
-                          elevation: 0,
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: Colors.transparent,
-                          content: snackBarContent,
-                        ),
-                      );
-
                     setState(() => _isLoading = true);
                     _loadData();
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Gagal keluar kelas: $e")),
+                    _showSnackbar(
+                      "Gagal keluar kelas: $e",
+                      ContentType.failure,
                     );
                   }
                 }
@@ -276,22 +256,10 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
   }
 
   void _showProfileWarning() {
-    final snackBarContent = AwesomeSnackbarContent(
-      title: "Peringatan",
-      message: "Harap lengkapi menu Profil.",
-      contentType: ContentType.warning,
+    _showSnackbar(
+      "Harap lengkapi Profil (NIM dan Kampus) sebelum bergabung.",
+      ContentType.warning,
     );
-
-    final snackBar = SnackBar(
-      elevation: 0,
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.transparent,
-      content: snackBarContent,
-    );
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(snackBar);
   }
 
   @override
@@ -299,7 +267,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Ruang Kelas",
           style: TextStyle(
             color: AppColor.kTextColor,
@@ -322,7 +290,8 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
               message:
                   "Anda belum bergabung dengan kelas manapun. Silakan gabung kelas dengan menekan tombol (+).",
             )
-          : ClassList(
+          : ClassListFirebase(
+              //  Menggunakan ClassListFirebase
               daftarKelas: _daftarKelas,
               onKelasTap: _navigateToDetail,
               isDosen: false,
@@ -336,7 +305,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
             ? AppColor.kAccentColor
             : AppColor.kDisabledColor,
         tooltip: 'Gabung Kelas Baru',
-        child: Icon(Icons.add, color: AppColor.kWhiteColor),
+        child: const Icon(Icons.add, color: AppColor.kWhiteColor),
       ),
     );
   }

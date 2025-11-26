@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/SQF/database/db_helper.dart';
-import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/tugas_model.dart';
-import 'package:project_volt/data/SQF/models/user_model.dart';
-import 'package:project_volt/features/4_kelas/view/tugas_detail_mhs.dart';
+import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
+import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
+import 'package:project_volt/features/4_kelas/view/Firebase/tugas_detail_mhs_firebase.dart';
 import 'package:project_volt/features/4_kelas/widgets/list_views/tugas_list_view.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
-class TugasTabMhs extends StatefulWidget {
-  final KelasModel kelas;
-  final UserModel user;
-  const TugasTabMhs({super.key, required this.kelas, required this.user});
+class TugasTabMhsFirebase extends StatefulWidget {
+  final KelasFirebaseModel kelas;
+  final UserFirebaseModel user;
+  const TugasTabMhsFirebase({
+    super.key,
+    required this.kelas,
+    required this.user,
+  });
 
   @override
-  State<TugasTabMhs> createState() => _TugasTabMhsState();
+  State<TugasTabMhsFirebase> createState() => _TugasTabMhsFirebaseState();
 }
 
-class _TugasTabMhsState extends State<TugasTabMhs> {
+class _TugasTabMhsFirebaseState extends State<TugasTabMhsFirebase> {
   List<TugasModel> _daftarTugas = [];
   bool _isLoading = true;
 
@@ -38,11 +43,12 @@ class _TugasTabMhsState extends State<TugasTabMhs> {
     }
   }
 
-  void _navigateToDetailTugas(TugasModel tugas) {
+  void _navigateToDetailTugas(TugasFirebaseModel tugas) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TugasDetailMhs(tugas: tugas, user: widget.user),
+        builder: (context) =>
+            TugasDetailMhsFirebase(tugas: tugas, user: widget.user),
       ),
     ).then((_) {
       // TODO: Tambahkan 'result'

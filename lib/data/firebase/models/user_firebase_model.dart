@@ -4,15 +4,15 @@ import 'dart:convert';
 
 class UserFirebaseModel {
   // Properti Wajib dari Firebase Auth & Data Sesi
-  final String? uid;
+  final String uid;
   final String? token;
-  final String? email;
+  final String email;
 
   // Properti Data Profil dari Firestore
-  final String? namaLengkap;
-  final String? role;
+  final String namaLengkap;
+  final String role;
 
-  // 🔥 TAMBAHAN: Data Profil Kritis (diperlukan untuk fungsi inti aplikasi)
+  //  TAMBAHAN: Data Profil Kritis (diperlukan untuk fungsi inti aplikasi)
   final String? nimNidn; // NIM untuk Mahasiswa, NIDN/NIDK untuk Dosen
   final String? namaKampus;
 
@@ -21,18 +21,18 @@ class UserFirebaseModel {
   final String? updatedAt;
 
   UserFirebaseModel({
-    this.uid,
+    required this.uid,
     this.token,
-    this.namaLengkap,
-    this.email,
-    this.role,
-    this.nimNidn, // <-- Tambah di constructor
-    this.namaKampus, // <-- Tambah di constructor
+    required this.namaLengkap,
+    required this.email,
+    required this.role,
+    this.nimNidn,
+    this.namaKampus,
     this.createdAt,
     this.updatedAt,
   });
 
-  // --- Konversi ke/dari Map ---
+  // Konversi ke/dari Map
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -41,28 +41,38 @@ class UserFirebaseModel {
       'namaLengkap': namaLengkap,
       'email': email,
       'role': role,
-      'nimNidn': nimNidn, // <-- Tambah di toMap
-      'namaKampus': namaKampus, // <-- Tambah di toMap
+      'nimNidn': nimNidn,
+      'namaKampus': namaKampus,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
   }
 
   factory UserFirebaseModel.fromMap(Map<String, dynamic> map) {
+    // uid: map['uid'] as String?,
+    final String? requiredUid = map['uid'] as String?;
+    // token: map['token'] as String?,
+    final String? requiredRole = map['role'] as String?;
+    if (requiredUid == null || requiredRole == null) {
+      // Melempar error dengan pesan yang jelas
+      throw StateError("Data Integritas Gagal");
+    }
     return UserFirebaseModel(
-      uid: map['uid'] as String?,
-      token: map['token'] as String?,
-      namaLengkap: map['namaLengkap'] as String?,
-      email: map['email'] as String?,
-      role: map['role'] as String?,
-      nimNidn: map['nimNidn'] as String?, // <-- Tambah di fromMap
-      namaKampus: map['namaKampus'] as String?, // <-- Tambah di fromMap
+      uid: requiredUid,
+      // namaLengkap: map['namaLengkap'] as String?,
+      namaLengkap: (map['namaLengkap'] as String?) ?? 'Pengguna',
+      // email: map['email'] as String?,
+      email: (map['email'] as String?) ?? '',
+      // role: map['role'] as String?,
+      role: requiredRole,
+      nimNidn: map['nimNidn'] as String?,
+      namaKampus: map['namaKampus'] as String?,
       createdAt: map['createdAt'] as String?,
       updatedAt: map['updatedAt'] as String?,
     );
   }
 
-  // --- Konversi ke/dari JSON String (untuk penyimpanan SharedPreferences) ---
+  // Konversi ke/dari JSON String (untuk penyimpanan SharedPreferences)
 
   String toJson() => json.encode(toMap());
 

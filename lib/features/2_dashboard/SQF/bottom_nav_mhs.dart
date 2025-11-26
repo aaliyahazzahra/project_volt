@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/features/2_dashboard/SQF/homepage_mhs.dart';
-import 'package:project_volt/features/3_profile/profile_page.dart';
+import 'package:project_volt/features/3_profile/SQF/profile_page.dart';
 import 'package:project_volt/features/5_simulasi/simulasi_page.dart';
 
 class BottomNavMhs extends StatefulWidget {

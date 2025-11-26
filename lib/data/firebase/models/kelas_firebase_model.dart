@@ -3,12 +3,12 @@
 import 'dart:convert';
 
 class KelasFirebaseModel {
-  // 🔥 ID dokumen di Firestore (String unik)
+  //  ID dokumen di Firestore (String unik)
   final String? kelasId;
   final String namaKelas;
   final String? deskripsi;
   final String kodeKelas;
-  // 🔥 ID Pengguna dari Firebase Auth (UID, tipe String)
+  //  ID Pengguna dari Firebase Auth (UID, tipe String)
   final String dosenUid;
 
   KelasFirebaseModel({

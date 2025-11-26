@@ -5,7 +5,7 @@ import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/homepage_dosen_firebase.dart';
 import 'package:project_volt/features/3_profile/Firebase/profile_page_firebase.dart';
-import 'package:project_volt/features/5_simulasi/simulasi_page.dart';
+import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
 
 class BottomNavDosenFirebase extends StatefulWidget {
   final UserFirebaseModel user;
@@ -32,7 +32,7 @@ class _BottomNavDosenFirebaseState extends State<BottomNavDosenFirebase> {
           controller: controller,
           children: [
             HomepageDosenFirebase(user: widget.user),
-            SimulationPage(),
+            CreateSimulasiFirebasePage(kelasId: kelasId),
             ProfilePageFirebase(user: widget.user),
           ],
         ),

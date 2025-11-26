@@ -7,7 +7,7 @@ import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 
 class EditClassFirebasePage extends StatefulWidget {
-  // 🔥 UBAH TIPE MODEL: KelasModel -> KelasModelFirebase
+  //  UBAH TIPE MODEL: KelasModel -> KelasModelFirebase
   final KelasFirebaseModel kelas;
   const EditClassFirebasePage({super.key, required this.kelas});
 
@@ -18,11 +18,11 @@ class EditClassFirebasePage extends StatefulWidget {
 class _EditClassState extends State<EditClassFirebasePage> {
   final _formKey = GlobalKey<FormState>();
 
-  // 🔥 INISIASI SERVICE FIREBASE
+  //  INISIASI SERVICE FIREBASE
   final KelasFirebaseService _kelasService = KelasFirebaseService();
 
   late TextEditingController _deskripsiController;
-  late KelasFirebaseModel _currentKelasData; // 🔥 UBAH TIPE MODEL
+  late KelasFirebaseModel _currentKelasData; //  UBAH TIPE MODEL
 
   bool _isUpdating = false;
 
@@ -48,7 +48,7 @@ class _EditClassState extends State<EditClassFirebasePage> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isUpdating = true);
 
-      // 🔥 1. Buat model yang diperbarui
+      //  1. Buat model yang diperbarui
       final updatedModel = _currentKelasData.copyWith(
         deskripsi: _deskripsiController.text.trim(),
       );
@@ -61,7 +61,7 @@ class _EditClassState extends State<EditClassFirebasePage> {
       }
 
       try {
-        // 🔥 2. Panggil Service Firebase: Update Kelas
+        //  2. Panggil Service Firebase: Update Kelas
         await _kelasService.updateKelas(updatedModel);
 
         if (!mounted) return;
@@ -147,7 +147,7 @@ class _EditClassState extends State<EditClassFirebasePage> {
                 if (kelasId == null) return;
 
                 try {
-                  // 🔥 Panggil Service Firebase: Delete Kelas
+                  //  Panggil Service Firebase: Delete Kelas
                   await _kelasService.deleteKelas(kelasId);
 
                   if (!mounted) return;

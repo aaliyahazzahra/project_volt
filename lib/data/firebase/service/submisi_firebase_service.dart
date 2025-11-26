@@ -4,7 +4,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:project_volt/data/firebase/models/submisi_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart'; // Import user model
 // Asumsi: SubmisiDetailFirebase didefinisikan di sini atau diimpor
 
 // --- Helper Class (seperti di atas) ---
@@ -28,12 +28,13 @@ class SubmisiFirebaseService {
   // ----------------------------------------------------
   /// Menggunakan Compound Key (tugasId + mahasiswaId) untuk cek dan update.
   Future<void> createOrUpdateSubmisi(SubmisiFirebaseModel submisi) async {
-    // Firestore tidak memiliki 'conflictAlgorithm.replace' seperti Sqflite.
-    // Kita membuat ID unik gabungan untuk menjamin hanya ada SATU submisi per tugas per mhs.
-    final String uniqueId = '${submisi.tugasId}_${submisi.mahasiswaId}';
+    // 💡 KOREKSI 1: Pastikan ID submisi yang akan digunakan adalah ID gabungan,
+    // jika submisiId di model adalah null (artinya baru pertama kali dibuat/dimuat dari model)
+    final String uniqueId =
+        submisi.submisiId ?? '${submisi.tugasId}_${submisi.mahasiswaId}';
 
-    // Perhatikan: Kita menggunakan set() dengan uniqueId. Jika dokumen sudah ada, akan ditimpa.
     try {
+      // 💡 KOREKSI 2: Panggil toMap() yang sudah diupdate
       await _firestore
           .collection(_collectionName)
           .doc(uniqueId)
@@ -63,13 +64,15 @@ class SubmisiFirebaseService {
         return null;
       }
 
+      // 💡 KOREKSI 3: Pastikan fromMap menerima tipe data yang benar (Map<String, dynamic>)
       return SubmisiFirebaseModel.fromMap(
         doc.data() as Map<String, dynamic>,
         id: doc.id, // ID dokumen adalah uniqueId gabungan
       );
     } catch (e) {
       log('Error getting submission: $e');
-      throw Exception('Gagal memuat status submisi.');
+      // Tidak perlu rethrow jika tujuan utama adalah mengecek keberadaan
+      return null;
     }
   }
 
@@ -81,7 +84,6 @@ class SubmisiFirebaseService {
     String tugasId,
   ) async {
     try {
-      // Menggunakan query where. Perlu index Firestore untuk field 'tugasId'
       final QuerySnapshot snapshot = await _firestore
           .collection(_collectionName)
           .where('tugasId', isEqualTo: tugasId)
@@ -107,8 +109,6 @@ class SubmisiFirebaseService {
   Future<List<SubmisiDetailFirebase>> getSubmisiDetailByTugas(
     String tugasId,
   ) async {
-    // NOTE: Firestore tidak memiliki JOIN. Kita melakukan 'client-side join'
-    // dengan memuat Submisi, lalu memuat data User terkait satu per satu (atau secara batch).
     try {
       // 1. Ambil semua Submisi untuk tugas ini
       final submisiSnapshot = await _firestore
@@ -120,22 +120,14 @@ class SubmisiFirebaseService {
         return [];
       }
 
-      // 2. Kumpulkan semua Mahasiswa ID (UID) yang terlibat
-      // final List<String> mhsUids = submisiSnapshot.docs
-      //     .map((doc) => (doc.data())['mahasiswaId'] as String)
-      //     .toList();
-
-      // 3. Ambil data profil Mahasiswa secara batch (jika jumlah UID banyak, ini lebih efisien)
-      // Sayangnya, Firestore limit query IN adalah 10, jadi kita lakukan iterasi/batch.
       final List<SubmisiDetailFirebase> resultList = [];
 
       for (var doc in submisiSnapshot.docs) {
-        final submisiData = SubmisiFirebaseModel.fromMap(
-          doc.data(),
-          id: doc.id,
-        );
+        final Map<String, dynamic> docData = doc.data() as Map<String, dynamic>;
 
-        // Ambil detail user satu per satu
+        final submisiData = SubmisiFirebaseModel.fromMap(docData, id: doc.id);
+
+        // 2. Ambil detail user satu per satu (client-side join)
         final userDoc = await _firestore
             .collection(_userCollection)
             .doc(submisiData.mahasiswaId)
@@ -144,17 +136,27 @@ class SubmisiFirebaseService {
         if (userDoc.exists) {
           final Map<String, dynamic> userData = userDoc.data()!;
 
-          // 🔥 1. Pastikan UID dari Document ID ditambahkan ke map
+          // 💡 KOREKSI 4: Pastikan UID dari Document ID ditambahkan untuk diinisiasi oleh fromMap UserFirebaseModel
           userData['uid'] = userDoc.id;
 
-          // Opsional: Pastikan email diambil dari data jika tidak dijamin ada
-          // userData['email'] = userData['email'] ?? '';
-
-          // 2. Panggil fromMap dengan map yang sudah lengkap
+          // 3. Panggil UserFirebaseModel.fromMap yang sudah lengkap
           final userModel = UserFirebaseModel.fromMap(userData);
 
           resultList.add(
             SubmisiDetailFirebase(submisi: submisiData, mahasiswa: userModel),
+          );
+        } else {
+          // Jika data user hilang, tetap tambahkan submisi, tapi dengan user model default/kosong
+          resultList.add(
+            SubmisiDetailFirebase(
+              submisi: submisiData,
+              mahasiswa: UserFirebaseModel(
+                uid: submisiData.mahasiswaId,
+                role: 'mhs',
+                namaLengkap: 'User Tidak Ditemukan',
+                email: 'email',
+              ),
+            ),
           );
         }
       }
@@ -167,7 +169,27 @@ class SubmisiFirebaseService {
   }
 
   // ----------------------------------------------------
-  // 5. DELETE: Menghapus Submisi
+  // 5. UPDATE: Menilai Submisi
+  // ----------------------------------------------------
+  /// Mengupdate nilai dan status penilaian (digunakan oleh Dosen).
+  Future<void> updateNilai({
+    required String submisiId,
+    required int nilai,
+  }) async {
+    try {
+      await _firestore.collection(_collectionName).doc(submisiId).update({
+        'nilai': nilai,
+        // Setelah dinilai, status diubah menjadi 'DINILAI'
+        'status': 'DINILAI',
+      });
+    } catch (e) {
+      log("Error updating submission score: $e");
+      rethrow;
+    }
+  }
+
+  // ----------------------------------------------------
+  // 6. DELETE: Menghapus Submisi
   // ----------------------------------------------------
   /// Menghapus submisi berdasarkan ID gabungan.
   Future<void> deleteSubmisiByTugasAndMahasiswa(

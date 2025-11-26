@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:project_volt/features/0_splash/SQF/splash_screen.dart'art';
+import 'package:project_volt/features/0_splash/Firebase/splash_screen_firebase.dart';
 import 'package:project_volt/firebase_options.dart';
 
 void main() async {
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: SplashScreen(),
+      home: SplashScreenFirebase(),
     );
   }
 }

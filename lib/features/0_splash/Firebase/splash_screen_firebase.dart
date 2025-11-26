@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart'; // 🔥 Tambah ini untuk cek Auth
+import 'package:firebase_auth/firebase_auth.dart'; //  Tambah ini untuk cek Auth
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_image.dart'; // Asumsi path AppImages sudah benar
 import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
@@ -44,7 +44,7 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
     });
   }
 
-  // 🔥 Logika Gabungan: Cek Sesi Lokal + Cek Firebase Auth
+  //  Logika Gabungan: Cek Sesi Lokal + Cek Firebase Auth
   Future<void> _cekSession() async {
     // 1. Ambil data sesi lokal
     final UserFirebaseModel? savedUser =
@@ -108,7 +108,7 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
         children: [
           Center(
             child: AnimatedCrossFade(
-              // 🔥 Menggunakan asset kustom & animasi Anda
+              //  Menggunakan asset kustom & animasi Anda
               firstChild: Image.asset(AppImages.vAja, height: 250),
               secondChild: Image.asset(AppImages.volt, height: 200),
               crossFadeState: _showFullLogo

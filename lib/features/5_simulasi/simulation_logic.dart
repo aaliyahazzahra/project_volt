@@ -1,6 +1,6 @@
 // lib/features/simulasi/simulation_logic.dart
 
-import 'package:project_volt/data/SQF/models/simulation_models.dart';
+import 'package:project_volt/data/simulation_models.dart';
 
 // Fungsi Helper untuk Default Input
 Map<String, bool> getDefaultInputs(String type) {
@@ -30,7 +30,7 @@ SimulationProject runSimulationInBackground(SimulationPayload payload) {
   final components = project.components;
   final wires = project.wires;
 
-  // ⭐️ OPTIMASI KUNCI: Buat Map untuk pencarian cepat
+  //   OPTIMASI KUNCI: Buat Map untuk pencarian cepat
   final componentMap = <String, SimulationComponent>{};
   for (final c in components) {
     componentMap[c.id] = c;

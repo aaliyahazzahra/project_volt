@@ -4,8 +4,8 @@ import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/materi_firebase_service.dart';
-import 'package:project_volt/features/4_kelas/view/create_materi_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/list_views/materi_list_view.dart';
+import 'package:project_volt/features/4_kelas/view/Firebase/create_materi_firebase_page.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/list_views/materi_list_view_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class MateriTabContentFirebase extends StatefulWidget {
@@ -26,8 +26,8 @@ class MateriTabContentFirebase extends StatefulWidget {
 }
 
 class _MateriTabContentFirebaseState extends State<MateriTabContentFirebase> {
-  // 🔥 INISIASI SERVICE FIREBASE
-  final MateriFirebaseService _materiService = MateriFirebaseService();
+  //  INISIASI SERVICE FIREBASE
+  final MateriFirebaseService _materiFirebaseService = MateriFirebaseService();
 
   List<MateriFirebaseModel> _daftarMateri = [];
   bool _isLoading = true;
@@ -39,7 +39,7 @@ class _MateriTabContentFirebaseState extends State<MateriTabContentFirebase> {
   }
 
   Future<void> _loadMateri() async {
-    // 🔥 UBAH ID: Menggunakan kelasId (String)
+    //  UBAH ID: Menggunakan kelasId (String)
     final String? kelasId = widget.kelas.kelasId;
 
     if (kelasId == null) {
@@ -48,8 +48,8 @@ class _MateriTabContentFirebaseState extends State<MateriTabContentFirebase> {
     }
 
     try {
-      // 🔥 PANGGIL SERVICE FIREBASE
-      final data = await _materiService.getMateriByKelas(kelasId);
+      //  PANGGIL SERVICE FIREBASE
+      final data = await _materiFirebaseService.getMateriByKelas(kelasId);
 
       if (mounted) {
         setState(() {
@@ -67,7 +67,7 @@ class _MateriTabContentFirebaseState extends State<MateriTabContentFirebase> {
   }
 
   void _navigateToCreateMateri() async {
-    // 🔥 UBAH ID: Menggunakan kelasId (String)
+    //  UBAH ID: Menggunakan kelasId (String)
     final String? kelasId = widget.kelas.kelasId;
     if (kelasId == null) return;
 
@@ -75,7 +75,7 @@ class _MateriTabContentFirebaseState extends State<MateriTabContentFirebase> {
       context,
       // ASUMSI: CreateMateriPage menerima String kelasId
       MaterialPageRoute(
-        builder: (context) => CreateMateriPage(kelasId: kelasId),
+        builder: (context) => CreateMateriFirebasePage(kelasId: kelasId),
       ),
     );
 
@@ -110,7 +110,7 @@ class _MateriTabContentFirebaseState extends State<MateriTabContentFirebase> {
                   : "Dosen Anda belum memposting materi apapun di kelas ini.",
               iconColor: rolePrimaryColor,
             )
-          : MateriListView(
+          : MateriListViewFirebase(
               daftarMateri: _daftarMateri,
               onMateriTap: _navigateToDetailMateri,
               roleColor: rolePrimaryColor,

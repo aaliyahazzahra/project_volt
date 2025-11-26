@@ -1,30 +1,45 @@
+// lib/features/4_kelas/view/Firebase/create_tugas_firebase_page.dart
+
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+//  Import Model dan Service Tugas Firebase
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
-// 🔥 TAMBAH: Import service Tugas Firebase dan model Tugas
 import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
+import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
+// 🎯 Import Model User dan Halaman Simulasi
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 
 class CreateTugasFirebasePage extends StatefulWidget {
-  // 🔥 UBAH TIPE DATA: kelasId dari int menjadi String (UID Kelas)
+  //  TAMBAHAN: Menerima User Model Dosen
   final String kelasId;
-  const CreateTugasFirebasePage({super.key, required this.kelasId});
+  final UserFirebaseModel user;
+
+  const CreateTugasFirebasePage({
+    super.key,
+    required this.kelasId,
+    required this.user, // Dosen User Model
+  });
 
   @override
-  State<CreateTugasFirebasePage> createState() => _CreateTugasPageState();
+  State<CreateTugasFirebasePage> createState() =>
+      _CreateTugasFirebasePageState();
 }
 
-class _CreateTugasPageState extends State<CreateTugasFirebasePage> {
+class _CreateTugasFirebasePageState extends State<CreateTugasFirebasePage> {
   final _formKey = GlobalKey<FormState>();
   final _judulController = TextEditingController();
   final _deskripsiController = TextEditingController();
 
   DateTime? _selectedDateTime;
-  bool _isSaving = false; // State untuk loading button
+  bool _isSaving = false;
 
-  // 🔥 INISIASI SERVICE FIREBASE
+  // 🎯 STATE BARU: ID Simulasi yang dilampirkan
+  String? _simulasiId;
+
+  //  INISIASI SERVICE FIREBASE
   final TugasFirebaseService _tugasService = TugasFirebaseService();
 
   @override
@@ -34,14 +49,34 @@ class _CreateTugasPageState extends State<CreateTugasFirebasePage> {
     super.dispose();
   }
 
+  // --- FUNGSI HELPER UI ---
+
+  void _showSnackbar(String title, String message, ContentType type) {
+    final snackBarContent = AwesomeSnackbarContent(
+      title: title,
+      message: message,
+      contentType: type,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        content: snackBarContent,
+      ),
+    );
+  }
+
+  // --- FUNGSI TANGGAL WAKTU (tetap sama) ---
+
   Future<void> _pickDateTime(BuildContext context) async {
-    // ... (Logika Date and Time Picker tetap sama)
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDateTime ?? DateTime.now(),
+      initialDate:
+          _selectedDateTime ?? DateTime.now().add(const Duration(days: 7)),
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
-      // locale: const Locale('id', 'ID'),
     );
 
     if (pickedDate != null) {
@@ -68,93 +103,148 @@ class _CreateTugasPageState extends State<CreateTugasFirebasePage> {
     }
   }
 
+  // 🎯 FUNGSI BARU: NAVIGASI KE EDITOR SIMULASI
+  void _navigateToSimulationEditor() async {
+    if (widget.user.uid == null) {
+      _showSnackbar(
+        "Error",
+        "User ID Dosen tidak ditemukan.",
+        ContentType.failure,
+      );
+      return;
+    }
+
+    // Meluncurkan SimulationPage (Editor Simulasi)
+    // Asumsi: SimulationPage mengembalikan String ID Simulasi yang baru disimpan.
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateSimulasiFirebasePage(
+          kelasId: widget.kelasId,
+          user: widget.user,
+        ),
+      ),
+    );
+
+    if (result != null && result is String) {
+      // Jika berhasil disimpan, ID Simulasi akan dikembalikan
+      if (mounted) {
+        setState(() {
+          _simulasiId = result;
+        });
+        _showSnackbar(
+          "Berhasil",
+          "Simulasi berhasil dibuat dan dilampirkan!",
+          ContentType.success,
+        );
+      }
+    } else if (result == true && mounted) {
+      // fallback jika SimulationPage hanya mengembalikan boolean 'true'
+      // Untuk tujuan demo, kita akan mengasumsikan ID baru (tapi ini kurang disarankan)
+      _showSnackbar(
+        "Perhatian",
+        "Simulasi berhasil disimpan, tetapi ID tidak diterima.",
+        ContentType.warning,
+      );
+    }
+  }
+
+  // --- LOGIKA UTAMA: SUBMIT FORM / CREATE TUGAS FIREBASE ---
+
   void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      if (_isSaving) return;
+    if (!_formKey.currentState!.validate()) {
+      _showSnackbar(
+        "Peringatan",
+        "Harap isi Judul Tugas.",
+        ContentType.warning,
+      );
+      return;
+    }
 
-      setState(() {
-        _isSaving = true;
-      });
+    if (_selectedDateTime == null) {
+      _showSnackbar(
+        "Peringatan",
+        "Harap tentukan tanggal tenggat waktu.",
+        ContentType.warning,
+      );
+      return;
+    }
 
-      // Simpan sebagai ISO string
-      final String? tglTenggat = _selectedDateTime?.toIso8601String();
+    // Cek jika tugas adalah simulasi, harus ada simulasi yang dilampirkan
+    // Jika Anda ingin semua tugas harus memiliki simulasi, aktifkan cek ini:
+    /*
+    if (_simulasiId == null && isSimulasiType) {
+         _showSnackbar("Peringatan", "Tugas simulasi harus melampirkan proyek simulasi.", ContentType.warning);
+         return;
+    }
+    */
 
-      // 🔥 1. Buat TugasModelFirebase (menggunakan kelasId String)
+    if (_isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
       final newTugas = TugasFirebaseModel(
-        kelasId: widget.kelasId, // Sudah String
+        kelasId: widget.kelasId,
+        dosenId: widget.user.uid!, //  Masukkan ID Dosen dari User Model
         judul: _judulController.text.trim(),
         deskripsi: _deskripsiController.text.trim(),
-        tglTenggat: tglTenggat,
+        tglDibuat: DateTime.now(), // Tambahkan tgl dibuat
+        tglTenggat: _selectedDateTime,
+        simulasiId: _simulasiId, // 🎯 Lampirkan ID Simulasi jika ada
       );
 
-      try {
-        // 🔥 2. Panggil Service Firebase
-        await _tugasService.createTugas(newTugas);
+      //  Panggil Service Firebase
+      await _tugasService.createTugas(newTugas);
 
-        if (!mounted) return;
+      if (!mounted) return;
 
-        final snackBarContent = AwesomeSnackbarContent(
-          title: "Sukses",
-          message: "Tugas berhasil dibuat!",
-          contentType: ContentType.success,
-        );
+      _showSnackbar(
+        "Sukses",
+        "Tugas berhasil dipublikasikan!",
+        ContentType.success,
+      );
+      Navigator.pop(context, true); // Pop dengan sinyal refresh
+    } catch (e) {
+      if (!mounted) return;
 
-        final snackBar = SnackBar(
-          elevation: 0,
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
-          content: snackBarContent,
-        );
-
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(snackBar);
-
-        // 3. Navigasi kembali setelah sukses
-        Navigator.pop(context, true); // Pop dengan sinyal refresh
-      } catch (e) {
-        if (!mounted) return;
-
-        final snackBarContent = AwesomeSnackbarContent(
-          title: "Error",
-          message:
-              "Gagal membuat tugas. ${e.toString().replaceAll('Exception: ', '')}",
-          contentType: ContentType.warning,
-        );
-
-        final snackBar = SnackBar(
-          elevation: 0,
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
-          content: snackBarContent,
-        );
-
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(snackBar);
-        print("Create Tugas Error: $e");
-      } finally {
-        if (mounted) {
-          setState(() => _isSaving = false);
-        }
+      print("Create Tugas Error: $e");
+      _showSnackbar(
+        "Error",
+        "Gagal membuat tugas. ${e.toString().replaceAll('Exception: ', '')}",
+        ContentType.failure,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Pastikan user model memiliki UID
+    if (widget.user.uid == null) {
+      return const Scaffold(
+        body: Center(child: Text("Error: Dosen ID tidak tersedia.")),
+      );
+    }
+
+    final String tenggatFormatted = _selectedDateTime == null
+        ? 'Pilih Tanggal dan Waktu'
+        : DateFormat.yMd().add_Hm().format(_selectedDateTime!);
+
+    final bool isSimulasiAttached = _simulasiId != null;
+
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          "Buat Tugas Baru",
-          style: TextStyle(
-            color: AppColor.kPrimaryColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text("Buat Tugas Baru"),
         centerTitle: true,
         backgroundColor: AppColor.kBackgroundColor,
+        foregroundColor: AppColor.kPrimaryColor,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -165,6 +255,7 @@ class _CreateTugasPageState extends State<CreateTugasFirebasePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 10),
+                // --- Input Judul ---
                 BuildTextField(
                   labelText: "Judul Tugas",
                   controller: _judulController,
@@ -176,6 +267,7 @@ class _CreateTugasPageState extends State<CreateTugasFirebasePage> {
                   },
                 ),
                 const SizedBox(height: 16),
+                // --- Input Deskripsi ---
                 BuildTextField(
                   labelText: "Deskripsi (Opsional)",
                   controller: _deskripsiController,
@@ -183,54 +275,109 @@ class _CreateTugasPageState extends State<CreateTugasFirebasePage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Input Tanggal Tenggat
+                // --- Pilihan Tanggal Tenggat ---
                 Text(
-                  "Tanggal Tenggat (Opsional)",
+                  "Tanggal Tenggat",
                   style: TextStyle(color: Colors.grey[700], fontSize: 12),
                 ),
                 const SizedBox(height: 8),
-                InkWell(
-                  onTap: _isSaving ? null : () => _pickDateTime(context),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 16,
+                Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      isSimulasiAttached
+                          ? Icons.check_circle
+                          : Icons.integration_instructions_outlined,
+                      color: isSimulasiAttached
+                          ? Colors.green
+                          : AppColor.kPrimaryColor,
                     ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[400]!),
-                      borderRadius: BorderRadius.circular(32),
+                    title: Text(
+                      isSimulasiAttached
+                          ? "Simulasi Terlampir (Siap)"
+                          : "Lampirkan Proyek Simulasi",
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _selectedDateTime == null
-                              ? 'Pilih Tanggal dan Waktu'
-                              : DateFormat.yMd().add_Hm().format(
-                                  _selectedDateTime!,
-                                ),
-
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: _selectedDateTime == null
-                                ? Colors.grey[600]
-                                : Colors.black,
+                    subtitle: isSimulasiAttached
+                        ? const Text(
+                            "Tugas ini berupa proyek Simulasi Logika Digital.",
+                            style: TextStyle(fontStyle: FontStyle.italic),
+                          )
+                        : const Text(
+                            "Tugas akan dianggap sebagai pengumpulan dokumen standar.",
                           ),
-                        ),
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          color: AppColor.kPrimaryColor,
-                        ),
-                      ],
-                    ),
+                    trailing: isSimulasiAttached
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: AppColor.kErrorColor,
+                            ),
+                            onPressed: () => setState(() => _simulasiId = null),
+                            tooltip: 'Hapus Lampiran Simulasi',
+                          )
+                        : const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: _isSaving || isSimulasiAttached
+                        ? null
+                        : _navigateToSimulationEditor,
                   ),
                 ),
                 const SizedBox(height: 30),
+
+                // 🎯 BAGIAN BARU: LAMPIRKAN SIMULASI
+                Text(
+                  "Lampiran Tugas",
+                  style: TextStyle(color: Colors.grey[700], fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+                Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      isSimulasiAttached
+                          ? Icons.check_circle
+                          : Icons.integration_instructions_outlined,
+                      color: isSimulasiAttached
+                          ? Colors.green
+                          : AppColor.kPrimaryColor,
+                    ),
+                    title: Text(
+                      isSimulasiAttached
+                          ? "Simulasi Terlampir (Siap)"
+                          : "Lampirkan Proyek Simulasi",
+                    ),
+                    subtitle: isSimulasiAttached
+                        ? const Text(
+                            "Tugas ini berupa proyek Simulasi Logika Digital.",
+                            style: TextStyle(fontStyle: FontStyle.italic),
+                          )
+                        : const Text(
+                            "Tugas akan dianggap sebagai pengumpulan dokumen standar.",
+                          ),
+                    trailing: isSimulasiAttached
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: AppColor.kErrorColor,
+                            ),
+                            onPressed: () => setState(() => _simulasiId = null),
+                            tooltip: 'Hapus Lampiran Simulasi',
+                          )
+                        : const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: _isSaving || isSimulasiAttached
+                        ? null
+                        : _navigateToSimulationEditor, // Tidak bisa melampirkan 2 kali
+                  ),
+                ),
+                const SizedBox(height: 30),
+
+                // --- Tombol Simpan ---
                 ElevatedButton(
-                  onPressed: _isSaving
-                      ? null
-                      : _submitForm, // Matikan tombol saat saving
+                  onPressed: _isSaving ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColor.kPrimaryColor,
                     foregroundColor: AppColor.kWhiteColor,
@@ -249,7 +396,7 @@ class _CreateTugasPageState extends State<CreateTugasFirebasePage> {
                           ),
                         )
                       : const Text(
-                          'Simpan Tugas',
+                          'Publikasikan Tugas',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

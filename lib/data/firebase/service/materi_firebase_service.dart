@@ -1,8 +1,10 @@
 // File: project_volt/data/firebase/service/materi_firebase_service.dart
 
 import 'dart:developer';
-
+import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 
 class MateriFirebaseService {
@@ -88,5 +90,23 @@ class MateriFirebaseService {
       log('Error deleting material: $e');
       throw Exception('Gagal menghapus materi.');
     }
+  }
+
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  Future<String> uploadFile(File file, String kelasId) async {
+    // Membuat path unik di Firebase Storage
+    final fileName = p.basename(file.path);
+    final ref = _storage.ref().child(
+      'materi/$kelasId/${DateTime.now().millisecondsSinceEpoch}_$fileName',
+    );
+
+    // Upload file
+    final uploadTask = ref.putFile(file);
+    final snapshot = await uploadTask.whenComplete(() => {});
+
+    // Dapatkan URL publik
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+    return downloadUrl; // Ini yang disimpan di Firestore
   }
 }

@@ -1,107 +1,139 @@
-import 'dart:math';
+// File: project_volt/features/4_kelas/view/create_materi_page.dart
 
+import 'dart:io';
+
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-// 🔥 TAMBAH: Import service Kelas Firebase
-import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
-import 'package:project_volt/widgets/buildtextfield.dart';
 
-class CreateClassFirebase extends StatefulWidget {
-  final UserFirebaseModel user;
-  const CreateClassFirebase({super.key, required this.user});
+//  Import Service dan Model Firebase
+import 'package:project_volt/data/firebase/service/materi_firebase_service.dart';
+import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
+
+class CreateMateriFirebasePage extends StatefulWidget {
+  // ID Kelas sekarang bertipe String (UID Kelas)
+  final String kelasId;
+  const CreateMateriFirebasePage({super.key, required this.kelasId});
 
   @override
-  State<CreateClassFirebase> createState() => _CreateClassFirebaseState();
+  State<CreateMateriFirebasePage> createState() =>
+      _CreateMateriFirebasePageState();
 }
 
-class _CreateClassFirebaseState extends State<CreateClassFirebase> {
+class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
   final _formKey = GlobalKey<FormState>();
-  final _namaController = TextEditingController();
+  final _judulController = TextEditingController();
   final _deskripsiController = TextEditingController();
+  final _linkController = TextEditingController();
 
-  // 🔥 INISIASI SERVICE FIREBASE
-  final KelasFirebaseService _kelasService = KelasFirebaseService();
-  bool _isSaving = false; // Tambahkan state untuk tombol loading
+  //  INISIASI SERVICE FIREBASE
+  final MateriFirebaseService _materiService = MateriFirebaseService();
+
+  File? _pickedFile;
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _namaController.dispose();
+    _judulController.dispose();
     _deskripsiController.dispose();
+    _linkController.dispose();
     super.dispose();
   }
 
-  void _showMessage(String message, {bool isError = false}) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: isError ? Colors.red : Colors.green,
-        ),
-      );
+  // Helper untuk menampilkan Awesome Snackbar
+  void _showSnackbar(String message, ContentType type) {
+    final snackBarContent = AwesomeSnackbarContent(
+      title: type == ContentType.success ? "Sukses" : "Peringatan",
+      message: message,
+      contentType: type,
+    );
+
+    final snackBar = SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      content: snackBarContent,
+    );
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(snackBar);
+  }
+
+  // untuk memilih file (logika FilePicker)
+  Future<void> _pickFile() async {
+    if (_isLoading) return; // Jangan izinkan saat sedang loading
+
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+      if (result != null) {
+        setState(() {
+          _pickedFile = File(result.files.single.path!);
+        });
+      }
+    } catch (e) {
+      _showSnackbar("Gagal memilih file.", ContentType.warning);
     }
   }
 
-  // Fungsi untuk generate kode unik (tetap sama)
-  String _generateKodeKelas() {
-    const String chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    Random rnd = Random();
-    // Menggunakan kode 6 karakter seperti sebelumnya
-    return String.fromCharCodes(
-      Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
-    );
-  }
+  // untuk menyimpan materi ke Firebase Storage dan Firestore
+  Future<void> _saveMateri() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-  void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      if (_isSaving) return; // Mencegah double submit
+    if (_linkController.text.trim().isEmpty && _pickedFile == null) {
+      _showSnackbar(
+        "Harap sertakan Link Materi atau Upload File.",
+        ContentType.warning,
+      );
+      return;
+    }
 
-      setState(() {
-        _isSaving = true;
-      });
+    setState(() => _isLoading = true);
 
-      final String newKode = _generateKodeKelas();
+    String? fileUrl;
 
-      // Pastikan UID Dosen ada
-      final String? dosenUid = widget.user.uid;
-      if (dosenUid == null) {
-        _showMessage('Error: User ID Dosen tidak ditemukan.', isError: true);
-        setState(() => _isSaving = false);
-        return;
+    try {
+      // 1. UPLOAD FILE ke Firebase Storage
+      if (_pickedFile != null) {
+        fileUrl = await _materiService.uploadFile(_pickedFile!, widget.kelasId);
       }
 
-      // 🔥 1. Buat KelasModelFirebase (menggunakan dosenUid String)
-      final newKelas = KelasFirebaseModel(
-        namaKelas: _namaController.text.trim(),
+      // 2. Buat Model Firebase
+      final materi = MateriFirebaseModel(
+        kelasId: widget.kelasId,
+        judul: _judulController.text.trim(),
         deskripsi: _deskripsiController.text.trim(),
-        kodeKelas: newKode,
-        dosenUid: dosenUid, // 🔥 GANTI: dosenId (int) -> dosenUid (String)
+        linkMateri: _linkController.text.trim().isEmpty
+            ? null
+            : _linkController.text.trim(),
+        // filePathMateri adalah URL hasil upload
+        filePathMateri: fileUrl,
+        tglPosting: DateTime.now().toIso8601String(),
       );
 
-      try {
-        // 🔥 2. Panggil Service Firebase
-        // Service mengembalikan KelasModelFirebase yang sudah memiliki kelasId (doc.id)
-        final createdKelas = await _kelasService.createKelas(newKelas);
+      // 3. Simpan metadata ke Firestore
+      await _materiService.createMateri(materi);
 
-        // 3. Sukses & Navigasi
-        if (mounted) {
-          // Mengirim objek KelasFirebaseModel yang sudah lengkap kembali ke homepage
-          Navigator.pop(context, createdKelas);
-        }
-      } catch (e) {
-        // Penanganan error (misal: koneksi, Firestore, dll.)
-        _showMessage(
-          'Error saat membuat kelas: Coba lagi.', // Pesan generik, karena kode kelas harusnya unik secara acak
-          isError: true,
+      if (mounted) {
+        _showSnackbar("Materi berhasil diposting!", ContentType.success);
+        Navigator.of(context).pop(true); // Kirim 'true' untuk refresh
+      }
+    } catch (e) {
+      print("Error saving materi/uploading file: $e");
+      if (mounted) {
+        _showSnackbar(
+          "Gagal menyimpan materi. Pastikan koneksi dan file valid: ${e.toString().replaceAll('Exception: ', '')}",
+          ContentType.warning,
         );
-        print("Create Class Error: $e");
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isSaving = false;
-          });
-        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -111,77 +143,90 @@ class _CreateClassFirebaseState extends State<CreateClassFirebase> {
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          "Buat Kelas Baru",
-          style: TextStyle(
-            color: AppColor.kPrimaryColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
+        title: const Text("Posting Materi Baru"),
         backgroundColor: AppColor.kBackgroundColor,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                BuildTextField(
-                  labelText: "Nama Kelas",
-                  controller: _namaController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Nama Kelas tidak boleh kosong';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                BuildTextField(
-                  maxLines: 5,
-                  labelText: "Deskripsi (Opsional)",
-                  controller: _deskripsiController,
-                ),
-                const SizedBox(height: 16),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _isSaving
-                      ? null
-                      : _submitForm, // Matikan tombol saat loading
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor.kPrimaryColor,
-                    foregroundColor: AppColor.kWhiteColor,
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  TextFormField(
+                    controller: _judulController,
+                    decoration: const InputDecoration(
+                      labelText: 'Judul Materi',
+                    ),
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Judul tidak boleh kosong'
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _deskripsiController,
+                    decoration: const InputDecoration(
+                      labelText: 'Deskripsi (Opsional)',
+                    ),
+                    maxLines: 4,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Lampiran:",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _linkController,
+                    decoration: const InputDecoration(
+                      labelText: 'Link Materi (Opsional)',
+                      hintText: 'Contoh: https://youtube.com/...',
+                      prefixIcon: Icon(Icons.link),
                     ),
                   ),
-                  child: _isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 3,
-                          ),
-                        )
-                      : const Text(
-                          'Simpan Kelas',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  // tombol pilih file
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.attach_file),
+                    label: Text(
+                      _pickedFile == null
+                          ? 'Upload File (PDF/Simulasi)'
+                          : p.basename(_pickedFile!.path),
+                    ),
+                    onPressed: _pickFile,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _pickedFile != null
+                          ? Colors.green
+                          : AppColor.kTextColor,
+                      side: BorderSide(
+                        color: _pickedFile != null ? Colors.green : Colors.grey,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _saveMateri,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.kPrimaryColor,
+                      foregroundColor: AppColor.kWhiteColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          )
+                        : const Text('Posting Materi'),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

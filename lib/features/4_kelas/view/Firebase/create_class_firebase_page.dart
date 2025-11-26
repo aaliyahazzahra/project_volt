@@ -21,7 +21,7 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
   final _namaController = TextEditingController();
   final _deskripsiController = TextEditingController();
 
-  // 🔥 INISIASI SERVICE FIREBASE
+  //  INISIASI SERVICE FIREBASE
   final KelasFirebaseService _kelasService = KelasFirebaseService();
   bool _isSaving = false; // Tambahkan state untuk tombol loading
 
@@ -71,16 +71,16 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
         return;
       }
 
-      // 🔥 1. Buat KelasModelFirebase (menggunakan dosenUid String)
+      //  1. Buat KelasModelFirebase (menggunakan dosenUid String)
       final newKelas = KelasFirebaseModel(
         namaKelas: _namaController.text.trim(),
         deskripsi: _deskripsiController.text.trim(),
         kodeKelas: newKode,
-        dosenUid: dosenUid, // 🔥 GANTI: dosenId (int) -> dosenUid (String)
+        dosenUid: dosenUid, //  GANTI: dosenId (int) -> dosenUid (String)
       );
 
       try {
-        // 🔥 2. Panggil Service Firebase
+        //  2. Panggil Service Firebase
         // Service mengembalikan KelasModelFirebase yang sudah memiliki kelasId (doc.id)
         final createdKelas = await _kelasService.createKelas(newKelas);
 

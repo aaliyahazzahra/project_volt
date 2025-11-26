@@ -6,11 +6,11 @@ import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/edit_class_firebase_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/anggota_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/info_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/materi_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/tugas_tab_content.dart';
-import 'package:project_volt/features/4_kelas/widgets/tabs/tugas_tab_mhs.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/anggota_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/info_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/materi_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/tugas_tab_content_firebase.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/tugas_tab_mhs_firebase.dart';
 
 class ClassDetailFirebasePage extends StatefulWidget {
   final KelasFirebaseModel kelas;
@@ -31,7 +31,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
   late bool _isDosen;
   bool _dataEdited = false;
 
-  // 🔥 INISIASI FIREBASE SERVICES
+  //  INISIASI FIREBASE SERVICES
   final KelasFirebaseService _kelasService = KelasFirebaseService();
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
@@ -64,7 +64,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
     }
   }
 
-  // 🔥 UPDATE LOGIKA REFRESH DATA (Menggunakan FirebaseService)
+  //  UPDATE LOGIKA REFRESH DATA (Menggunakan FirebaseService)
   Future<void> _refreshKelasData() async {
     // Pastikan ID kelas tersedia dan bertipe String
     final String? kelasId = widget.kelas.kelasId;
@@ -96,7 +96,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
   // FUNGSI KHUSUS MAHASISWA
   // ----------------------------------------------------
 
-  // 🔥 UPDATE LOGIKA KELUAR KELAS (Menggunakan UserManagementFirebaseService)
+  //  UPDATE LOGIKA KELUAR KELAS (Menggunakan UserManagementFirebaseService)
   Future<void> _exitClass() async {
     // 1. Tampilkan Dialog Konfirmasi
     final bool? confirm = await showDialog<bool>(
@@ -143,7 +143,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
       }
 
       try {
-        // 🔥 Panggil service leaveKelas yang sudah dikonversi
+        //  Panggil service leaveKelas yang sudah dikonversi
         await _userManagementService.leaveKelas(userUid, kelasId);
 
         if (mounted) {
@@ -272,13 +272,13 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
           body: TabBarView(
             children: [
               // Tab 1: Info (SAMA)
-              InfoTabContent(
+              InfoTabContentFirebase(
                 kelas: _currentKelasData,
                 roleColor: rolePrimaryColor,
               ),
 
               // Tab 2: Materi (SAMA)
-              MateriTabContent(
+              MateriTabContentFirebase(
                 kelas: _currentKelasData,
                 user: widget.user,
                 isDosen: _isDosen,
@@ -286,11 +286,14 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
 
               // Tab 3: Tugas (BERBEDA)
               _isDosen
-                  ? TugasTabContent(kelas: _currentKelasData)
-                  : TugasTabMhs(kelas: _currentKelasData, user: widget.user),
+                  ? TugasTabContentFirebase(kelas: _currentKelasData)
+                  : TugasTabMhsFirebase(
+                      kelas: _currentKelasData,
+                      user: widget.user,
+                    ),
 
               // Tab 4: Anggota (SAMA)
-              AnggotaTabContent(
+              AnggotaTabContentFirebase(
                 kelas: _currentKelasData,
                 rolePrimaryColor: rolePrimaryColor,
               ),

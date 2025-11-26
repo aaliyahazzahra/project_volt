@@ -1,27 +1,52 @@
+// lib/features/5_simulasi/create_simulasi_firebase_page.dart
+
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/SQF/models/simulation_models.dart';
+//  Import Model dan Service yang dibutuhkan
+import 'package:project_volt/data/firebase/models/simulasi_firebase_model.dart';
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
+import 'package:project_volt/data/firebase/service/simulasi_firebase_service.dart';
+import 'package:project_volt/data/simulation_models.dart';
 import 'package:project_volt/features/5_simulasi/simulation_logic.dart';
 import 'package:project_volt/features/5_simulasi/simulation_painters.dart';
 import 'package:uuid/uuid.dart';
 
 // ----------------------------------------------------------------------
-// --- HALAMAN UTAMA SIMULASI (SimulationPage) ---
+// --- HALAMAN EDITOR SIMULASI (Dosen Mode: Create/Update/Template Load) ---
 // ----------------------------------------------------------------------
 
-class SimulationPage extends StatefulWidget {
-  const SimulationPage({super.key});
+class CreateSimulasiFirebasePage extends StatefulWidget {
+  final String kelasId;
+  final UserFirebaseModel user;
+  // 🎯 PARAMETER BARU: ID Simulasi yang akan dimuat sebagai template
+  final String? loadSimulasiId;
+
+  const CreateSimulasiFirebasePage({
+    super.key,
+    required this.kelasId,
+    required this.user,
+    this.loadSimulasiId, // Optional ID
+  });
 
   @override
-  State<SimulationPage> createState() => _SimulationPageState();
+  State<CreateSimulasiFirebasePage> createState() =>
+      _CreateSimulasiFirebasePageState();
 }
 
-class _SimulationPageState extends State<SimulationPage> {
+class _CreateSimulasiFirebasePageState
+    extends State<CreateSimulasiFirebasePage> {
+  //  FIREBASE SERVICE
+  final SimulasiFirebaseService _simulasiService = SimulasiFirebaseService();
   final Uuid _uuid = Uuid();
   final GlobalKey _canvasKey = GlobalKey();
 
-  // State untuk Multiple Canvas
+  // State untuk Metadata Simulasi
+  final TextEditingController _judulController = TextEditingController();
+  final TextEditingController _deskripsiController = TextEditingController();
+
+  // State Simulasi
   final List<SimulationProject> _projects = [];
   int _activeIndex = 0;
 
@@ -30,32 +55,220 @@ class _SimulationPageState extends State<SimulationPage> {
       _activeProject.components;
   List<WireConnection> get _wires => _activeProject.wires;
 
-  // State untuk melacak kabel yang sedang ditarik
   String? _draggingFromComponentId;
   String? _draggingFromNodeId;
   Offset? _draggingOffset;
 
-  // State untuk mencegah simulasi tumpang tindih
   bool _isSimulating = false;
-
-  // State untuk drag-to-delete (sebagai indikator visual)
+  bool _isSaving = false;
+  bool _isTemplateLoading = false; // 🎯 STATE BARU: Loading template
   bool _isDraggingComponentForDelete = false;
+
+  // ID dari simulasi yang sedang diedit (null jika baru)
+  String? _currentSimulasiId;
 
   @override
   void initState() {
     super.initState();
-    // Inisialisasi Proyek Pertama
-    _projects.add(
-      SimulationProject(
-        id: _uuid.v4(),
-        name: "Sirkuit 1",
-        components: [],
-        wires: [],
+    _currentSimulasiId = widget.loadSimulasiId;
+
+    // Muat data jika loadSimulasiId ada
+    if (widget.loadSimulasiId != null) {
+      _loadExistingProject(widget.loadSimulasiId!);
+    } else {
+      _initializeNewProject();
+    }
+  }
+
+  @override
+  void dispose() {
+    _judulController.dispose();
+    _deskripsiController.dispose();
+    super.dispose();
+  }
+
+  // --- LOGIC TEMPLATE LOADING ---
+
+  void _initializeNewProject() {
+    if (_projects.isEmpty) {
+      _projects.add(
+        SimulationProject(
+          id: _uuid.v4(),
+          name: "Sirkuit 1",
+          components: [],
+          wires: [],
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadExistingProject(String simulasiId) async {
+    setState(() => _isTemplateLoading = true);
+
+    try {
+      final SimulasiFirebaseModel? existingSimulasi = await _simulasiService
+          .getSimulasiById(simulasiId);
+
+      if (existingSimulasi != null && mounted) {
+        setState(() {
+          // Isi metadata
+          _judulController.text = existingSimulasi.judul;
+          _deskripsiController.text = existingSimulasi.deskripsi;
+
+          // Isi Project Data (Clone project untuk editor)
+          // Menggunakan clone agar data Dosen asli tidak langsung terpengaruh
+          _projects.add(existingSimulasi.projectData.copyWith(id: _uuid.v4()));
+
+          _currentSimulasiId = existingSimulasi.simulasiId;
+        });
+        _runSimulation();
+      } else {
+        // Jika gagal muat, kembali ke mode buat baru
+        _initializeNewProject();
+        _showSnackbar(
+          "Gagal",
+          "Gagal memuat template simulasi. Memulai proyek kosong.",
+          ContentType.warning,
+        );
+      }
+    } catch (e) {
+      _initializeNewProject();
+      _showSnackbar(
+        "Error",
+        "Error saat memuat data: ${e.toString()}",
+        ContentType.failure,
+      );
+    } finally {
+      if (mounted) setState(() => _isTemplateLoading = false);
+    }
+  }
+
+  // --- LOGIC FIREBASE SAVE/UPDATE ---
+
+  void _showSnackbar(String title, String message, ContentType type) {
+    final snackBarContent = AwesomeSnackbarContent(
+      title: title,
+      message: message,
+      contentType: type,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        content: snackBarContent,
       ),
     );
   }
 
-  // --- FUNGSI HELPER (UI) ---
+  Future<void> _showSaveDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(
+            _currentSimulasiId != null
+                ? 'Update Simulasi'
+                : 'Simpan Simulasi Baru',
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: _judulController,
+                  decoration: const InputDecoration(
+                    labelText: 'Judul Simulasi *',
+                    hintText: 'Misal: Gerbang Kombinasi Dasar',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _deskripsiController,
+                  decoration: const InputDecoration(
+                    labelText: 'Deskripsi (Opsional)',
+                    hintText: 'Penjelasan tujuan simulasi ini',
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            ElevatedButton(
+              onPressed: _judulController.text.isEmpty
+                  ? null
+                  : () => _saveProject(dialogContext),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _saveProject(BuildContext dialogContext) async {
+    if (_judulController.text.isEmpty || widget.user.uid == null) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final SimulasiFirebaseModel simulasiToSave = SimulasiFirebaseModel(
+        simulasiId: _currentSimulasiId,
+        kelasId: widget.kelasId,
+        dosenId: widget.user.uid!,
+        judul: _judulController.text,
+        deskripsi: _deskripsiController.text,
+        projectData: _activeProject,
+      );
+
+      String resultId;
+      if (_currentSimulasiId != null) {
+        // UPDATE yang sudah ada
+        await _simulasiService.updateSimulasi(simulasiToSave);
+        resultId = _currentSimulasiId!;
+      } else {
+        // CREATE baru
+        resultId = await _simulasiService.createSimulasi(simulasiToSave);
+        // Simpan ID yang baru didapat
+        setState(() => _currentSimulasiId = resultId);
+      }
+
+      // Notifikasi Sukses dan Keluar
+      if (mounted) {
+        _showSnackbar(
+          "Sukses",
+          "Simulasi berhasil disimpan!",
+          ContentType.success,
+        );
+        Navigator.of(dialogContext).pop(); // Tutup dialog
+        // 🎯 KEMBALIKAN ID SIMULASI untuk dilampirkan ke Tugas/Submisi
+        Navigator.of(context).pop(resultId);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackbar(
+          "Gagal",
+          'Gagal menyimpan: ${e.toString()}',
+          ContentType.failure,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  // --- LOGIC ENGINE & HELPER UI (Sama seperti kode sebelumnya) ---
 
   void _resetDragging() {
     setState(() {
@@ -118,8 +331,6 @@ class _SimulationPageState extends State<SimulationPage> {
     return null;
   }
 
-  // --- LOGIC ENGINE CALLER ---
-
   void _runSimulation() async {
     if (_isSimulating) return;
 
@@ -129,7 +340,6 @@ class _SimulationPageState extends State<SimulationPage> {
 
     final payload = SimulationPayload(_activeProject.copyWith());
 
-    // Panggil fungsi logic dari file eksternal
     final SimulationProject updatedProject = await compute(
       runSimulationInBackground,
       payload,
@@ -143,7 +353,6 @@ class _SimulationPageState extends State<SimulationPage> {
     });
   }
 
-  // --- LOGIC HAPUS & CANVAS MANAGEMENT ---
   void _deleteComponent(String componentId) {
     setState(() {
       _componentsOnCanvas.removeWhere((c) => c.id == componentId);
@@ -192,13 +401,401 @@ class _SimulationPageState extends State<SimulationPage> {
     _runSimulation();
   }
 
+  Widget _buildTrashArea() {
+    return DragTarget<String>(
+      onWillAcceptWithDetails: (data) {
+        if (data is String) {
+          setState(() => _isDraggingComponentForDelete = true);
+          return true;
+        }
+        return false;
+      },
+      onLeave: (data) {
+        setState(() => _isDraggingComponentForDelete = false);
+      },
+      onAcceptWithDetails: (details) {
+        final componentId = details.data;
+        _deleteComponent(componentId);
+        setState(() => _isDraggingComponentForDelete = false);
+      },
+      builder: (context, candidateData, rejectedData) {
+        final bool isCandidate = candidateData.isNotEmpty;
+        return Container(
+          height: 50,
+          width: double.infinity,
+          color: isCandidate
+              ? AppColor.kErrorColor.withOpacity(0.8)
+              : AppColor.kErrorColor.withOpacity(0.3),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.delete_forever, color: AppColor.kWhiteColor, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                isCandidate
+                    ? "LEPAS UNTUK MENGHAPUS"
+                    : "Tarik Komponen Ke Sini Untuk Menghapus",
+                style: TextStyle(
+                  color: AppColor.kWhiteColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildComponentWithGesture(SimulationComponent component) {
+    return Draggable<String>(
+      data: component.id,
+      feedback: Opacity(
+        opacity: 0.7,
+        child: _buildComponentWidget(component: component),
+      ),
+      childWhenDragging: Container(
+        width: 80,
+        height: 60,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColor.kDividerColor, width: 2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      onDragUpdate: (details) {
+        setState(() {
+          component.position += details.delta;
+        });
+      },
+      onDragEnd: (details) => _runSimulation(),
+      child: _buildComponentWidget(component: component),
+    );
+  }
+
+  Widget _buildToolbox() {
+    return Container(
+      height: 100,
+      width: double.infinity,
+      color: AppColor.kWarningColor.withOpacity(0.5),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            _buildDraggableComponent("INPUT"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("OUTPUT"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("AND"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("OR"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("NOT"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("NAND"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("NOR"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("Ex-OR"),
+            const SizedBox(width: 16),
+            _buildDraggableComponent("Ex-NOR"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDraggableComponent(String type) {
+    return Draggable<String>(
+      data: type,
+      feedback: _buildComponentVisual(type, isDragging: true, value: false),
+      child: _buildComponentVisual(type, value: false),
+      onDragStarted: () => _resetDragging(),
+    );
+  }
+
+  Widget _buildComponentWidget({required SimulationComponent component}) {
+    final bool isInputComponent = component.type == 'INPUT';
+    Widget componentVisual = _buildComponentVisual(
+      component.type,
+      value: component.outputValue,
+    );
+
+    if (isInputComponent) {
+      componentVisual = GestureDetector(
+        onTap: () {
+          setState(() {
+            component.outputValue = !component.outputValue;
+          });
+          _runSimulation();
+        },
+        child: componentVisual,
+      );
+    }
+
+    final type = component.type;
+    final bool showInputA = type != 'INPUT';
+    final bool showInputB =
+        type == 'AND' ||
+        type == 'OR' ||
+        type == 'NAND' ||
+        type == 'NOR' ||
+        type == 'Ex-OR' ||
+        type == 'Ex-NOR';
+    final bool showOutput = type != 'OUTPUT';
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        componentVisual,
+        if (showInputA)
+          Positioned(
+            left: -8,
+            top: (showInputB) ? 10 : (60 / 2) - 8,
+            child: _buildDraggableConnectionNode(
+              componentId: component.id,
+              nodeId: 'input_a',
+              isInputNode: true,
+            ),
+          ),
+        if (showInputB)
+          Positioned(
+            left: -8,
+            bottom: 10,
+            child: _buildDraggableConnectionNode(
+              componentId: component.id,
+              nodeId: 'input_b',
+              isInputNode: true,
+            ),
+          ),
+        if (showOutput)
+          Positioned(
+            right: -8,
+            top: (60 / 2) - 8,
+            child: _buildDraggableConnectionNode(
+              componentId: component.id,
+              nodeId: 'output',
+              isInputNode: false,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildComponentVisual(
+    String type, {
+    bool isDragging = false,
+    required bool value,
+  }) {
+    if (type == 'INPUT') {
+      return Container(
+        height: 60,
+        width: 80,
+        decoration: BoxDecoration(
+          color: AppColor.kWhiteColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColor.kPrimaryColor, width: 2),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "INPUT",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: AppColor.kPrimaryColor,
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: null,
+              activeThumbColor: AppColor.kPrimaryColor,
+            ),
+          ],
+        ),
+      );
+    }
+    if (type == 'OUTPUT') {
+      return Container(
+        height: 60,
+        width: 80,
+        decoration: BoxDecoration(
+          color: AppColor.kWhiteColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.black54, width: 2),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.lightbulb,
+              size: 30,
+              color: value ? Colors.yellow[600] : Colors.grey,
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "OUTPUT",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        height: 60,
+        width: 80,
+        decoration: BoxDecoration(
+          color: isDragging
+              ? Colors.blueAccent.withOpacity(0.5)
+              : AppColor.kWhiteColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColor.kPrimaryColor, width: 2),
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Center(
+              child: Text(
+                type,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: AppColor.kPrimaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDraggableConnectionNode({
+    required String componentId,
+    required String nodeId,
+    required bool isInputNode,
+  }) {
+    bool nodeValue = false;
+    try {
+      final component = _componentsOnCanvas.firstWhere(
+        (c) => c.id == componentId,
+      );
+      if (isInputNode) {
+        nodeValue = component.inputs[nodeId] ?? false;
+      } else {
+        nodeValue = component.outputValue;
+      }
+    } catch (e) {}
+
+    return GestureDetector(
+      onPanStart: (details) {
+        final component = _componentsOnCanvas.firstWhere(
+          (c) => c.id == componentId,
+        );
+
+        if (isInputNode) {
+          if (component.type != 'INPUT') return;
+        }
+
+        final Offset localPosition = _convertGlobalToLocal(
+          details.globalPosition,
+        );
+        setState(() {
+          _draggingFromComponentId = componentId;
+          _draggingFromNodeId = nodeId;
+          _draggingOffset = localPosition;
+        });
+      },
+      onPanUpdate: (details) {
+        if (_draggingFromComponentId == null) return;
+        final Offset localPosition = _convertGlobalToLocal(
+          details.globalPosition,
+        );
+        setState(() {
+          _draggingOffset = localPosition;
+        });
+      },
+      onPanEnd: (details) {
+        if (_draggingFromComponentId == null) {
+          _resetDragging();
+          return;
+        }
+
+        final targetNode = _findNodeAt(_draggingOffset!);
+        if (targetNode != null) {
+          if (targetNode.componentId != _draggingFromComponentId) {
+            setState(() {
+              _wires.removeWhere(
+                (wire) =>
+                    wire.toComponentId == targetNode.componentId &&
+                    wire.toNodeId == targetNode.nodeId,
+              );
+
+              _wires.add(
+                WireConnection(
+                  fromComponentId: _draggingFromComponentId!,
+                  fromNodeId: _draggingFromNodeId!,
+                  toComponentId: targetNode.componentId,
+                  toNodeId: targetNode.nodeId,
+                ),
+              );
+            });
+            _runSimulation();
+          }
+        }
+        _resetDragging();
+      },
+      child: _buildConnectionNode(isInput: isInputNode, value: nodeValue),
+    );
+  }
+
+  Widget _buildConnectionNode({required bool isInput, required bool value}) {
+    Color color;
+    if (isInput) {
+      color = value ? Colors.cyan[200]! : Colors.blue;
+    } else {
+      color = value ? Colors.orange : Colors.red;
+    }
+
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColor.kWhiteColor, width: 2),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isTemplateLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Memuat Simulasi...')),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColor.kPrimaryColor),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "Simulation: ${_activeProject.name}",
+          "Editor: ${_judulController.text.isNotEmpty ? _judulController.text : _activeProject.name}",
           style: TextStyle(
             color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
@@ -211,6 +808,14 @@ class _SimulationPageState extends State<SimulationPage> {
           bottom: BorderSide(color: AppColor.kDividerColor, width: 1.5),
         ),
         actions: [
+          //   TOMBOL SIMPAN
+          IconButton(
+            icon: Icon(Icons.save, color: AppColor.kPrimaryColor),
+            tooltip: _currentSimulasiId != null
+                ? "Update Simulasi"
+                : "Simpan Simulasi Baru",
+            onPressed: _showSaveDialog,
+          ),
           IconButton(
             icon: Icon(Icons.refresh, color: AppColor.kTextColor),
             tooltip: "Reset Canvas",
@@ -225,7 +830,7 @@ class _SimulationPageState extends State<SimulationPage> {
         ],
         // TAB BAR untuk SWITCH CANVAS
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(48.0),
+          preferredSize: const Size.fromHeight(48.0),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -361,393 +966,6 @@ class _SimulationPageState extends State<SimulationPage> {
             ),
           ),
           _buildToolbox(),
-        ],
-      ),
-    );
-  }
-
-  // --- WIDGET AREA SAMPAH (DRAG TARGET) ---
-  Widget _buildTrashArea() {
-    return DragTarget<String>(
-      onWillAcceptWithDetails: (data) {
-        if (data is String) {
-          setState(() => _isDraggingComponentForDelete = true);
-          return true;
-        }
-        return false;
-      },
-      onLeave: (data) {
-        setState(() => _isDraggingComponentForDelete = false);
-      },
-      onAcceptWithDetails: (details) {
-        final componentId = details.data;
-        _deleteComponent(componentId);
-        setState(() => _isDraggingComponentForDelete = false);
-      },
-      builder: (context, candidateData, rejectedData) {
-        final bool isCandidate = candidateData.isNotEmpty;
-        return Container(
-          height: 50,
-          width: double.infinity,
-          color: isCandidate
-              ? AppColor.kErrorColor.withOpacity(0.8)
-              : AppColor.kErrorColor.withOpacity(0.3),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.delete_forever, color: AppColor.kWhiteColor, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                isCandidate
-                    ? "LEPAS UNTUK MENGHAPUS"
-                    : "Tarik Komponen Ke Sini Untuk Menghapus",
-                style: TextStyle(
-                  color: AppColor.kWhiteColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // --- WIDGET WRAPPER GESER/HAPUS (DRAGGABLE) ---
-  Widget _buildComponentWithGesture(SimulationComponent component) {
-    return Draggable<String>(
-      data: component.id,
-      feedback: Opacity(
-        opacity: 0.7,
-        child: _buildComponentWidget(component: component),
-      ),
-      childWhenDragging: Container(
-        width: 80,
-        height: 60,
-        decoration: BoxDecoration(
-          // Border solid (menggantikan dashed yang error)
-          border: Border.all(color: AppColor.kDividerColor, width: 2),
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      onDragUpdate: (details) {
-        setState(() {
-          component.position += details.delta;
-        });
-      },
-      onDragEnd: (details) => _runSimulation(),
-      child: _buildComponentWidget(component: component),
-    );
-  }
-
-  // --- WIDGET TOOLBOX ---
-  Widget _buildToolbox() {
-    return Container(
-      height: 100,
-      width: double.infinity,
-      color: AppColor.kWarningColor.withOpacity(0.5),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            _buildDraggableComponent("INPUT"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("OUTPUT"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("AND"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("OR"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("NOT"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("NAND"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("NOR"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("Ex-OR"),
-            SizedBox(width: 16),
-            _buildDraggableComponent("Ex-NOR"),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDraggableComponent(String type) {
-    return Draggable<String>(
-      data: type,
-      feedback: _buildComponentVisual(type, isDragging: true, value: false),
-      child: _buildComponentVisual(type, value: false),
-      onDragStarted: () => _resetDragging(),
-    );
-  }
-
-  // --- WIDGET KOMPONEN DI CANVAS ---
-  Widget _buildComponentWidget({required SimulationComponent component}) {
-    final bool isInputComponent = component.type == 'INPUT';
-    Widget componentVisual = _buildComponentVisual(
-      component.type,
-      value: component.outputValue,
-    );
-
-    if (isInputComponent) {
-      componentVisual = GestureDetector(
-        onTap: () {
-          setState(() {
-            component.outputValue = !component.outputValue;
-          });
-          _runSimulation();
-        },
-        child: componentVisual,
-      );
-    }
-
-    final type = component.type;
-    final bool showInputA = type != 'INPUT';
-    final bool showInputB =
-        type == 'AND' ||
-        type == 'OR' ||
-        type == 'NAND' ||
-        type == 'NOR' ||
-        type == 'Ex-OR' ||
-        type == 'Ex-NOR';
-    final bool showOutput = type != 'OUTPUT';
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        componentVisual,
-        if (showInputA)
-          Positioned(
-            left: -8,
-            top: (showInputB) ? 10 : (60 / 2) - 8,
-            child: _buildDraggableConnectionNode(
-              componentId: component.id,
-              nodeId: 'input_a',
-              isInputNode: true,
-            ),
-          ),
-        if (showInputB)
-          Positioned(
-            left: -8,
-            bottom: 10,
-            child: _buildDraggableConnectionNode(
-              componentId: component.id,
-              nodeId: 'input_b',
-              isInputNode: true,
-            ),
-          ),
-        if (showOutput)
-          Positioned(
-            right: -8,
-            top: (60 / 2) - 8,
-            child: _buildDraggableConnectionNode(
-              componentId: component.id,
-              nodeId: 'output',
-              isInputNode: false,
-            ),
-          ),
-      ],
-    );
-  }
-
-  // --- WIDGET VISUAL KOMPONEN (GERBANG, INPUT, OUTPUT) ---
-  Widget _buildComponentVisual(
-    String type, {
-    bool isDragging = false,
-    required bool value,
-  }) {
-    if (type == 'INPUT') {
-      return Container(
-        height: 60,
-        width: 80,
-        decoration: BoxDecoration(
-          color: AppColor.kWhiteColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColor.kPrimaryColor, width: 2),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "INPUT",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: AppColor.kPrimaryColor,
-              ),
-            ),
-            Switch(
-              value: value,
-              onChanged: null,
-              activeThumbColor: AppColor.kPrimaryColor,
-            ),
-          ],
-        ),
-      );
-    }
-    if (type == 'OUTPUT') {
-      return Container(
-        height: 60,
-        width: 80,
-        decoration: BoxDecoration(
-          color: AppColor.kWhiteColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.black54, width: 2),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.lightbulb,
-              size: 30,
-              color: value ? Colors.yellow[600] : Colors.grey,
-            ),
-            SizedBox(height: 4),
-            Text(
-              "OUTPUT",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Colors.black54,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        height: 60,
-        width: 80,
-        decoration: BoxDecoration(
-          color: isDragging
-              ? Colors.blueAccent.withOpacity(0.5)
-              : AppColor.kWhiteColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColor.kPrimaryColor, width: 2),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            Center(
-              child: Text(
-                type,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: AppColor.kPrimaryColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- WIDGET NODE KONEKSI (BULATAN) ---
-  Widget _buildDraggableConnectionNode({
-    required String componentId,
-    required String nodeId,
-    required bool isInputNode,
-  }) {
-    bool nodeValue = false;
-    try {
-      final component = _componentsOnCanvas.firstWhere(
-        (c) => c.id == componentId,
-      );
-      if (isInputNode) {
-        nodeValue = component.inputs[nodeId] ?? false;
-      } else {
-        nodeValue = component.outputValue;
-      }
-    } catch (e) {}
-
-    return GestureDetector(
-      onPanStart: (details) {
-        final component = _componentsOnCanvas.firstWhere(
-          (c) => c.id == componentId,
-        );
-
-        if (isInputNode) {
-          if (component.type != 'INPUT') return;
-        }
-
-        final Offset localPosition = _convertGlobalToLocal(
-          details.globalPosition,
-        );
-        setState(() {
-          _draggingFromComponentId = componentId;
-          _draggingFromNodeId = nodeId;
-          _draggingOffset = localPosition;
-        });
-      },
-      onPanUpdate: (details) {
-        if (_draggingFromComponentId == null) return;
-        final Offset localPosition = _convertGlobalToLocal(
-          details.globalPosition,
-        );
-        setState(() {
-          _draggingOffset = localPosition;
-        });
-      },
-      onPanEnd: (details) {
-        if (_draggingFromComponentId == null) {
-          _resetDragging();
-          return;
-        }
-
-        final targetNode = _findNodeAt(_draggingOffset!);
-        if (targetNode != null) {
-          if (targetNode.componentId != _draggingFromComponentId) {
-            setState(() {
-              _wires.removeWhere(
-                (wire) =>
-                    wire.toComponentId == targetNode.componentId &&
-                    wire.toNodeId == targetNode.nodeId,
-              );
-
-              _wires.add(
-                WireConnection(
-                  fromComponentId: _draggingFromComponentId!,
-                  fromNodeId: _draggingFromNodeId!,
-                  toComponentId: targetNode.componentId,
-                  toNodeId: targetNode.nodeId,
-                ),
-              );
-            });
-            _runSimulation();
-          }
-        }
-        _resetDragging();
-      },
-      child: _buildConnectionNode(isInput: isInputNode, value: nodeValue),
-    );
-  }
-
-  // Tampilan visual node (bulatan)
-  Widget _buildConnectionNode({required bool isInput, required bool value}) {
-    Color color;
-    if (isInput) {
-      color = value ? Colors.cyan[200]! : Colors.blue;
-    } else {
-      color = value ? Colors.orange[200]! : Colors.red;
-    }
-
-    return Container(
-      width: 16,
-      height: 16,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColor.kWhiteColor, width: 2),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4),
         ],
       ),
     );

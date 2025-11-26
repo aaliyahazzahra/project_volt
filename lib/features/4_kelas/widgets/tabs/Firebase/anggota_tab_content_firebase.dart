@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-// 🔥 Import Service Manajemen Pengguna
+//  Import Service Manajemen Pengguna
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
-import 'package:project_volt/features/4_kelas/widgets/list_views/anggota_list_view.dart';
+import 'package:project_volt/features/4_kelas/widgets/tabs/Firebase/list_views/anggota_list_view_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
 class AnggotaTabContentFirebase extends StatefulWidget {
@@ -22,7 +22,7 @@ class AnggotaTabContentFirebase extends StatefulWidget {
 }
 
 class _AnggotaTabContentFirebaseState extends State<AnggotaTabContentFirebase> {
-  // 🔥 INISIASI SERVICE FIREBASE
+  //  INISIASI SERVICE FIREBASE
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
 
@@ -36,7 +36,7 @@ class _AnggotaTabContentFirebaseState extends State<AnggotaTabContentFirebase> {
   }
 
   Future<void> _loadAnggota() async {
-    // 🔥 UBAH ID: Menggunakan kelasId (String)
+    //  UBAH ID: Menggunakan kelasId (String)
     final String? kelasId = widget.kelas.kelasId;
 
     if (kelasId == null) {
@@ -45,7 +45,7 @@ class _AnggotaTabContentFirebaseState extends State<AnggotaTabContentFirebase> {
     }
 
     try {
-      // 🔥 PANGGIL SERVICE FIREBASE
+      //  PANGGIL SERVICE FIREBASE
       final data = await _userManagementService.getAnggotaByKelas(kelasId);
 
       if (mounted) {
@@ -81,7 +81,7 @@ class _AnggotaTabContentFirebaseState extends State<AnggotaTabContentFirebase> {
               message: "Belum ada mahasiswa yang bergabung dengan kelas ini.",
               iconColor: widget.rolePrimaryColor,
             )
-          : AnggotaListView(
+          : AnggotaListViewFirebase(
               daftarAnggota: _daftarAnggota,
               // onAnggotaTap: _handleAnggotaTap, // Jika diaktifkan
               roleColor: widget.rolePrimaryColor,
