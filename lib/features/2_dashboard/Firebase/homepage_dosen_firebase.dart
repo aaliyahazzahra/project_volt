@@ -1,15 +1,10 @@
-// file: HomepageDosenFirebase.dart
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-
-//  Import Service Firebase
-import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-
-//  Import Widget Firebase yang sudah dikonversi
+import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/class_detail_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/create_class_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/edit_class_firebase_page.dart';
@@ -40,15 +35,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
   }
 
   Future<void> _loadData() async {
-    final String? userUid = widget.user.uid;
-
-    if (userUid == null) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _showSnackbar("User ID tidak ditemukan", ContentType.failure);
-      }
-      return;
-    }
+    final String userUid = widget.user.uid;
 
     //  Cek Kelengkapan Profil dari Model Sesi (nimNidn dan namaKampus sudah ada di user object)
     bool profileComplete =

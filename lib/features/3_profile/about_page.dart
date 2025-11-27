@@ -126,7 +126,7 @@ class AboutPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            "v1.0.1",
+            "v1.0.2",
             style: TextStyle(
               fontSize: 12,
               color: AppColor.kTextSecondaryColor,

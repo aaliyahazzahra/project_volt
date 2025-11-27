@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_gradients/flutter_animated_gradients.dart';
-import 'package:project_volt/core/constants/app_image.dart';
 // WAJIB import AppColor
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/features/1_auth/SQF/login_form.dart';
-import 'package:project_volt/features/1_auth/SQF/register_form.dart';
+import 'package:project_volt/core/constants/app_image.dart';
+import 'package:project_volt/features/1_auth/Firebase/login_form_firebase.dart';
+import 'package:project_volt/features/1_auth/Firebase/register_form_firebase.dart';
 
 class AuthenticatorFirebase extends StatelessWidget {
   const AuthenticatorFirebase({super.key});
@@ -78,10 +78,10 @@ class AuthenticatorFirebase extends StatelessWidget {
                       child: TabBarView(
                         children: const [
                           // Halaman 1: Form Login
-                          LoginForm(),
+                          LoginFormFirebase(),
 
                           // Halaman 2: Form Registrasi
-                          RegisterForm(),
+                          RegisterFormFirebase(),
                         ],
                       ),
                     ),

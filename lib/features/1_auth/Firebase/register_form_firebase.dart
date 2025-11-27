@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
-
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/firebase/rolebuttonfirebase.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
@@ -18,6 +18,16 @@ class RegisterFormFirebase extends StatefulWidget {
 class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
   final _formKey = GlobalKey<FormState>();
   // SQF CODE: final AuthDataSource _authDataSource = AuthDataSource();
+  final Logger logger = Logger(
+    printer: PrettyPrinter(
+      // Anda bisa mengatur kustomisasi di sini
+      methodCount: 0, // Tidak menampilkan jumlah method call
+      errorMethodCount: 5, // Tampilkan 5 method call saat error
+      lineLength: 80,
+      colors: true, // Pastikan berwarna
+      printTime: true, // Tampilkan waktu log
+    ),
+  );
 
   UserRole _selectedRole = UserRole.mahasiswa;
   bool _isLoading = false;
@@ -108,6 +118,10 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
     } catch (e) {
       // Handle error lain (misal: Firestore error, network error, dll.)
       if (!mounted) return;
+
+      logger.e(
+        'GENERAL ERROR DURING REGISTRATION: $e',
+      ); // Menggunakan logger.e() untuk ERROR
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Terjadi kesalahan tak terduga.'),

@@ -3,9 +3,9 @@ import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
-
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
+import 'package:project_volt/features/3_profile/password_management_page.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
 
@@ -143,9 +143,34 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
             SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: Text(
-                'Lupa Password?',
-                style: TextStyle(color: AppColor.kAccentColor),
+              child: TextButton(
+                // Style (Gaya) Tombol
+                style: TextButton.styleFrom(
+                  // Padding diatur menjadi 0 agar teks terlihat seperti aslinya
+                  padding: EdgeInsets.zero,
+                  // Secara opsional, atur warna splash/hover agar sesuai
+                  foregroundColor: AppColor.kAccentColor.withOpacity(0.5),
+                  alignment:
+                      Alignment.centerRight, // Pastikan teks tetap di kanan
+                ),
+                // Fungsi yang dijalankan saat tombol diklik
+                onPressed: () {
+                  // Navigasi ke halaman PasswordManagementScreen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PasswordManagementPage(),
+                    ),
+                  );
+                },
+                // Teks yang ditampilkan dalam Tombol
+                child: Text(
+                  'Lupa Password?',
+                  style: TextStyle(
+                    color:
+                        AppColor.kAccentColor, // Pastikan warna teks diterapkan
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 30),

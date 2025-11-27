@@ -4,11 +4,9 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_data.dart' as AppData;
-
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 //  TAMBAH: Import Service Manajemen Pengguna
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
-
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 
 class EditProfileFirebasePage extends StatefulWidget {
   final UserFirebaseModel user;
@@ -107,8 +105,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
       return;
     }
 
-    final String? userUid = widget.user.uid;
-    if (userUid == null) return;
+    final String userUid = widget.user.uid;
 
     setState(() {
       _isLoading = true;
@@ -118,8 +115,14 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
       // 1. Panggil service untuk update dokumen user di Firestore
       await _userManagementService.updateProfileDetails(
         uid: userUid,
-        nimNidn: _nomorIndukController.text
-            .trim(), // nim untuk mhs, nidn untuk dosen
+        nimNidn: _nomorIndukController.text.trim(),
+        namaKampus: _selectedKampus!,
+      );
+
+      // --- TAMBAHAN KODE PENTING DI SINI ---
+      // 1a. Buat Model User Baru yang sudah di-update
+      final UserFirebaseModel updatedUser = widget.user.copyWith(
+        nimNidn: _nomorIndukController.text.trim(),
         namaKampus: _selectedKampus!,
       );
 
@@ -143,7 +146,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
           );
 
         // Kirim sinyal ke parent untuk refresh data (penting!)
-        Navigator.pop(context, true);
+        Navigator.pop(context, updatedUser);
       }
     } catch (e) {
       print("Error saving profile: $e");

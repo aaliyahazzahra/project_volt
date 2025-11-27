@@ -19,9 +19,19 @@ class _BottomNavMhsFirebaseState extends State<BottomNavMhsFirebase> {
   int _tabIndex = 0; // indeks awal
 
   final PageController controller = PageController();
+  late UserFirebaseModel _currentUser;
+
   @override
   void initState() {
     super.initState();
+    _currentUser = widget.user;
+  }
+
+  void _updateCurrentUser(UserFirebaseModel updatedUser) {
+    setState(() {
+      _currentUser = updatedUser;
+      print("Wrapper State Updated: ${updatedUser.nimNidn}");
+    });
   }
 
   @override
@@ -32,9 +42,12 @@ class _BottomNavMhsFirebaseState extends State<BottomNavMhsFirebase> {
         body: PageView(
           controller: controller,
           children: [
-            HomepageMhsFirebase(user: widget.user),
-            CreateSimulasiFirebasePage(user: widget.user),
-            ProfilePageFirebase(user: widget.user),
+            HomepageMhsFirebase(user: _currentUser),
+            CreateSimulasiFirebasePage(user: _currentUser),
+            ProfilePageFirebase(
+              user: _currentUser,
+              onUpdate: _updateCurrentUser,
+            ),
           ],
         ),
         bottomNavigationBar: BottomBarBubble(

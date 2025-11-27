@@ -18,10 +18,19 @@ class BottomNavDosenFirebase extends StatefulWidget {
 class _BottomNavDosenFirebaseState extends State<BottomNavDosenFirebase> {
   int _tabIndex = 0; // indeks awal
   final PageController controller = PageController();
+  late UserFirebaseModel _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _currentUser = widget.user;
+  }
+
+  void _updateCurrentUser(UserFirebaseModel updatedUser) {
+    setState(() {
+      _currentUser = updatedUser; // UPDATE STATE LOKAL DI WRAPPER
+      print("Wrapper State Updated: ${updatedUser.nimNidn}");
+    });
   }
 
   @override
@@ -31,9 +40,12 @@ class _BottomNavDosenFirebaseState extends State<BottomNavDosenFirebase> {
         body: PageView(
           controller: controller,
           children: [
-            HomepageDosenFirebase(user: widget.user),
-            CreateSimulasiFirebasePage(user: widget.user),
-            ProfilePageFirebase(user: widget.user),
+            HomepageDosenFirebase(user: _currentUser),
+            CreateSimulasiFirebasePage(user: _currentUser),
+            ProfilePageFirebase(
+              user: _currentUser,
+              onUpdate: _updateCurrentUser,
+            ),
           ],
         ),
         bottomNavigationBar: BottomBarBubble(
