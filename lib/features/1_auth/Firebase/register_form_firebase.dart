@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_data.dart' as AppData;
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
@@ -35,6 +36,10 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
   final TextEditingController namaLengkapController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nimNidnController =
+      TextEditingController(); // Controller baru
+  String? _selectedKampus;
+  final List<String> daftarKampus = AppData.daftarKampus;
 
   @override
   void dispose() {
@@ -65,6 +70,8 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
 
       // Mengambil role dalam bentuk string yang bersih ('mahasiswa' atau 'dosen')
       String roleString = _selectedRole.name;
+      final String nimNidn = nimNidnController.text.trim();
+      final String namaKampus = _selectedKampus!;
 
       // 2. Panggil Firebase Service
       // SQF CODE: bool isSuccess = await _authDataSource.registerUser(newUser);
@@ -75,6 +82,8 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
         role: roleString,
+        nimNidn: nimNidn,
+        namaKampus: namaKampus,
       );
 
       // Stop Loading sebelum tampilkan UI Feedback
@@ -94,6 +103,7 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
       namaLengkapController.clear();
       emailController.clear();
       passwordController.clear();
+      nimNidnController.clear();
 
       // *Opsional: Navigasi ke tab Login jika menggunakan TabController di Authenticator
       // TabController.of(context).animateTo(0);
@@ -266,7 +276,62 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                   }
                 },
               ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedKampus,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: 'Nama Kampus / Universitas',
+                  // Warna border saat fokus menggunakan warna peran
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: AppColor.kAppBar, width: 2.0),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: AppColor.kDividerColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide(color: AppColor.kDividerColor),
+                  ),
+                  filled: true,
+                  fillColor: AppColor.kWhiteColor,
+                  labelStyle: TextStyle(color: AppColor.kTextColor),
+                ),
+                hint: const Text('Pilih Kampus'),
+                items: daftarKampus.map((String kampus) {
+                  return DropdownMenuItem<String>(
+                    value: kampus,
+                    child: Text(kampus, overflow: TextOverflow.ellipsis),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedKampus = newValue;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nama kampus tidak boleh kosong';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              BuildTextField(
+                labelText: _selectedRole == UserRole.dosen
+                    ? "NIDN/NIDK"
+                    : "NIM",
+                controller: nimNidnController,
 
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return '${_selectedRole == UserRole.dosen ? "NIDN/NIDK" : "NIM"} tidak boleh kosong'; // Wajib diisi!
+                  }
+                  return null;
+                },
+              ),
               SizedBox(height: 20),
 
               Text(

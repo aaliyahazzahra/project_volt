@@ -41,7 +41,7 @@ class KelasFirebaseService {
       final QuerySnapshot snapshot = await _firestore
           .collection(_collectionName)
           .where('dosenUid', isEqualTo: dosenUid)
-          .orderBy('nama_kelas', descending: false) // Urutkan A-Z
+          // .orderBy('nama_kelas', descending: false) // Urutkan A-Z
           .get();
 
       // Mapping data dari snapshot Firestore ke List<KelasModelFirebase>

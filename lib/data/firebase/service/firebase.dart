@@ -13,12 +13,14 @@ class FirebaseService {
 
   static const String userCollection = 'users';
 
-  /// 👥 Registrasi pengguna baru di Firebase Auth dan menyimpan data di Firestore.
+  /// Registrasi pengguna baru di Firebase Auth dan menyimpan data di Firestore.
   static Future<UserFirebaseModel> registerUser({
     required String email,
     required String namaLengkap,
     required String password,
     required String role,
+    required String nimNidn,
+    required String namaKampus,
   }) async {
     try {
       // 1. Firebase Authentication: Membuat user baru

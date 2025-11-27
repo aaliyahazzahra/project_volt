@@ -26,7 +26,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
 
   List<KelasFirebaseModel> _daftarKelas = []; //  UBAH TIPE LIST
   bool _isLoading = true;
-  bool _isProfileComplete = false;
+  // bool _isProfileComplete = false;
 
   @override
   void initState() {
@@ -38,9 +38,9 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
     final String userUid = widget.user.uid;
 
     //  Cek Kelengkapan Profil dari Model Sesi (nimNidn dan namaKampus sudah ada di user object)
-    bool profileComplete =
-        widget.user.nimNidn?.isNotEmpty == true &&
-        widget.user.namaKampus?.isNotEmpty == true;
+    // bool profileComplete =
+    //     widget.user.nimNidn?.isNotEmpty == true &&
+    //     widget.user.namaKampus?.isNotEmpty == true;
 
     //  Ambil Data Kelas dari Firestore
     try {
@@ -49,7 +49,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
       if (mounted) {
         setState(() {
           _daftarKelas = dataKelas;
-          _isProfileComplete = profileComplete;
+          // _isProfileComplete = profileComplete;
           _isLoading = false;
         });
       }
@@ -291,12 +291,12 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
     }
   }
 
-  void _showProfileWarning() {
-    _showSnackbar(
-      "Harap lengkapi Profil (NIDN/NIDK dan Kampus) sebelum membuat kelas.",
-      ContentType.warning,
-    );
-  }
+  // void _showProfileWarning() {
+  //   _showSnackbar(
+  //     "Harap lengkapi Profil (NIDN/NIDK dan Kampus) sebelum membuat kelas.",
+  //     ContentType.warning,
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -336,12 +336,11 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
               roleColor: AppColor.kPrimaryColor,
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _isProfileComplete
-            ? _navigateToBuatKelas
-            : _showProfileWarning,
-        backgroundColor: _isProfileComplete
-            ? AppColor.kPrimaryColor
-            : AppColor.kDisabledColor,
+        onPressed: _navigateToBuatKelas,
+        backgroundColor: AppColor.kPrimaryColor,
+        // backgroundColor: _isProfileComplete
+        //     ? AppColor.kPrimaryColor
+        //     : AppColor.kDisabledColor,
         child: const Icon(Icons.add, color: AppColor.kWhiteColor),
       ),
     );

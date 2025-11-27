@@ -1,25 +1,17 @@
-// file: HomepageMhsFirebase.dart
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-
-//  Import Service Manajemen Pengguna Firebase
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
-
-//  Import Model Firebase
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-
-//  Import Widget Firebase
 import 'package:project_volt/features/4_kelas/view/Firebase/class_detail_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/class_list_firebase.dart';
 import 'package:project_volt/widgets/dialogs/confirmation_dialog_helper.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
-//  UBAH NAMA CLASS & ARGUMENT MODEL: HomepageMhs -> HomepageMhsFirebase
 class HomepageMhsFirebase extends StatefulWidget {
-  final UserFirebaseModel user; //  GANTI: UserModel -> UserFirebaseModel
+  final UserFirebaseModel user;
   const HomepageMhsFirebase({super.key, required this.user});
 
   @override
@@ -27,13 +19,12 @@ class HomepageMhsFirebase extends StatefulWidget {
 }
 
 class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
-  //  INISIASI SERVICE FIREBASE
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
 
   List<KelasFirebaseModel> _daftarKelas = []; //  UBAH TIPE LIST
   bool _isLoading = true;
-  bool _isProfileComplete = false;
+  // bool _isProfileComplete = false;
 
   final TextEditingController _kodeController = TextEditingController();
 
@@ -62,9 +53,9 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     }
 
     // 2.  Cek Kelengkapan Profil dari Model Sesi (nimNidn dan namaKampus sudah ada di user object)
-    bool profileComplete =
-        widget.user.nimNidn?.isNotEmpty == true &&
-        widget.user.namaKampus?.isNotEmpty == true;
+    // bool profileComplete =
+    //     widget.user.nimNidn?.isNotEmpty == true &&
+    //     widget.user.namaKampus?.isNotEmpty == true;
 
     // 3.  Ambil Data Kelas yang Diikuti dari Firebase Service
     try {
@@ -75,7 +66,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       if (mounted) {
         setState(() {
           _daftarKelas = dataKelas;
-          _isProfileComplete = profileComplete;
+          // _isProfileComplete = profileComplete;
           _isLoading = false;
         });
       }
@@ -239,12 +230,12 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     }
   }
 
-  void _showProfileWarning() {
-    _showSnackbar(
-      "Harap lengkapi Profil (NIM dan Kampus) sebelum bergabung.",
-      ContentType.warning,
-    );
-  }
+  // void _showProfileWarning() {
+  //   _showSnackbar(
+  //     "Harap lengkapi Profil (NIM dan Kampus) sebelum bergabung.",
+  //     ContentType.warning,
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -283,12 +274,11 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
               roleColor: AppColor.kAccentColor,
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _isProfileComplete
-            ? _showGabungKelasDialog
-            : _showProfileWarning,
-        backgroundColor: _isProfileComplete
-            ? AppColor.kAccentColor
-            : AppColor.kDisabledColor,
+        onPressed: _showGabungKelasDialog,
+        backgroundColor: AppColor.kAccentColor,
+        // backgroundColor: _isProfileComplete
+        //     ? AppColor.kAccentColor
+        //     : AppColor.kDisabledColor,
         tooltip: 'Gabung Kelas Baru',
         child: const Icon(Icons.add, color: AppColor.kWhiteColor),
       ),
