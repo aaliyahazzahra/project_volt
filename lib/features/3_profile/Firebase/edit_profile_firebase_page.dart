@@ -112,15 +112,25 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     });
 
     try {
+      final String newNimNidn = _nomorIndukController.text.trim();
+      final String newNamaKampus = _selectedKampus!;
+
       // 1. Panggil service untuk update dokumen user di Firestore
       await _userManagementService.updateProfileDetails(
         uid: userUid,
-        nimNidn: _nomorIndukController.text
-            .trim(), // nim untuk mhs, nidn untuk dosen
-        namaKampus: _selectedKampus!,
+        nimNidn: newNimNidn,
+        namaKampus: newNamaKampus,
       );
 
-      // 2. Sukses: Sinyal ke homepage/AuthWrapper untuk refresh sesi
+      // 2. Buat Model Pengguna yang Baru dan Terupdate
+      final UserFirebaseModel updatedUser = widget.user.copyWith(
+        nimNidn: newNimNidn,
+        namaKampus: newNamaKampus,
+        // Perlu update updatedAt jika field tersebut penting
+        updatedAt: DateTime.now().toIso8601String(),
+      );
+
+      // 3. Sukses: Sinyal ke parent DAN KEMBALIKAN DATA BARU
       if (mounted) {
         final snackBarContent = AwesomeSnackbarContent(
           title: "Sukses",
@@ -140,7 +150,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
           );
 
         // Kirim sinyal ke parent untuk refresh data (penting!)
-        Navigator.pop(context, true);
+        Navigator.pop(context, updatedUser);
       }
     } catch (e) {
       print("Error saving profile: $e");

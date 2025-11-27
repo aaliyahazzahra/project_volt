@@ -32,6 +32,31 @@ class UserFirebaseModel {
     this.updatedAt,
   });
 
+  // TAMBAHKAN METHOD copyWith
+  UserFirebaseModel copyWith({
+    String? uid,
+    String? token,
+    String? email,
+    String? namaLengkap,
+    String? role,
+    String? nimNidn,
+    String? namaKampus,
+    String? createdAt,
+    String? updatedAt,
+  }) {
+    return UserFirebaseModel(
+      uid: uid ?? this.uid,
+      token: token ?? this.token,
+      namaLengkap: namaLengkap ?? this.namaLengkap,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      nimNidn: nimNidn ?? this.nimNidn,
+      namaKampus: namaKampus ?? this.namaKampus,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   // Konversi ke/dari Map
 
   Map<String, dynamic> toMap() {
