@@ -1,285 +1,285 @@
-// File: project_volt/features/3_profile/complete_profile_page.dart
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-import 'package:flutter/material.dart';
-import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/core/constants/app_data.dart' as AppData;
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-//  Import Service Manajemen Pengguna
-import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
-import 'package:project_volt/widgets/buildtextfield.dart';
+// // File: project_volt/features/3_profile/complete_profile_page.dart
+// import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+// import 'package:flutter/material.dart';
+// import 'package:project_volt/core/constants/app_color.dart';
+// import 'package:project_volt/core/constants/app_data.dart' as AppData;
+// import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
+// //  Import Service Manajemen Pengguna
+// import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
+// import 'package:project_volt/widgets/buildtextfield.dart';
 
-class CompleteProfilePage extends StatefulWidget {
-  final UserFirebaseModel user;
-  const CompleteProfilePage({super.key, required this.user});
+// class CompleteProfilePage extends StatefulWidget {
+//   final UserFirebaseModel user;
+//   const CompleteProfilePage({super.key, required this.user});
 
-  @override
-  State<CompleteProfilePage> createState() => _CompleteProfilePageState();
-}
+//   @override
+//   State<CompleteProfilePage> createState() => _CompleteProfilePageState();
+// }
 
-class _CompleteProfilePageState extends State<CompleteProfilePage> {
-  final _formKey = GlobalKey<FormState>();
+// class _CompleteProfilePageState extends State<CompleteProfilePage> {
+//   final _formKey = GlobalKey<FormState>();
 
-  //  INISIASI SERVICE FIREBASE
-  final UserManagementFirebaseService _userManagementService =
-      UserManagementFirebaseService();
+//   //  INISIASI SERVICE FIREBASE
+//   final UserManagementFirebaseService _userManagementService =
+//       UserManagementFirebaseService();
 
-  final List<String> daftarKampus = AppData.daftarKampus;
+//   final List<String> daftarKampus = AppData.daftarKampus;
 
-  String? _selectedKampus;
-  late TextEditingController _nomorIndukController;
+//   String? _selectedKampus;
+//   late TextEditingController _nomorIndukController;
 
-  bool _isLoading = false;
-  late bool _isDosen;
-  String _nomorIndukLabel = "NIM";
+//   bool _isLoading = false;
+//   late bool _isDosen;
+//   String _nomorIndukLabel = "NIM";
 
-  @override
-  void initState() {
-    super.initState();
-    _nomorIndukController = TextEditingController();
+//   @override
+//   void initState() {
+//     super.initState();
+//     _nomorIndukController = TextEditingController();
 
-    // ASUMSI: role disimpan sebagai string 'dosen'
-    _isDosen = widget.user.role == 'dosen';
-    _nomorIndukLabel = _isDosen ? "NIDN/NIDK" : "NIM";
+//     // ASUMSI: role disimpan sebagai string 'dosen'
+//     _isDosen = widget.user.role == 'dosen';
+//     _nomorIndukLabel = _isDosen ? "NIDN/NIDK" : "NIM";
 
-    // Pre-fill data jika sudah ada
-    _nomorIndukController.text = widget.user.nimNidn ?? '';
-    _selectedKampus = widget.user.namaKampus;
-  }
+//     // Pre-fill data jika sudah ada
+//     _nomorIndukController.text = widget.user.nimNidn ?? '';
+//     _selectedKampus = widget.user.namaKampus;
+//   }
 
-  @override
-  void dispose() {
-    _nomorIndukController.dispose();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     _nomorIndukController.dispose();
+//     super.dispose();
+//   }
 
-  void _showSnackbar(String message, ContentType type) {
-    final snackBarContent = AwesomeSnackbarContent(
-      title: type == ContentType.success ? "Sukses" : "Peringatan",
-      message: message,
-      contentType: type,
-    );
+//   void _showSnackbar(String message, ContentType type) {
+//     final snackBarContent = AwesomeSnackbarContent(
+//       title: type == ContentType.success ? "Sukses" : "Peringatan",
+//       message: message,
+//       contentType: type,
+//     );
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          elevation: 0,
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
-          content: snackBarContent,
-        ),
-      );
-  }
+//     ScaffoldMessenger.of(context)
+//       ..hideCurrentSnackBar()
+//       ..showSnackBar(
+//         SnackBar(
+//           elevation: 0,
+//           behavior: SnackBarBehavior.floating,
+//           backgroundColor: Colors.transparent,
+//           content: snackBarContent,
+//         ),
+//       );
+//   }
 
-  Future<void> _saveProfileData() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+//   Future<void> _saveProfileData() async {
+//     if (!_formKey.currentState!.validate()) {
+//       return;
+//     }
 
-    final String? userUid = widget.user.uid;
-    if (userUid == null) return;
+//     final String? userUid = widget.user.uid;
+//     if (userUid == null) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+//     setState(() {
+//       _isLoading = true;
+//     });
 
-    try {
-      // 1. Panggil service untuk update dokumen user di Firestore
-      await _userManagementService.updateProfileDetails(
-        uid: userUid,
-        nimNidn: _nomorIndukController.text.trim(),
-        namaKampus: _selectedKampus!,
-      );
+//     try {
+//       // 1. Panggil service untuk update dokumen user di Firestore
+//       await _userManagementService.updateProfileDetails(
+//         uid: userUid,
+//         nimNidn: _nomorIndukController.text.trim(),
+//         namaKampus: _selectedKampus!,
+//       );
 
-      // 2. Sukses: Sinyal ke parent untuk refresh sesi
-      if (mounted) {
-        _showSnackbar("Berhasil melengkapi profil!", ContentType.success);
-        // Kirim sinyal ke AuthWrapper/halaman sebelumnya agar sesi di-refresh
-        Navigator.pop(context, true);
-      }
-    } catch (e) {
-      print("Error saving profile: $e");
-      if (mounted) {
-        _showSnackbar(
-          "Gagal menyimpan profil: ${e.toString().replaceAll('Exception: ', '')}",
-          ContentType.failure, // Menggunakan failure untuk error
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
+//       // 2. Sukses: Sinyal ke parent untuk refresh sesi
+//       if (mounted) {
+//         _showSnackbar("Berhasil melengkapi profil!", ContentType.success);
+//         // Kirim sinyal ke AuthWrapper/halaman sebelumnya agar sesi di-refresh
+//         Navigator.pop(context, true);
+//       }
+//     } catch (e) {
+//       print("Error saving profile: $e");
+//       if (mounted) {
+//         _showSnackbar(
+//           "Gagal menyimpan profil: ${e.toString().replaceAll('Exception: ', '')}",
+//           ContentType.failure, // Menggunakan failure untuk error
+//         );
+//       }
+//     } finally {
+//       if (mounted) {
+//         setState(() {
+//           _isLoading = false;
+//         });
+//       }
+//     }
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Tentukan warna tema peran secara dinamis
-    final Color rolePrimaryColor = _isDosen
-        ? AppColor.kPrimaryColor
-        : AppColor.kAccentColor;
+//   @override
+//   Widget build(BuildContext context) {
+//     // Tentukan warna tema peran secara dinamis
+//     final Color rolePrimaryColor = _isDosen
+//         ? AppColor.kPrimaryColor
+//         : AppColor.kAccentColor;
 
-    return Scaffold(
-      backgroundColor: AppColor.kBackgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          "Lengkapi Profil Akademik",
-          style: TextStyle(
-            color: AppColor.kTextColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        // Ikon kembali menggunakan warna peran
-        iconTheme: IconThemeData(color: rolePrimaryColor),
-        backgroundColor: AppColor.kBackgroundColor,
-        elevation: 0,
-        // Menonaktifkan tombol back karena profil wajib diisi (sudah benar)
-        automaticallyImplyLeading: false,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Text(
-                "Harap lengkapi data kampus dan nomor induk Anda untuk mengaktifkan fitur kelas.",
-                // Mengganti Colors.grey[700]
-                style: TextStyle(
-                  color: AppColor.kTextSecondaryColor,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Dropdown Kampus
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedKampus,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: 'Nama Kampus / Universitas',
-                        // Warna border saat fokus menggunakan warna peran
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide(
-                            color: rolePrimaryColor,
-                            width: 2.0,
-                          ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide(color: AppColor.kDividerColor),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide(color: AppColor.kDividerColor),
-                        ),
-                        filled: true,
-                        fillColor: AppColor.kWhiteColor,
-                        labelStyle: TextStyle(color: AppColor.kTextColor),
-                      ),
-                      hint: const Text('Pilih Kampus'),
-                      items: daftarKampus.map((String kampus) {
-                        return DropdownMenuItem<String>(
-                          value: kampus,
-                          child: Text(kampus, overflow: TextOverflow.ellipsis),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedKampus = newValue;
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Harap pilih nama kampus';
-                        }
-                        return null;
-                      },
-                    ),
+//     return Scaffold(
+//       backgroundColor: AppColor.kBackgroundColor,
+//       appBar: AppBar(
+//         title: const Text(
+//           "Lengkapi Profil Akademik",
+//           style: TextStyle(
+//             color: AppColor.kTextColor,
+//             fontWeight: FontWeight.bold,
+//           ),
+//         ),
+//         // Ikon kembali menggunakan warna peran
+//         iconTheme: IconThemeData(color: rolePrimaryColor),
+//         backgroundColor: AppColor.kBackgroundColor,
+//         elevation: 0,
+//         // Menonaktifkan tombol back karena profil wajib diisi (sudah benar)
+//         automaticallyImplyLeading: false,
+//       ),
+//       body: SingleChildScrollView(
+//         child: Padding(
+//           padding: const EdgeInsets.all(16.0),
+//           child: Column(
+//             children: [
+//               Text(
+//                 "Harap lengkapi data kampus dan nomor induk Anda untuk mengaktifkan fitur kelas.",
+//                 // Mengganti Colors.grey[700]
+//                 style: TextStyle(
+//                   color: AppColor.kTextSecondaryColor,
+//                   fontSize: 14,
+//                 ),
+//                 textAlign: TextAlign.center,
+//               ),
+//               const SizedBox(height: 24),
+//               Form(
+//                 key: _formKey,
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.stretch,
+//                   children: [
+//                     // Dropdown Kampus
+//                     DropdownButtonFormField<String>(
+//                       initialValue: _selectedKampus,
+//                       isExpanded: true,
+//                       decoration: InputDecoration(
+//                         labelText: 'Nama Kampus / Universitas',
+//                         // Warna border saat fokus menggunakan warna peran
+//                         focusedBorder: OutlineInputBorder(
+//                           borderRadius: BorderRadius.circular(12.0),
+//                           borderSide: BorderSide(
+//                             color: rolePrimaryColor,
+//                             width: 2.0,
+//                           ),
+//                         ),
+//                         border: OutlineInputBorder(
+//                           borderRadius: BorderRadius.circular(12.0),
+//                           borderSide: BorderSide(color: AppColor.kDividerColor),
+//                         ),
+//                         enabledBorder: OutlineInputBorder(
+//                           borderRadius: BorderRadius.circular(12.0),
+//                           borderSide: BorderSide(color: AppColor.kDividerColor),
+//                         ),
+//                         filled: true,
+//                         fillColor: AppColor.kWhiteColor,
+//                         labelStyle: TextStyle(color: AppColor.kTextColor),
+//                       ),
+//                       hint: const Text('Pilih Kampus'),
+//                       items: daftarKampus.map((String kampus) {
+//                         return DropdownMenuItem<String>(
+//                           value: kampus,
+//                           child: Text(kampus, overflow: TextOverflow.ellipsis),
+//                         );
+//                       }).toList(),
+//                       onChanged: (String? newValue) {
+//                         setState(() {
+//                           _selectedKampus = newValue;
+//                         });
+//                       },
+//                       validator: (value) {
+//                         if (value == null || value.isEmpty) {
+//                           return 'Harap pilih nama kampus';
+//                         }
+//                         return null;
+//                       },
+//                     ),
 
-                    const SizedBox(height: 16),
+//                     const SizedBox(height: 16),
 
-                    // Nomor Induk (NIM/NIDN)
-                    TextFormField(
-                      controller: _nomorIndukController,
-                      decoration: InputDecoration(
-                        labelText: _nomorIndukLabel,
-                        // Warna border saat fokus menggunakan warna peran
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide(
-                            color: rolePrimaryColor,
-                            width: 2.0,
-                          ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide(color: AppColor.kDividerColor),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          borderSide: BorderSide(color: AppColor.kDividerColor),
-                        ),
-                        filled: true,
-                        fillColor: AppColor.kWhiteColor,
-                        labelStyle: TextStyle(color: AppColor.kTextColor),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return '$_nomorIndukLabel tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 32),
+//                     // Nomor Induk (NIM/NIDN)
+//                     TextFormField(
+//                       controller: _nomorIndukController,
+//                       decoration: InputDecoration(
+//                         labelText: _nomorIndukLabel,
+//                         // Warna border saat fokus menggunakan warna peran
+//                         focusedBorder: OutlineInputBorder(
+//                           borderRadius: BorderRadius.circular(12.0),
+//                           borderSide: BorderSide(
+//                             color: rolePrimaryColor,
+//                             width: 2.0,
+//                           ),
+//                         ),
+//                         border: OutlineInputBorder(
+//                           borderRadius: BorderRadius.circular(12.0),
+//                           borderSide: BorderSide(color: AppColor.kDividerColor),
+//                         ),
+//                         enabledBorder: OutlineInputBorder(
+//                           borderRadius: BorderRadius.circular(12.0),
+//                           borderSide: BorderSide(color: AppColor.kDividerColor),
+//                         ),
+//                         filled: true,
+//                         fillColor: AppColor.kWhiteColor,
+//                         labelStyle: TextStyle(color: AppColor.kTextColor),
+//                       ),
+//                       keyboardType: TextInputType.number,
+//                       validator: (value) {
+//                         if (value == null || value.trim().isEmpty) {
+//                           return '$_nomorIndukLabel tidak boleh kosong';
+//                         }
+//                         return null;
+//                       },
+//                     ),
+//                     const SizedBox(height: 32),
 
-                    // Tombol Simpan
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _saveProfileData,
-                      style: ElevatedButton.styleFrom(
-                        // Background tombol menggunakan warna peran
-                        backgroundColor: rolePrimaryColor,
-                        // Disabled color menggunakan kDisabledColor
-                        disabledBackgroundColor: AppColor.kDisabledColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                // Loading spinner menggunakan kWhiteColor
-                                color: AppColor.kWhiteColor,
-                                strokeWidth: 3,
-                              ),
-                            )
-                          : Text(
-                              'Simpan dan Lanjutkan',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColor.kWhiteColor,
-                              ),
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+//                     // Tombol Simpan
+//                     ElevatedButton(
+//                       onPressed: _isLoading ? null : _saveProfileData,
+//                       style: ElevatedButton.styleFrom(
+//                         // Background tombol menggunakan warna peran
+//                         backgroundColor: rolePrimaryColor,
+//                         // Disabled color menggunakan kDisabledColor
+//                         disabledBackgroundColor: AppColor.kDisabledColor,
+//                         padding: const EdgeInsets.symmetric(vertical: 16),
+//                         shape: RoundedRectangleBorder(
+//                           borderRadius: BorderRadius.circular(12.0),
+//                         ),
+//                       ),
+//                       child: _isLoading
+//                           ? SizedBox(
+//                               width: 20,
+//                               height: 20,
+//                               child: CircularProgressIndicator(
+//                                 // Loading spinner menggunakan kWhiteColor
+//                                 color: AppColor.kWhiteColor,
+//                                 strokeWidth: 3,
+//                               ),
+//                             )
+//                           : Text(
+//                               'Simpan dan Lanjutkan',
+//                               style: TextStyle(
+//                                 fontSize: 16,
+//                                 fontWeight: FontWeight.bold,
+//                                 color: AppColor.kWhiteColor,
+//                               ),
+//                             ),
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
