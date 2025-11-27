@@ -5,6 +5,10 @@
 // import 'package:project_volt/data/SQF/models/user_model.dart';
 // import 'package:project_volt/features/2_dashboard/SQF/homepage_mhs.dart';
 // import 'package:project_volt/features/3_profile/SQF/profile_page.dart';
+<<<<<<< HEAD
+=======
+// import 'package:project_volt/features/5_simulasi/simulasi_page.dart';
+>>>>>>> 33c44999616857edee8623a8da896b25f5c7144e
 
 // class BottomNavMhs extends StatefulWidget {
 //   final UserModel user;
