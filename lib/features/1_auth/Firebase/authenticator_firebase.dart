@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_gradients/flutter_animated_gradients.dart';
-// WAJIB import AppColor
 import 'package:project_volt/core/constants/app_color.dart';
-<<<<<<< HEAD
 import 'package:project_volt/core/constants/app_image.dart';
-=======
->>>>>>> 33c44999616857edee8623a8da896b25f5c7144e
+// WAJIB import AppColor
 import 'package:project_volt/features/1_auth/Firebase/login_form_firebase.dart';
 import 'package:project_volt/features/1_auth/Firebase/register_form_firebase.dart';
 

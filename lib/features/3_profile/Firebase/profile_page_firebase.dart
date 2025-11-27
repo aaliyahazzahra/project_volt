@@ -16,12 +16,7 @@ import 'package:project_volt/widgets/dialogs/confirmation_dialog_helper.dart';
 
 class ProfilePageFirebase extends StatefulWidget {
   final UserFirebaseModel user;
-  final void Function(UserFirebaseModel) onUpdate;
-  const ProfilePageFirebase({
-    super.key,
-    required this.user,
-    required this.onUpdate,
-  });
+  const ProfilePageFirebase({super.key, required this.user});
 
   @override
   State<ProfilePageFirebase> createState() => _ProfilePageFirebaseState();
@@ -31,7 +26,6 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
   final AuthDataSource _authDataSource = AuthDataSource();
 
   late bool _isMahasiswa;
-  late UserFirebaseModel _currentUser;
 
   // State Dummy untuk Toggle Switch
   bool _isDarkMode = false;
@@ -42,7 +36,6 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
   @override
   void initState() {
     super.initState();
-    _currentUser = widget.user;
     _isMahasiswa = widget.user.role == UserRole.mahasiswa.toString();
   }
 
@@ -76,36 +69,13 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
   }
 
   // LOGIKA NAVIGASI
-  // Contoh di Halaman Induk (misal: ProfileSayaPage)
-
-  // File: ProfilePageFirebase.dart
-
-  // File: ProfilePageFirebase.dart
-
-  void _navigateToEditProfile() async {
-    // Navigasi dan Tunggu Hasil
-    final result = await Navigator.push(
+  void _navigateToEditProfile() {
+    Navigator.push(
       context,
       MaterialPageRoute(
-        // GANTI: widget.user -> _currentUser
-        builder: (context) => EditProfileFirebasePage(user: _currentUser),
+        builder: (context) => EditProfileFirebasePage(user: widget.user),
       ),
     );
-
-    // Cek apakah hasil adalah UserFirebaseModel yang di-update
-    if (result != null && result is UserFirebaseModel) {
-      // 1. Perbarui state lokal di Halaman Profil
-      setState(() {
-        _currentUser = result;
-      });
-
-      // 2. KIRIM data terbaru ke PARENT (BottomNavDosenFirebase) melalui callback
-      widget.onUpdate(_currentUser);
-
-      // TIDAK PERLU Navigator.pop() lagi di sini karena ProfilePageFirebase adalah tab/Pageview.
-
-      print('Profil berhasil diperbarui dan sesi lokal diperbarui.');
-    }
   }
 
   void _navigateToChangePassword() {
@@ -138,7 +108,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
           children: [
             // 1. KARTU PROFIL UTAMA (Warna tema disupply)
             ProfileHeaderCardFirebase(
-              user: _currentUser,
+              user: widget.user,
               onEdit: _navigateToEditProfile,
               roleColor: _roleColor,
             ),

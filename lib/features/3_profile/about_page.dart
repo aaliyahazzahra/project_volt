@@ -131,13 +131,10 @@ class AboutPage extends StatelessWidget {
             color: AppColor.kDividerColor,
             borderRadius: BorderRadius.circular(20),
           ),
-<<<<<<< HEAD
+
           child: Text(
             "v1.0.2",
-=======
-          child: const Text(
-            "v1.0.1",
->>>>>>> 33c44999616857edee8623a8da896b25f5c7144e
+
             style: TextStyle(
               fontSize: 12,
               color: AppColor.kTextSecondaryColor,

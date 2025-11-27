@@ -115,14 +115,8 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
       // 1. Panggil service untuk update dokumen user di Firestore
       await _userManagementService.updateProfileDetails(
         uid: userUid,
-        nimNidn: _nomorIndukController.text.trim(),
-        namaKampus: _selectedKampus!,
-      );
-
-      // --- TAMBAHAN KODE PENTING DI SINI ---
-      // 1a. Buat Model User Baru yang sudah di-update
-      final UserFirebaseModel updatedUser = widget.user.copyWith(
-        nimNidn: _nomorIndukController.text.trim(),
+        nimNidn: _nomorIndukController.text
+            .trim(), // nim untuk mhs, nidn untuk dosen
         namaKampus: _selectedKampus!,
       );
 
@@ -146,7 +140,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
           );
 
         // Kirim sinyal ke parent untuk refresh data (penting!)
-        Navigator.pop(context, updatedUser);
+        Navigator.pop(context, true);
       }
     } catch (e) {
       print("Error saving profile: $e");
