@@ -8,9 +8,6 @@ import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart';
 import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
-// Asumsi Anda telah menambahkan library file_picker
-// import 'package:file_picker/file_picker.dart';
-// Asumsi: Kita menggunakan dummy path untuk saat ini karena file_picker memerlukan setup
 
 class TugasSubmissionFirebasePage extends StatefulWidget {
   final TugasFirebaseModel tugas;

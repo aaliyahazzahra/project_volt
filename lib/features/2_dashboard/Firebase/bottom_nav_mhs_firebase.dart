@@ -16,41 +16,50 @@ class BottomNavMhsFirebase extends StatefulWidget {
 }
 
 class _BottomNavMhsFirebaseState extends State<BottomNavMhsFirebase> {
-  int _tabIndex = 0; // indeks awal
+  int _tabIndex = 0; // indeks awal: 0 = Kelas, 1 = Simulasi, 2 = Profil
 
-  final PageController controller = PageController();
+  // Definisikan list halaman
+  late final List<Widget> _widgetOptions = <Widget>[
+    HomepageMhsFirebase(user: widget.user), // Index 0: Kelas
+    CreateSimulasiFirebasePage(
+      // Index 1: Simulasi
+      user: widget.user,
+      // Tidak ada kelasId/template saat masuk dari navigasi utama Mhs
+      kelasId: null,
+    ),
+    ProfilePageFirebase(user: widget.user), // Index 2: Profil
+  ];
+
   @override
   void initState() {
     super.initState();
+    // PageController sudah tidak diperlukan
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        // body: _widgetOptions[_tabIndex],
-        body: PageView(
-          controller: controller,
-          children: [
-            HomepageMhsFirebase(user: widget.user),
-            CreateSimulasiFirebasePage(user: widget.user),
-            ProfilePageFirebase(user: widget.user),
-          ],
-        ),
-        bottomNavigationBar: BottomBarBubble(
-          backgroundColor: AppColor.kWhiteColor,
-          color: AppColor.kAccentColor,
-          selectedIndex: _tabIndex,
-          items: [
-            BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
-            BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
-            BottomBarItem(iconData: Icons.group, label: 'Profil'),
-          ],
-          onSelect: (newIndex) {
+    return Scaffold(
+      body: IndexedStack(
+        // Solusi ANR: Hanya membangun widget yang ditunjukkan oleh index saat ini.
+        // Halaman lain tidak dimuat di background.
+        index: _tabIndex,
+        children: _widgetOptions,
+      ),
+      bottomNavigationBar: BottomBarBubble(
+        backgroundColor: AppColor.kWhiteColor,
+        color: AppColor.kAccentColor,
+        selectedIndex: _tabIndex,
+        items: [
+          BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
+          BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
+          BottomBarItem(iconData: Icons.group, label: 'Profil'),
+        ],
+        onSelect: (newIndex) {
+          // Hanya perlu setState untuk mengubah index IndexedStack
+          setState(() {
             _tabIndex = newIndex;
-            controller.jumpToPage(newIndex);
-          },
-        ),
+          });
+        },
       ),
     );
   }

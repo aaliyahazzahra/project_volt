@@ -88,43 +88,41 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
+
           // Avatar dan Tombol Edit
-          Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: roleColor, width: 2),
-                ),
-                child: CircleAvatar(
-                  radius: 35,
-                  backgroundColor: roleColor.withOpacity(0.1),
-                  child: Icon(Icons.person, size: 40, color: roleColor),
-                ),
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Material(
-                  color: AppColor.kWhiteColor,
-                  shape: const CircleBorder(),
-                  elevation: 2,
-                  child: InkWell(
-                    onTap: onEdit,
-                    customBorder: const CircleBorder(),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColor.kDividerColor),
-                      ),
-                      child: Icon(Icons.edit, size: 16, color: roleColor),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: roleColor, width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 35,
+              backgroundColor: roleColor.withOpacity(0.1),
+              child: Icon(Icons.person, size: 40, color: roleColor),
+            ),
           ),
+
+          //     Positioned(
+          //       right: 0,
+          //       top: 0,
+          //       child: Material(
+          //         color: AppColor.kWhiteColor,
+          //         shape: const CircleBorder(),
+          //         elevation: 2,
+          //         child: InkWell(
+          //           onTap: onEdit,
+          //           customBorder: const CircleBorder(),
+          //           child: Container(
+          //             padding: const EdgeInsets.all(6),
+          //             decoration: BoxDecoration(
+          //               shape: BoxShape.circle,
+          //               border: Border.all(color: AppColor.kDividerColor),
+          //             ),
+          //             // child: Icon(Icons.edit, size: 16, color: roleColor),
+          //           ),
+          //         ),
+          //       ),
+          //     ),
         ],
       ),
     );
