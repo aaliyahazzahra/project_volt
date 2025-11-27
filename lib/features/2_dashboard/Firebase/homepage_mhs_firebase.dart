@@ -150,14 +150,14 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
             TextButton(
               child: Text(
                 'Batal',
-                style: TextStyle(color: AppColor.kAccentColor), // Sudah benar
+                style: TextStyle(color: AppColor.kAccentColor),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: Text(
                 'Gabung',
-                style: TextStyle(color: AppColor.kAccentColor), // Sudah benar
+                style: TextStyle(color: AppColor.kAccentColor),
               ),
               onPressed: () async {
                 final String? userUid = widget.user.uid;
@@ -211,7 +211,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       content:
           'Apakah Anda yakin ingin keluar dari kelas "${kelas.namaKelas}"?',
       confirmText: 'Keluar',
-      confirmColor: AppColor.kErrorColor, //perubahan: Mengganti Colors.red
+      confirmColor: AppColor.kErrorColor,
     );
 
     // Jika pengguna menekan 'Keluar' (confirm == true)
@@ -264,15 +264,13 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       ),
       body: _isLoading
           ? Center(
-              child: CircularProgressIndicator(
-                color: AppColor.kAccentColor,
-              ), // Sudah benar
+              child: CircularProgressIndicator(color: AppColor.kAccentColor),
             )
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
               icon: Icons.school_outlined,
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
-              iconColor: AppColor.kAccentColor, // Sudah benar
+              iconColor: AppColor.kAccentColor,
               message:
                   "Anda belum bergabung dengan kelas manapun. Silakan gabung kelas dengan menekan tombol (+).",
             )
@@ -282,21 +280,17 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
               onKelasTap: _navigateToDetail,
               isDosen: false,
               onMenuAction: _handleMenuAction,
-              roleColor: AppColor.kAccentColor, // Sudah benar
+              roleColor: AppColor.kAccentColor,
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _isProfileComplete
             ? _showGabungKelasDialog
             : _showProfileWarning,
         backgroundColor: _isProfileComplete
-            ? AppColor
-                  .kAccentColor // Sudah benar
+            ? AppColor.kAccentColor
             : AppColor.kDisabledColor,
         tooltip: 'Gabung Kelas Baru',
-        child: const Icon(
-          Icons.add,
-          color: AppColor.kWhiteColor,
-        ), // Sudah benar
+        child: const Icon(Icons.add, color: AppColor.kWhiteColor),
       ),
     );
   }

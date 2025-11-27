@@ -39,21 +39,19 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
     _isMahasiswa = widget.user.role == UserRole.mahasiswa.toString();
   }
 
+  // Getter untuk warna tema peran (Orange/Biru)
   Color get _roleColor =>
       _isMahasiswa ? AppColor.kAccentColor : AppColor.kPrimaryColor;
 
-  // Di dalam class _ProfilePageFirebaseState
-
   // LOGIKA SESI (Logout)
   Future<void> _logout() async {
-    // 🔥 KOREKSI 1: Menggunakan fungsi showConfirmationDialog yang reusable
     final bool? confirm = await showConfirmationDialog(
       context: context,
       title: 'Keluar',
       content: 'Apakah Anda yakin ingin keluar dari akun ini?',
       confirmText: 'Keluar',
-      confirmColor:
-          AppColor.kErrorColor, // Mengirim warna merah untuk tombol Keluar
+      // Menggunakan konstanta error
+      confirmColor: AppColor.kErrorColor,
     );
 
     if (confirm == true) {
@@ -108,7 +106,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. KARTU PROFIL UTAMA
+            // 1. KARTU PROFIL UTAMA (Warna tema disupply)
             ProfileHeaderCardFirebase(
               user: widget.user,
               onEdit: _navigateToEditProfile,
@@ -129,7 +127,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
                 },
               ),
               const SizedBox(height: 10),
-              BadgeShowcaseFirebase(),
+              BadgeShowcaseFirebase(), // Asumsi badge showcase akan mengambil warna badge dari AppColor
               const SizedBox(height: 24),
             ],
 
@@ -268,10 +266,10 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
 
   // Garis pemisah antar item
   Widget _buildDivider() {
-    return Divider(
+    return const Divider(
       height: 1,
       thickness: 1,
-
+      // Mengganti Colors.grey[100]
       color: AppColor.kDividerColor,
       indent: 60,
     );

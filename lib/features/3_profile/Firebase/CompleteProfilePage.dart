@@ -1,11 +1,10 @@
 // File: project_volt/features/3_profile/complete_profile_page.dart
-
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_data.dart' as AppData;
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-//  Import Service Manajemen Pengguna
+//  Import Service Manajemen Pengguna
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 
@@ -20,7 +19,7 @@ class CompleteProfilePage extends StatefulWidget {
 class _CompleteProfilePageState extends State<CompleteProfilePage> {
   final _formKey = GlobalKey<FormState>();
 
-  //  INISIASI SERVICE FIREBASE
+  //  INISIASI SERVICE FIREBASE
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
 
@@ -42,7 +41,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     _isDosen = widget.user.role == 'dosen';
     _nomorIndukLabel = _isDosen ? "NIDN/NIDK" : "NIM";
 
-    // Pre-fill data jika sudah ada (meskipun halaman ini harusnya muncul hanya jika data kosong)
+    // Pre-fill data jika sudah ada
     _nomorIndukController.text = widget.user.nimNidn ?? '';
     _selectedKampus = widget.user.namaKampus;
   }
@@ -103,7 +102,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
       if (mounted) {
         _showSnackbar(
           "Gagal menyimpan profil: ${e.toString().replaceAll('Exception: ', '')}",
-          ContentType.failure,
+          ContentType.failure, // Menggunakan failure untuk error
         );
       }
     } finally {
@@ -117,20 +116,26 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Tentukan warna tema peran secara dinamis
+    final Color rolePrimaryColor = _isDosen
+        ? AppColor.kPrimaryColor
+        : AppColor.kAccentColor;
+
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Lengkapi Profil Akademik",
           style: TextStyle(
-            color: AppColor.kPrimaryColor,
+            color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: IconThemeData(color: AppColor.kPrimaryColor),
+        // Ikon kembali menggunakan warna peran
+        iconTheme: IconThemeData(color: rolePrimaryColor),
         backgroundColor: AppColor.kBackgroundColor,
         elevation: 0,
-        // Menonaktifkan tombol back karena profil wajib diisi
+        // Menonaktifkan tombol back karena profil wajib diisi (sudah benar)
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
@@ -140,7 +145,11 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             children: [
               Text(
                 "Harap lengkapi data kampus dan nomor induk Anda untuk mengaktifkan fitur kelas.",
-                style: TextStyle(color: Colors.grey[700], fontSize: 14),
+                // Mengganti Colors.grey[700]
+                style: TextStyle(
+                  color: AppColor.kTextSecondaryColor,
+                  fontSize: 14,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -155,11 +164,25 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                       isExpanded: true,
                       decoration: InputDecoration(
                         labelText: 'Nama Kampus / Universitas',
+                        // Warna border saat fokus menggunakan warna peran
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(
+                            color: rolePrimaryColor,
+                            width: 2.0,
+                          ),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: AppColor.kDividerColor),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: AppColor.kDividerColor),
                         ),
                         filled: true,
                         fillColor: AppColor.kWhiteColor,
+                        labelStyle: TextStyle(color: AppColor.kTextColor),
                       ),
                       hint: const Text('Pilih Kampus'),
                       items: daftarKampus.map((String kampus) {
@@ -188,11 +211,25 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                       controller: _nomorIndukController,
                       decoration: InputDecoration(
                         labelText: _nomorIndukLabel,
+                        // Warna border saat fokus menggunakan warna peran
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(
+                            color: rolePrimaryColor,
+                            width: 2.0,
+                          ),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: AppColor.kDividerColor),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(color: AppColor.kDividerColor),
                         ),
                         filled: true,
                         fillColor: AppColor.kWhiteColor,
+                        labelStyle: TextStyle(color: AppColor.kTextColor),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -208,18 +245,22 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _saveProfileData,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.kPrimaryColor,
+                        // Background tombol menggunakan warna peran
+                        backgroundColor: rolePrimaryColor,
+                        // Disabled color menggunakan kDisabledColor
+                        disabledBackgroundColor: AppColor.kDisabledColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0),
                         ),
                       ),
                       child: _isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                // Loading spinner menggunakan kWhiteColor
+                                color: AppColor.kWhiteColor,
                                 strokeWidth: 3,
                               ),
                             )

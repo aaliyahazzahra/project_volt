@@ -112,10 +112,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
     Clipboard.setData(ClipboardData(text: kode));
 
     // PERBAIKAN SNACKBAR: Gunakan _showSnackbar untuk konsistensi
-    _showSnackbar(
-      "Kode kelas disalin ke clipboard",
-      ContentType.success,
-    ); //perubahan
+    _showSnackbar("Kode kelas disalin ke clipboard", ContentType.success);
   }
 
   //  UBAH TIPE MODEL & WIDGET
@@ -143,7 +140,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
           title: const Text(
             'Hapus Kelas?',
             // Mengganti Colors.red dengan kErrorColor
-            style: TextStyle(color: AppColor.kErrorColor), //perubahan
+            style: TextStyle(color: AppColor.kErrorColor),
           ),
           content: Text(
             'Anda yakin ingin menghapus kelas "${kelas.namaKelas}"?\nData tidak dapat dikembalikan.',
@@ -154,7 +151,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
               child: const Text(
                 'Batal',
                 style: TextStyle(color: AppColor.kTextColor),
-              ), //perubahan
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
@@ -162,7 +159,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
               child: const Text(
                 'Hapus',
                 style: TextStyle(color: AppColor.kErrorColor),
-              ), //perubahan
+              ),
               onPressed: () async {
                 Navigator.of(context).pop();
                 try {
@@ -176,7 +173,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
                     _showSnackbar(
                       "Kelas berhasil dihapus",
                       ContentType.success,
-                    ); //perubahan
+                    );
                     _loadData();
                   }
                 } catch (e) {
@@ -349,8 +346,7 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
               onKelasTap: _navigateToDetail,
               isDosen: true,
               onMenuAction: _handleMenuAction,
-              roleColor: AppColor
-                  .kPrimaryColor, //perubahan: Pastikan roleColor disupply
+              roleColor: AppColor.kPrimaryColor,
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _isProfileComplete

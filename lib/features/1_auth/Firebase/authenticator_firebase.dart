@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animated_gradients/flutter_animated_gradients.dart';
 import 'package:project_volt/core/constants/app_image.dart';
 // WAJIB import AppColor
-import 'package:project_volt/core/constants/app_color.dart'; //perubahan
+import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/features/1_auth/SQF/login_form.dart';
 import 'package:project_volt/features/1_auth/SQF/register_form.dart';
 
@@ -19,10 +19,10 @@ class AuthenticatorFirebase extends StatelessWidget {
           child: AnimatedGradientBackground(
             // Mengganti hardcode warna gradasi
             colors: const [
-              AppColor.kGradationBlueDark, //perubahan
-              AppColor.kGradationBlueLight, //perubahan
-              AppColor.kGradationOrangeLight, //perubahan
-              AppColor.kGradationOrangeDark, //perubahan
+              AppColor.kGradationBlueDark,
+              AppColor.kGradationBlueLight,
+              AppColor.kGradationOrangeLight,
+              AppColor.kGradationOrangeDark,
             ],
             duration: const Duration(seconds: 10),
             child: SafeArea(
@@ -42,16 +42,12 @@ class AuthenticatorFirebase extends StatelessWidget {
                       height: 50,
                       decoration: BoxDecoration(
                         // Mengganti Colors.white
-                        color: AppColor.kWhiteColor.withOpacity(
-                          0.9,
-                        ), //perubahan
+                        color: AppColor.kWhiteColor.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(25.0),
                         boxShadow: [
                           BoxShadow(
                             // Mengganti Colors.black
-                            color: AppColor.kBlackColor.withOpacity(
-                              0.1,
-                            ), //perubahan
+                            color: AppColor.kBlackColor.withOpacity(0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),
@@ -60,15 +56,14 @@ class AuthenticatorFirebase extends StatelessWidget {
                       child: TabBar(
                         indicator: BoxDecoration(
                           // Mengganti Colors.blueAccent dengan kAccentColor (Biru)
-                          color: AppColor.kAccentColor, //perubahan
+                          color: AppColor.kAccentColor,
                           borderRadius: BorderRadius.circular(25.0),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         // Mengganti Colors.white
-                        labelColor: AppColor.kWhiteColor, //perubahan
+                        labelColor: AppColor.kWhiteColor,
                         // Mengganti Colors.grey
-                        unselectedLabelColor:
-                            AppColor.kTextSecondaryColor, //perubahan
+                        unselectedLabelColor: AppColor.kTextSecondaryColor,
                         tabs: const [
                           Tab(text: 'Login'),
                           Tab(text: 'Registrasi'),

@@ -58,8 +58,6 @@ class AppColor {
   static const Color kDarkIndigo = Color(0xFF3949AB);
 
   // WARNA BADGE TAMBAHAN
-  static const Color kBadgeGold = Color(
-    0xFFFFC107,
-  ); // perwakilan Colors.amber //perubahan
+  static const Color kBadgeGold = Color(0xFFFFC107); // perwakilan Colors.amber
   static const Color kBadgeSilver = Color(0xFF90A4AE);
 }
