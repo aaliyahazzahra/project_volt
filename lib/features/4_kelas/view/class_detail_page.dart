@@ -221,7 +221,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                 Tab(icon: Icon(Icons.info_outline), text: "Info"),
                 Tab(icon: Icon(Icons.menu_book), text: "Materi"),
                 Tab(icon: Icon(Icons.assignment), text: "Tugas"),
-                Tab(icon: Icon(Icons.group_outlined), text: "Anggota"),
+                // Tab(icon: Icon(Icons.group_outlined), text: "Anggota"),
               ],
             ),
           ),

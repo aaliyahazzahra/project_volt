@@ -6,7 +6,6 @@ import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/edit_class_firebase_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/Firebase/anggota_tab_content_firebase.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/info_tab_content_firebase.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/materi_tab_content_firebase.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/tugas_tab_content_firebase.dart';
@@ -31,7 +30,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
   late bool _isDosen;
   bool _dataEdited = false;
 
-  //  INISIASI FIREBASE SERVICES
+  // 	INISIASI FIREBASE SERVICES
   final KelasFirebaseService _kelasService = KelasFirebaseService();
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
@@ -64,7 +63,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
     }
   }
 
-  //  UPDATE LOGIKA REFRESH DATA (Menggunakan FirebaseService)
+  // 	UPDATE LOGIKA REFRESH DATA (Menggunakan FirebaseService)
   Future<void> _refreshKelasData() async {
     // Pastikan ID kelas tersedia dan bertipe String
     final String? kelasId = widget.kelas.kelasId;
@@ -96,7 +95,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
   // FUNGSI KHUSUS MAHASISWA
   // ----------------------------------------------------
 
-  //  UPDATE LOGIKA KELUAR KELAS (Menggunakan UserManagementFirebaseService)
+  // 	UPDATE LOGIKA KELUAR KELAS (Menggunakan UserManagementFirebaseService)
   Future<void> _exitClass() async {
     // 1. Tampilkan Dialog Konfirmasi
     final bool? confirm = await showDialog<bool>(
@@ -131,10 +130,10 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
 
     // 2. Jika dikonfirmasi, panggil Service Firebase
     if (confirm == true && mounted) {
-      final String? userUid = widget.user.uid;
+      final String userUid = widget.user.uid;
       final String? kelasId = _currentKelasData.kelasId;
 
-      if (userUid == null || kelasId == null) {
+      if (kelasId == null) {
         _showSnackbar(
           "ID pengguna atau kelas tidak ditemukan.",
           ContentType.failure,
@@ -143,7 +142,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
       }
 
       try {
-        //  Panggil service leaveKelas yang sudah dikonversi
+        // 	Panggil service leaveKelas yang sudah dikonversi
         await _userManagementService.leaveKelas(userUid, kelasId);
 
         if (mounted) {
@@ -217,7 +216,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
         }
       },
       child: DefaultTabController(
-        length: 4,
+        length: 3, // 🎉 DIUBAH: Hanya 3 tab (Info, Materi, Tugas)
         child: Scaffold(
           backgroundColor: scaffoldBgColor,
           appBar: AppBar(
@@ -259,32 +258,32 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
               labelColor: rolePrimaryColor,
               unselectedLabelColor: AppColor.kTextSecondaryColor,
               indicatorColor: rolePrimaryColor,
-              isScrollable: true,
+              isScrollable: false,
               tabs: const [
                 Tab(icon: Icon(Icons.info_outline), text: "Info"),
                 Tab(icon: Icon(Icons.menu_book), text: "Materi"),
                 Tab(icon: Icon(Icons.assignment), text: "Tugas"),
-                Tab(icon: Icon(Icons.group_outlined), text: "Anggota"),
+                // Tab Anggota DIHAPUS
               ],
             ),
           ),
 
           body: TabBarView(
             children: [
-              // Tab 1: Info (SAMA)
+              // Tab 1: Info
               InfoTabContentFirebase(
                 kelas: _currentKelasData,
                 roleColor: rolePrimaryColor,
               ),
 
-              // Tab 2: Materi (SAMA)
+              // Tab 2: Materi
               MateriTabContentFirebase(
                 kelas: _currentKelasData,
                 user: widget.user,
                 isDosen: _isDosen,
               ),
 
-              // Tab 3: Tugas (BERBEDA)
+              // Tab 3: Tugas
               _isDosen
                   ? TugasTabContentFirebase(
                       user: widget.user,
@@ -295,11 +294,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
                       user: widget.user,
                     ),
 
-              // Tab 4: Anggota (SAMA)
-              AnggotaTabContentFirebase(
-                kelas: _currentKelasData,
-                rolePrimaryColor: rolePrimaryColor,
-              ),
+              // Widget Anggota DIHAPUS
             ],
           ),
         ),

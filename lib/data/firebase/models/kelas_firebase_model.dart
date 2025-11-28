@@ -3,13 +3,16 @@
 import 'dart:convert';
 
 class KelasFirebaseModel {
-  //  ID dokumen di Firestore (String unik)
+  // ID dokumen di Firestore (String unik)
   final String? kelasId;
   final String namaKelas;
   final String? deskripsi;
   final String kodeKelas;
-  //  ID Pengguna dari Firebase Auth (UID, tipe String)
+  // ID Pengguna dari Firebase Auth (UID, tipe String)
   final String dosenUid;
+
+  // 💡 FIELD BARU: Jumlah Mahasiswa Riel
+  final int jumlahMahasiswa;
 
   KelasFirebaseModel({
     this.kelasId,
@@ -17,33 +20,43 @@ class KelasFirebaseModel {
     this.deskripsi,
     required this.kodeKelas,
     required this.dosenUid,
+    // Tetapkan nilai default 0 agar tidak perlu ada nilai di Firestore
+    this.jumlahMahasiswa = 0,
   });
 
   // --- Konversi ke/dari Map (untuk Firestore) ---
 
   // Konversi dari Map (dari Firestore) ke KelasFirebaseModel
-  // Catatan: Firestore tidak menyimpan 'kelasId' di dalam dokumen, tetapi sebagai ID dokumen itu sendiri.
-  // Oleh karena itu, kita harus memasukkan 'kelasId' secara manual saat memanggil fromMap.
   factory KelasFirebaseModel.fromMap(Map<String, dynamic> map, {String? id}) {
+    // Kunci 'jumlahMahasiswa' diinjeksi oleh service (KelasFirebaseService)
+    // jika dihitung dari koleksi lain. Jika tidak ada di map, gunakan default 0.
+    final int count = map['jumlahMahasiswa'] as int? ?? 0;
+
     return KelasFirebaseModel(
       // Mengambil ID dari parameter jika disediakan
       kelasId: id,
+      // 💡 PASTIKAN KEY INI SAMA DENGAN KEY DI toMap()
       namaKelas: map['nama_kelas'] as String,
       deskripsi: map['deskripsi'] as String?,
       kodeKelas: map['kode_kelas'] as String,
-      // Menggunakan key dosenUid
       dosenUid: map['dosenUid'] as String,
+
+      // 💡 INISIALISASI FIELD BARU
+      jumlahMahasiswa: count,
     );
   }
 
   // Konversi dari KelasFirebaseModel ke Map (untuk set/update di Firestore)
-  // TIDAK menyertakan kelasId karena itu adalah Document ID.
+  // TIDAK menyertakan kelasId & jumlahMahasiswa karena yang disimpan hanya data pokok.
   Map<String, dynamic> toMap() {
     return {
       'nama_kelas': namaKelas,
       'deskripsi': deskripsi,
       'kode_kelas': kodeKelas,
       'dosenUid': dosenUid, // Menggunakan key dosenUid (String)
+      // JIKA Anda menyimpan counter di dokumen kelas, masukkan:
+      // 'jumlahMahasiswa': jumlahMahasiswa,
+      // Namun, saat ini kita asumsikan counter dihitung di service.
     };
   }
 
@@ -54,6 +67,8 @@ class KelasFirebaseModel {
     String? deskripsi,
     String? kodeKelas,
     String? dosenUid,
+    // 💡 FIELD BARU: Tambahkan ke copyWith
+    int? jumlahMahasiswa,
   }) {
     return KelasFirebaseModel(
       kelasId: kelasId ?? this.kelasId,
@@ -61,6 +76,9 @@ class KelasFirebaseModel {
       deskripsi: deskripsi ?? this.deskripsi,
       kodeKelas: kodeKelas ?? this.kodeKelas,
       dosenUid: dosenUid ?? this.dosenUid,
+
+      // 💡 INISIALISASI FIELD BARU
+      jumlahMahasiswa: jumlahMahasiswa ?? this.jumlahMahasiswa,
     );
   }
 

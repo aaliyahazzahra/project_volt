@@ -22,45 +22,26 @@ class TugasTabMhsFirebase extends StatefulWidget {
 }
 
 class _TugasTabMhsFirebaseState extends State<TugasTabMhsFirebase> {
+  // INISIASI SERVICE FIREBASE
   final TugasFirebaseService _tugasService = TugasFirebaseService();
-  List<TugasFirebaseModel> _daftarTugas = [];
-  bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadTugas();
-  }
+  // ❗ HAPUS: State tidak diperlukan karena StreamBuilder mengelola data
+  // List<TugasFirebaseModel> _daftarTugas = [];
+  // bool _isLoading = true;
 
-  // Di dalam class _TugasTabMhsFirebaseState
+  // ❗ HAPUS: initState dan _loadTugas karena data diurus oleh StreamBuilder
 
-  Future<void> _loadTugas() async {
-    // 1. Ambil ID kelas (gunakan properti yang benar: kelasId)
-    final String? kelasId = widget.kelas.kelasId;
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _loadTugas();
+  // }
 
-    if (kelasId == null) {
-      if (mounted) setState(() => _isLoading = false);
-      return;
-    }
+  // Future<void> _loadTugas() async { ... HAPUS FUNGSI INI ... }
 
-    try {
-      final data = await _tugasService.getTugasByKelas(kelasId);
-
-      if (mounted) {
-        setState(() {
-          _daftarTugas = data;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        print("Error loading tasks from Firebase: $e");
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  // Di dalam class _TugasTabMhsFirebaseState
+  // ------------------------------------------------------------------
+  // FUNGSI NAVIGASI (Disesuaikan)
+  // ------------------------------------------------------------------
 
   void _navigateToDetailTugas(TugasFirebaseModel tugas) {
     Navigator.push(
@@ -70,37 +51,89 @@ class _TugasTabMhsFirebaseState extends State<TugasTabMhsFirebase> {
             TugasDetailMhsFirebase(tugas: tugas, user: widget.user),
       ),
     ).then((result) {
-      //    KOREKSI 1: Tangkap nilai balik sebagai 'result'
+      // Walaupun data utama (daftar tugas) real-time,
+      // kita tetap perlu me-refresh jika ada status Mahasiswa
+      // yang berubah di halaman detail (misalnya, status "Sudah Submit").
+      // Namun, jika status submisi Mahasiswa tersimpan di koleksi terpisah
+      // dan *ListView* Mahasiswa tidak perlu menampilkannya,
+      // panggilan ini mungkin tidak diperlukan.
 
-      //    KOREKSI 2: Cek apakah result adalah TRUE
-      if (result == true && mounted) {
-        // Panggil _loadTugas() untuk me-refresh daftar tugas
-        // agar status submisi Mahasiswa terbaru terlihat.
-        _loadTugas();
-      }
+      // JIKA STATUS SUBMISI MAHASISWA HARUS REFRESH:
+      // if (result == true && mounted) {
+      //   // Panggil fungsi *one-time fetch* atau me-refresh tampilan
+      //   // jika ada status tambahan yang harus diambil (ini skenario kompleks).
+      //   // Untuk saat ini, kita akan asumsikan data yang ditampilkan di List
+      //   // cukup dicakup oleh Stream, dan tidak perlu refresh manual.
+      // }
+
+      // KARENA MENGGUNAKAN STREAM: Panggilan ini umumnya tidak diperlukan lagi
+      // kecuali untuk data sekunder yang tidak di-stream.
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final String? kelasId = widget.kelas.kelasId;
+    final Color accentColor = AppColor.kAccentColor;
+
+    if (kelasId == null) {
+      return const Center(
+        child: Text(
+          'ID Kelas tidak valid',
+          style: TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
     return Container(
       color: AppColor.kWhiteColor,
-      child: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: AppColor.kAccentColor),
-            )
-          : _daftarTugas.isEmpty
-          ? EmptyStateWidget(
+      // ------------------------------------------------------------------
+      // 💡 PERBAIKAN UTAMA: GANTI Future/setState dengan StreamBuilder
+      // ------------------------------------------------------------------
+      child: StreamBuilder<List<TugasFirebaseModel>>(
+        // Panggil fungsi Stream yang sudah kita perbaiki
+        stream: _tugasService.getTugasStreamByKelas(kelasId),
+
+        builder: (context, snapshot) {
+          // 1. Loading State
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator(color: accentColor));
+          }
+
+          // 2. Error State
+          if (snapshot.hasError) {
+            print("Stream Error: ${snapshot.error}");
+            return Center(
+              child: Text(
+                'Gagal memuat data tugas: ${snapshot.error}',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+          }
+
+          // 3. Data Loaded / Empty State
+          final listTugas = snapshot.data ?? [];
+
+          if (listTugas.isEmpty) {
+            // Empty State
+            return EmptyStateWidget(
               icon: Icons.assignment_late_outlined,
               title: "Belum Ada Tugas",
               message: "Dosen Anda belum memposting tugas apapun di kelas ini.",
-              iconColor: AppColor.kAccentColor,
-            )
-          : TugasListViewFirebase(
-              daftarTugas: _daftarTugas,
-              onTugasTap: _navigateToDetailTugas,
-              roleColor: AppColor.kAccentColor,
-            ),
+              iconColor: accentColor,
+            );
+          }
+
+          // 4. Tampilkan Daftar Tugas
+          // TugasListViewFirebase kini otomatis akan diperbarui saat
+          // Dosen menambah tugas baru.
+          return TugasListViewFirebase(
+            daftarTugas: listTugas,
+            onTugasTap: _navigateToDetailTugas,
+            roleColor: accentColor,
+          );
+        },
+      ),
     );
   }
 }

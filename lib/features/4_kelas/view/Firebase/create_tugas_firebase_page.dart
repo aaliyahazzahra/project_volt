@@ -52,6 +52,8 @@ class _CreateTugasFirebasePageState extends State<CreateTugasFirebasePage> {
   // --- FUNGSI HELPER UI ---
 
   void _showSnackbar(String title, String message, ContentType type) {
+    if (!mounted) return; // Tambahkan pengecekan mounted
+
     final snackBarContent = AwesomeSnackbarContent(
       title: title,
       message: message,
@@ -129,7 +131,6 @@ class _CreateTugasFirebasePageState extends State<CreateTugasFirebasePage> {
       }
     } else if (result == true && mounted) {
       // fallback jika SimulationPage hanya mengembalikan boolean 'true'
-      // Untuk tujuan demo, kita akan mengasumsikan ID baru (tapi ini kurang disarankan)
       _showSnackbar(
         "Perhatian",
         "Simulasi berhasil disimpan, tetapi ID tidak diterima.",
@@ -141,6 +142,7 @@ class _CreateTugasFirebasePageState extends State<CreateTugasFirebasePage> {
   // --- LOGIKA UTAMA: SUBMIT FORM / CREATE TUGAS FIREBASE ---
 
   void _submitForm() async {
+    // 1. VALIDASI JUDUL (Wajib)
     if (!_formKey.currentState!.validate()) {
       _showSnackbar(
         "Peringatan",
@@ -150,23 +152,19 @@ class _CreateTugasFirebasePageState extends State<CreateTugasFirebasePage> {
       return;
     }
 
-    if (_selectedDateTime == null) {
+    // 2. VALIDASI KONTEN MINIMAL (Tanggal ATAU Deskripsi ATAU Simulasi ID)
+    final bool hasDeadline = _selectedDateTime != null;
+    final bool hasDescription = _deskripsiController.text.trim().isNotEmpty;
+    final bool hasSimulasi = _simulasiId != null;
+
+    if (!hasDeadline && !hasDescription && !hasSimulasi) {
       _showSnackbar(
         "Peringatan",
-        "Harap tentukan tanggal tenggat waktu.",
+        "Tugas wajib memiliki Tanggal Tenggat, Deskripsi, atau Lampiran Simulasi (minimal satu).",
         ContentType.warning,
       );
       return;
     }
-
-    // Cek jika tugas adalah simulasi, harus ada simulasi yang dilampirkan
-    // Jika Anda ingin semua tugas harus memiliki simulasi, aktifkan cek ini:
-    /*
-    if (_simulasiId == null && isSimulasiType) {
-         _showSnackbar("Peringatan", "Tugas simulasi harus melampirkan proyek simulasi.", ContentType.warning);
-         return;
-    }
-    */
 
     if (_isSaving) return;
 
@@ -179,7 +177,10 @@ class _CreateTugasFirebasePageState extends State<CreateTugasFirebasePage> {
         kelasId: widget.kelasId,
         dosenId: widget.user.uid, //  Masukkan ID Dosen dari User Model
         judul: _judulController.text.trim(),
-        deskripsi: _deskripsiController.text.trim(),
+        // Jika Deskripsi kosong, pastikan mengirim nilai null, bukan string kosong
+        deskripsi: _deskripsiController.text.trim().isEmpty
+            ? null
+            : _deskripsiController.text.trim(),
         tglDibuat: DateTime.now(), // Tambahkan tgl dibuat
         tglTenggat: _selectedDateTime,
         simulasiId: _simulasiId, //   Lampirkan ID Simulasi jika ada

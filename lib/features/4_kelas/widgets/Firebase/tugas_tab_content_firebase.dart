@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-
-import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
-import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
-
+import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
+import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/create_tugas_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/tugas_detail_dosen_firebase.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/list_views/tugas_list_view_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
-// Di dalam class TugasTabContentFirebase
-
 class TugasTabContentFirebase extends StatefulWidget {
   final KelasFirebaseModel kelas;
   final Color rolePrimaryColor = AppColor.kPrimaryColor;
-
-  //    KOREKSI 1: TAMBAHKAN PROPERTI USER
-  final UserFirebaseModel user;
+  final UserFirebaseModel user; // Sudah benar
 
   const TugasTabContentFirebase({
     super.key,
     required this.kelas,
-    required this.user, //    JADIKAN REQUIRED DI KONSTRUKTOR
+    required this.user,
   });
 
   @override
@@ -32,68 +26,52 @@ class TugasTabContentFirebase extends StatefulWidget {
 }
 
 class _TugasTabContentFirebaseState extends State<TugasTabContentFirebase> {
-  //  INISIASI SERVICE FIREBASE
+  // INISIASI SERVICE FIREBASE
   final TugasFirebaseService _tugasService = TugasFirebaseService();
 
-  //  UBAH TIPE LIST: TugasModel -> TugasFirebaseModel
-  List<TugasFirebaseModel> _daftarTugas = [];
-  bool _isLoading = true;
+  // ❗ HAPUS STATE LIST DAN LOADING: StreamBuilder akan mengurus ini
+  // List<TugasFirebaseModel> _daftarTugas = [];
+  // bool _isLoading = true;
 
+  // HAPUS initState dan _loadTugas karena data diurus oleh StreamBuilder
+
+  // ------------------------------------------------------------------
+  // ❗ HAPUS FUNGSI YANG TIDAK DIGUNAKAN LAGI (Karena diganti StreamBuilder)
+  // ------------------------------------------------------------------
+
+  /*
   @override
   void initState() {
     super.initState();
-    _loadTugas();
+    // ❗ Tidak perlu memanggil _loadTugas di sini lagi
   }
 
   void _refreshTugasList() {
-    setState(() => _isLoading = true);
-    _loadTugas();
+    // ❗ Tidak perlu memanggil _loadTugas lagi, StreamBuilder otomatis refresh
   }
-
-  //  UPDATE LOGIKA LOAD DATA (Menggunakan FirebaseService)
+  
   Future<void> _loadTugas() async {
-    final String? kelasId = widget.kelas.kelasId;
-
-    if (kelasId == null) {
-      if (mounted) setState(() => _isLoading = false);
-      return;
-    }
-
-    try {
-      //  PANGGIL SERVICE FIREBASE dengan kelasId (String)
-      final data = await _tugasService.getTugasByKelas(kelasId);
-
-      if (mounted) {
-        setState(() {
-          _daftarTugas = data;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        // Tampilkan pesan error jika perlu
-        print("Error loading tasks: $e");
-      }
-    }
+    // ❗ Hapus seluruh fungsi ini
   }
+  */
 
-  //  UPDATE LOGIKA NAVIGASI DETAIL (Menggunakan model dan widget Firebase)
-  void _navigateToDetailTugas(TugasFirebaseModel tugas) async {
-    final bool? isDataChanged = await Navigator.push(
+  // ------------------------------------------------------------------
+  // FUNGSI NAVIGASI TETAP ADA (Disesuaikan agar tidak memanggil refresh manual)
+  // ------------------------------------------------------------------
+
+  // UPDATE LOGIKA NAVIGASI DETAIL (Tidak perlu async/await/refresh)
+  void _navigateToDetailTugas(TugasFirebaseModel tugas) {
+    // Navigasi tidak perlu mengembalikan data karena Stream sudah real-time
+    Navigator.push(
       context,
       MaterialPageRoute(
-        //  GANTI: Panggil widget Detail Dosen versi Firebase
         builder: (context) => TugasDetailDosenFirebase(tugas: tugas),
       ),
+      // ❗ Tidak perlu .then((_) { _refreshTugasList(); }) lagi
     );
-
-    if (isDataChanged == true && mounted) {
-      _refreshTugasList();
-    }
   }
 
-  //  UPDATE LOGIKA NAVIGASI CREATE (Menggunakan widget Firebase)
+  // UPDATE LOGIKA NAVIGASI CREATE
   void _navigateToCreateTugas() {
     final String? kelasId = widget.kelas.kelasId;
     if (kelasId == null) return;
@@ -101,39 +79,81 @@ class _TugasTabContentFirebaseState extends State<TugasTabContentFirebase> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        //  GANTI: Panggil widget Create Tugas versi Firebase
-        builder: (context) => CreateTugasFirebasePage(
-          kelasId: kelasId,
-          //    KOREKSI: Akses User Model melalui widget
-          user: widget.user,
-        ),
+        builder: (context) =>
+            CreateTugasFirebasePage(kelasId: kelasId, user: widget.user),
       ),
-    ).then((_) {
-      _refreshTugasList(); // Selalu refresh setelah kembali
-    });
+    );
+    // ❗ Tidak perlu .then((_) { _refreshTugasList(); }) lagi,
+    // karena saat kembali, StreamBuilder otomatis mendeteksi tugas baru.
   }
 
   @override
   Widget build(BuildContext context) {
     final Color rolePrimaryColor = AppColor.kPrimaryColor;
+    final String? kelasId = widget.kelas.kelasId;
+
+    if (kelasId == null) {
+      return const Center(
+        child: Text(
+          'ID Kelas tidak valid',
+          style: TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColor.kWhiteColor,
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: rolePrimaryColor))
-          : _daftarTugas.isEmpty
-          ? EmptyStateWidget(
+      // ------------------------------------------------------------------
+      // 💡 PERBAIKAN UTAMA: GANTI Future/setState dengan StreamBuilder
+      // ------------------------------------------------------------------
+      body: StreamBuilder<List<TugasFirebaseModel>>(
+        // Panggil fungsi Stream yang sudah kita perbaiki
+        stream: _tugasService.getTugasStreamByKelas(kelasId),
+
+        builder: (context, snapshot) {
+          // 1. Loading State
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(color: rolePrimaryColor),
+            );
+          }
+
+          // 2. Error State
+          if (snapshot.hasError) {
+            print("Stream Error: ${snapshot.error}");
+            return Center(
+              child: Text(
+                'Gagal memuat data tugas: ${snapshot.error}',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+          }
+
+          // 3. Data Loaded / Empty State
+          // Data List<TugasFirebaseModel> yang otomatis diperbarui
+          final listTugas = snapshot.data ?? [];
+
+          if (listTugas.isEmpty) {
+            // Empty State dari tangkapan layar awal
+            return EmptyStateWidget(
               icon: Icons.assignment_late_outlined,
               title: "Belum Ada Tugas",
               message:
                   "Tekan tombol (+) di bawah untuk membuat tugas pertama di kelas ini.",
               iconColor: rolePrimaryColor,
-            )
-          : TugasListViewFirebase(
-              //  Menggunakan TugasListView versi Firebase
-              daftarTugas: _daftarTugas,
-              onTugasTap: _navigateToDetailTugas,
-              roleColor: rolePrimaryColor,
-            ),
+            );
+          }
+
+          // 4. Tampilkan Daftar Tugas
+          return TugasListViewFirebase(
+            daftarTugas: listTugas,
+            onTugasTap: _navigateToDetailTugas,
+            roleColor: rolePrimaryColor,
+          );
+        },
+      ),
+
+      // ------------------------------------------------------------------
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToCreateTugas,
         backgroundColor: AppColor.kPrimaryColor,

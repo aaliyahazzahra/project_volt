@@ -71,7 +71,7 @@ class ClassListFirebase extends StatelessWidget {
           (hasil, huruf) => hasil + huruf,
         );
 
-        // Modulus (%) supaya angkanya pas dengan jumlah pilihan warna kita
+        // Modulus (%) supaya angkanya pas dengan jumlah pilihan warna
         int indexWarna = nilaiUnikNama % _cardGradients.length;
 
         // Pilih warna berdasarkan hasil hitungan di atas
@@ -94,7 +94,7 @@ class ClassListFirebase extends StatelessWidget {
                 Stack(
                   children: [
                     Container(
-                      height: 100,
+                      height: 50,
                       decoration: BoxDecoration(gradient: gradient),
                     ),
                     Positioned(
@@ -217,7 +217,7 @@ class ClassListFirebase extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Kode: ${kelas.kodeKelas}",
+                        'Kode: ${kelas.kodeKelas}',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColor.kTextSecondaryColor,
@@ -246,7 +246,7 @@ class ClassListFirebase extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "30 Mahasiswa", // dummy
+                        '${kelas.jumlahMahasiswa} Mahasiswa',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColor.kTextColor,

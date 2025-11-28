@@ -1,9 +1,17 @@
-// File: project_volt/data/firebase/service/tugas_firebase_service.dart
+// File: project_volt/data/firebase/service/tugas_firebase_service.dart (Koreksi Real-Time)
 
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
+
+// Definisi Custom Exception
+class TugasServiceException implements Exception {
+  final String message;
+  TugasServiceException(this.message);
+  @override
+  String toString() => 'TugasServiceException: $message';
+}
 
 class TugasFirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -14,46 +22,63 @@ class TugasFirebaseService {
   // ----------------------------------------------------
   // 1. CREATE: Membuat Tugas Baru
   // ----------------------------------------------------
-  /// Menyimpan objek TugasModelFirebase baru ke Firestore.
+  /// Menyimpan objek TugasFirebaseModel baru ke Firestore.
   Future<TugasFirebaseModel> createTugas(TugasFirebaseModel tugas) async {
     try {
       final docRef = await _firestore
           .collection(_collectionName)
           .add(tugas.toMap());
 
+      // Mengembalikan model lengkap dengan ID dokumen
       return tugas.copyWith(tugasId: docRef.id);
     } catch (e) {
-      log('Error creating task: $e');
-      throw Exception('Gagal membuat tugas di Firestore.');
+      log('Error creating task: $e', error: e);
+      throw TugasServiceException('Gagal membuat tugas di Firestore.');
     }
   }
 
   // ----------------------------------------------------
-  // 2. READ: Mengambil Daftar Tugas Berdasarkan Kelas ID
+  // 2. READ: Mengambil Daftar Tugas (STREAM - REAL-TIME) 💡 BARU: Kunci Solusi
   // ----------------------------------------------------
-  /// Mengambil semua tugas untuk Kelas tertentu.
-  Future<List<TugasFirebaseModel>> getTugasByKelas(String kelasId) async {
+  /// Mengambil semua tugas untuk Kelas tertentu secara REAL-TIME.
+  Stream<List<TugasFirebaseModel>> getTugasStreamByKelas(String kelasId) {
+    // Kunci: Menggunakan .snapshots() untuk Stream<QuerySnapshot>
+    return _firestore
+        .collection(_collectionName)
+        .where('kelasId', isEqualTo: kelasId)
+        .orderBy('tglTenggat', descending: true)
+        .snapshots() // 🔑 Perubahan Penting di sini
+        .map((snapshot) {
+          // Mapping dari QuerySnapshot ke List<TugasFirebaseModel>
+          return snapshot.docs.map((doc) {
+            // Mapping data dan menyertakan ID dokumen
+            final data = doc.data();
+            return TugasFirebaseModel.fromMap(data, id: doc.id);
+          }).toList();
+        });
+  }
+
+  // ----------------------------------------------------
+  // 2.1. READ: Mengambil Daftar Tugas (FUTURE - ONE-TIME FETCH)
+  // ----------------------------------------------------
+  /// Mengambil semua tugas untuk Kelas tertentu (hanya sekali).
+  /// Fungsi ini dipertahankan, namun disarankan menggunakan fungsi Stream di atas
+  /// untuk tampilan daftar tugas.
+  Future<List<TugasFirebaseModel>> getTugasFutureByKelas(String kelasId) async {
     try {
-      // Query berdasarkan kelasId (Foreign Key)
       final QuerySnapshot snapshot = await _firestore
           .collection(_collectionName)
           .where('kelasId', isEqualTo: kelasId)
-          .orderBy(
-            'tglTenggat',
-            descending: true,
-          ) // Tampilkan yang terbaru di atas
-          .get();
+          .orderBy('tglTenggat', descending: true)
+          .get(); // ❗ Tetap menggunakan .get() jika hanya butuh sekali ambil
 
-      // Mapping data dari snapshot Firestore
       return snapshot.docs.map((doc) {
-        return TugasFirebaseModel.fromMap(
-          doc.data() as Map<String, dynamic>,
-          id: doc.id, // Menyediakan ID dokumen sebagai tugasId
-        );
+        final data = doc.data() as Map<String, dynamic>;
+        return TugasFirebaseModel.fromMap(data, id: doc.id);
       }).toList();
     } catch (e) {
-      log('Error getting tasks by class: $e');
-      throw Exception('Gagal memuat daftar tugas.');
+      log('Error getting tasks by class: $e', error: e);
+      throw TugasServiceException('Gagal memuat daftar tugas.');
     }
   }
 
@@ -68,17 +93,23 @@ class TugasFirebaseService {
           .doc(tugasId)
           .get();
 
-      if (!doc.exists || doc.data() == null) {
+      if (!doc.exists) {
+        return null;
+      }
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data == null) {
         return null;
       }
 
-      return TugasFirebaseModel.fromMap(
-        doc.data() as Map<String, dynamic>,
-        id: doc.id,
+      return TugasFirebaseModel.fromMap(data, id: doc.id);
+    } on FirebaseException catch (e) {
+      log('Firestore Error getting task by ID: ${e.code}', error: e);
+      throw TugasServiceException(
+        'Terjadi kesalahan saat memuat detail tugas.',
       );
     } catch (e) {
-      log('Error getting task by ID: $e');
-      throw Exception('Gagal memuat data tugas.');
+      log('Error getting task by ID: $e', error: e);
+      throw TugasServiceException('Gagal memuat data tugas.');
     }
   }
 
@@ -88,7 +119,7 @@ class TugasFirebaseService {
   /// Memperbarui data tugas berdasarkan tugasId.
   Future<void> updateTugas(TugasFirebaseModel tugas) async {
     if (tugas.tugasId == null) {
-      throw Exception("Tugas ID tidak ditemukan untuk pembaruan.");
+      throw TugasServiceException("Tugas ID tidak ditemukan untuk pembaruan.");
     }
     try {
       await _firestore
@@ -96,8 +127,8 @@ class TugasFirebaseService {
           .doc(tugas.tugasId)
           .update(tugas.toMap());
     } catch (e) {
-      log('Error updating task: $e');
-      throw Exception('Gagal memperbarui tugas.');
+      log('Error updating task: $e', error: e);
+      throw TugasServiceException('Gagal memperbarui tugas.');
     }
   }
 
@@ -108,13 +139,9 @@ class TugasFirebaseService {
   Future<void> deleteTugas(String tugasId) async {
     try {
       await _firestore.collection(_collectionName).doc(tugasId).delete();
-
-      // CATATAN PENTING: Untuk Firestore, Anda harus menghapus Sub-koleksi
-      // atau dokumen terkait (misalnya, submisi yang terkait dengan tugasId ini)
-      // secara manual.
     } catch (e) {
-      log('Error deleting task: $e');
-      throw Exception('Gagal menghapus tugas.');
+      log('Error deleting task: $e', error: e);
+      throw TugasServiceException('Gagal menghapus tugas.');
     }
   }
 }

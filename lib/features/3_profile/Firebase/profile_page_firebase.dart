@@ -29,9 +29,9 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
 
   // State Dummy untuk Toggle Switch
   bool _isDarkMode = false;
-  bool _isNotificationOn = true;
-  bool _isSoundOn = true;
-  bool _isHapticOn = true;
+  final bool _isNotificationOn = true;
+  final bool _isSoundOn = true;
+  final bool _isHapticOn = true;
 
   @override
   void initState() {
@@ -101,166 +101,167 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
         backgroundColor: AppColor.kAppBar,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. KARTU PROFIL UTAMA (Warna tema disupply)
-            ProfileHeaderCardFirebase(
-              user: widget.user,
-              onEdit: _navigateToEditProfile,
-              roleColor: _roleColor,
-            ),
-
-            const SizedBox(height: 20),
-
-            // 2. PENCAPAIAN SAYA (Khusus Mahasiswa)
-            if (_isMahasiswa) ...[
-              SectionHeaderFirebase(
-                title: "Pencapaian Saya",
+      body:
+          // SingleChildScrollView(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          //   child:
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. KARTU PROFIL UTAMA (Warna tema disupply)
+              ProfileHeaderCardFirebase(
+                user: widget.user,
+                onEdit: _navigateToEditProfile,
                 roleColor: _roleColor,
-                onSeeAll: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Halaman Badge Lengkap")),
-                  );
-                },
               ),
-              const SizedBox(height: 10),
-              BadgeShowcaseFirebase(), // Asumsi badge showcase akan mengambil warna badge dari AppColor
-              const SizedBox(height: 24),
-            ],
 
-            // 3. LIST PENGATURAN
+              const SizedBox(height: 20),
 
-            // GROUP 1: AKUN
-            SettingsGroup(
-              title: "Akun",
-              children: [
-                SettingsListTile(
-                  icon: Icons.edit_outlined,
-                  title: "Edit Profil",
+              // 2. PENCAPAIAN SAYA (Khusus Mahasiswa)
+              if (_isMahasiswa) ...[
+                SectionHeaderFirebase(
+                  title: "Pencapaian Saya",
                   roleColor: _roleColor,
-                  onTap: _navigateToEditProfile,
-                ),
-                _buildDivider(),
-
-                SettingsListTile(
-                  icon: Icons.lock_outline,
-                  title: "Keamanan Akun",
-                  roleColor: _roleColor,
-                  onTap: _navigateToChangePassword,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // GROUP 2: PREFERENSI APLIKASI
-            SettingsGroup(
-              title: "Preferensi Aplikasi",
-              children: [
-                SettingsSwitchTile(
-                  icon: Icons.dark_mode_outlined,
-                  title: "Tampilan Gelap",
-                  roleColor: _roleColor,
-                  value: _isDarkMode,
-                  onChanged: (val) => setState(() => _isDarkMode = val),
-                ),
-                _buildDivider(),
-
-                SettingsSwitchTile(
-                  icon: Icons.notifications_outlined,
-                  title: "Notifikasi",
-                  roleColor: _roleColor,
-                  value: _isNotificationOn,
-                  onChanged: (val) => setState(() => _isNotificationOn = val),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // GROUP 3: SIMULASI VOLT
-            SettingsGroup(
-              title: "Simulasi VOLT",
-              children: [
-                SettingsSwitchTile(
-                  icon: Icons.volume_up_outlined,
-                  title: "Efek Suara Simulasi",
-                  roleColor: _roleColor,
-                  value: _isSoundOn,
-                  onChanged: (val) => setState(() => _isSoundOn = val),
-                ),
-
-                _buildDivider(),
-                SettingsSwitchTile(
-                  icon: Icons.vibration,
-                  title: "Getaran Haptic",
-                  roleColor: _roleColor,
-                  value: _isHapticOn,
-                  onChanged: (val) => setState(() => _isHapticOn = val),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // GROUP 4: INFO
-            SettingsGroup(
-              title: "Info",
-              children: [
-                SettingsListTile(
-                  icon: Icons.info_outline,
-                  title: "Tentang Aplikasi",
-                  roleColor: _roleColor,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AboutPage(),
-                      ),
+                  onSeeAll: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Halaman Badge Lengkap")),
                     );
                   },
                 ),
-
-                _buildDivider(),
-                SettingsListTile(
-                  icon: Icons.help_outline,
-                  title: "Bantuan & FAQ",
-                  roleColor: _roleColor,
-                  onTap: () {},
-                ),
+                const SizedBox(height: 10),
+                BadgeShowcaseFirebase(), // Asumsi badge showcase akan mengambil warna badge dari AppColor
+                const SizedBox(height: 24),
               ],
-            ),
 
-            const SizedBox(height: 30),
+              // 3. LIST PENGATURAN
 
-            // GROUP 5: KELUAR (Tombol Full Width)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _logout,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.kErrorColor.withOpacity(0.1),
-                  foregroundColor: AppColor.kErrorColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              // GROUP 1: AKUN
+              SettingsGroup(
+                title: "Akun",
+                children: [
+                  SettingsListTile(
+                    icon: Icons.edit_outlined,
+                    title: "Edit Profil",
+                    roleColor: _roleColor,
+                    onTap: _navigateToEditProfile,
                   ),
-                  elevation: 0,
-                ),
-                icon: const Icon(Icons.logout),
-                label: const Text(
-                  "Keluar Aplikasi",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  // _buildDivider(),
+
+                  // SettingsListTile(
+                  //   icon: Icons.lock_outline,
+                  //   title: "Keamanan Akun",
+                  //   roleColor: _roleColor,
+                  //   onTap: _navigateToChangePassword,
+                  // ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // GROUP 2: PREFERENSI APLIKASI
+              SettingsGroup(
+                title: "Preferensi Aplikasi",
+                children: [
+                  SettingsSwitchTile(
+                    icon: Icons.dark_mode_outlined,
+                    title: "Tampilan Gelap",
+                    roleColor: _roleColor,
+                    value: _isDarkMode,
+                    onChanged: (val) => setState(() => _isDarkMode = val),
+                  ),
+                  _buildDivider(),
+
+                  // SettingsSwitchTile(
+                  //   icon: Icons.notifications_outlined,
+                  //   title: "Notifikasi",
+                  //   roleColor: _roleColor,
+                  //   value: _isNotificationOn,
+                  //   onChanged: (val) => setState(() => _isNotificationOn = val),
+                  // ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // GROUP 3: SIMULASI VOLT
+              // SettingsGroup(
+              //   title: "Simulasi VOLT",
+              //   children: [
+              //     SettingsSwitchTile(
+              //       icon: Icons.volume_up_outlined,
+              //       title: "Efek Suara Simulasi",
+              //       roleColor: _roleColor,
+              //       value: _isSoundOn,
+              //       onChanged: (val) => setState(() => _isSoundOn = val),
+              //     ),
+
+              //     _buildDivider(),
+              //     SettingsSwitchTile(
+              //       icon: Icons.vibration,
+              //       title: "Getaran Haptic",
+              //       roleColor: _roleColor,
+              //       value: _isHapticOn,
+              //       onChanged: (val) => setState(() => _isHapticOn = val),
+              //     ),
+              //   ],
+              // ),
+              const SizedBox(height: 20),
+
+              // GROUP 4: INFO
+              SettingsGroup(
+                title: "Info",
+                children: [
+                  SettingsListTile(
+                    icon: Icons.info_outline,
+                    title: "Tentang Aplikasi",
+                    roleColor: _roleColor,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AboutPage(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // _buildDivider(),
+                  // SettingsListTile(
+                  //   icon: Icons.help_outline,
+                  //   title: "Bantuan & FAQ",
+                  //   roleColor: _roleColor,
+                  //   onTap: () {},
+                  // ),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+              Spacer(),
+              // GROUP 5: KELUAR (Tombol Full Width)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _logout,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.kErrorColor.withOpacity(0.1),
+                    foregroundColor: AppColor.kErrorColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: const Icon(Icons.logout),
+                  label: const Text(
+                    "Keluar Aplikasi",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
-          ],
-        ),
-      ),
+              const SizedBox(height: 30),
+            ],
+          ),
+      // ),
     );
   }
 

@@ -174,6 +174,8 @@ class _CreateSimulasiFirebasePageState
     return showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
+        // Menggunakan Builder sederhana (tanpa StatefulBuilder) karena tidak perlu
+        // update state UI lokal saat mengetik lagi.
         return AlertDialog(
           title: Text(
             _currentSimulasiId != null
@@ -183,14 +185,17 @@ class _CreateSimulasiFirebasePageState
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
+                // TextField Judul
                 TextField(
                   controller: _judulController,
+                  // onChanged dihilangkan
                   decoration: const InputDecoration(
                     labelText: 'Judul Simulasi *',
                     hintText: 'Misal: Gerbang Kombinasi Dasar',
                   ),
                 ),
                 const SizedBox(height: 16),
+                // TextField Deskripsi
                 TextField(
                   controller: _deskripsiController,
                   decoration: const InputDecoration(
@@ -208,9 +213,9 @@ class _CreateSimulasiFirebasePageState
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             ElevatedButton(
-              onPressed: _judulController.text.isEmpty
-                  ? null
-                  : () => _saveProject(dialogContext),
+              // PERUBAHAN UTAMA DI SINI:
+              // onPressed TIDAK PERNAH null, sehingga tombol SELALU aktif (tidak disabled).
+              onPressed: () => _saveProject(dialogContext),
               child: _isSaving
                   ? const SizedBox(
                       width: 20,
@@ -233,7 +238,7 @@ class _CreateSimulasiFirebasePageState
       if (mounted) {
         _showSnackbar(
           "Peringatan",
-          "Simulasi tidak dapat disimpan tanpa ID Kelas yang jelas.",
+          "Simulasi tidak dapat disimpan karena tidak terkait dengan kelas manapun.",
           ContentType.warning,
         );
         Navigator.of(dialogContext).pop();

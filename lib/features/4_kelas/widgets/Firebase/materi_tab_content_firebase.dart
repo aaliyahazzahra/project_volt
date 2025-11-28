@@ -7,6 +7,7 @@ import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/materi_firebase_service.dart'; // Import Service
 import 'package:project_volt/features/4_kelas/view/Firebase/create_materi_firebase_page.dart';
+import 'package:project_volt/features/4_kelas/view/Firebase/materi_detail_mhs_firebase.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/list_views/materi_list_view_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
@@ -40,9 +41,33 @@ class MateriTabContentFirebase extends StatelessWidget {
     );
   }
 
-  void _navigateToDetailMateri(MateriFirebaseModel materi) {
-    // TODO: Navigasi ke MateriDetailPage
-    print("TODO: Navigasi ke MateriDetailPage untuk ${materi.judul}");
+  // void _navigateToDetailMateri(MateriFirebaseModel materi) {
+  //   MaterialPageRoute(
+  //     // GANTI: Panggil ClassDetailPage versi Firebase
+  //     builder: (context) =>
+  //         MateriDetailMhsFirebase(materiId: materi.materiId!, user: user),
+  //   );
+  //   print("TODO: Navigasi ke MateriDetailPage untuk ${materi.judul}");
+  // }
+
+  void _navigateToDetailMateri(
+    BuildContext context,
+    MateriFirebaseModel materi,
+  ) {
+    if (materi.materiId == null) {
+      print("Error: Materi ID is null.");
+      return;
+    }
+
+    // 🎯 PERBAIKAN: Lakukan navigasi dengan Navigator.push()
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            MateriDetailMhsFirebase(materiId: materi.materiId!, user: user),
+      ),
+    );
+    print("Navigasi ke MateriDetailPage untuk ${materi.judul}");
   }
 
   @override
@@ -97,7 +122,9 @@ class MateriTabContentFirebase extends StatelessWidget {
           // 4. Tampilkan Data
           return MateriListViewFirebase(
             daftarMateri: daftarMateri,
-            onMateriTap: _navigateToDetailMateri,
+            onMateriTap: (materi) {
+              _navigateToDetailMateri(context, materi);
+            },
             roleColor: rolePrimaryColor,
           );
         },

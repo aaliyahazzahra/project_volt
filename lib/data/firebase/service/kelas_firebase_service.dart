@@ -3,17 +3,41 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
+import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart'; // Pastikan model sudah diperbarui
 
 class KelasFirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Nama koleksi di Firestore
   static const String _collectionName = 'kelas';
+  static const String _enrollmentsCollection =
+      'enrollments'; // Nama koleksi Mahasiswa/Enrollments
+
+  // ----------------------------------------------------
+  // FUNGSI UTILITY: MENGHITUNG JUMLAH ANGGOTA KELAS
+  // ----------------------------------------------------
+
+  /// Menghitung jumlah dokumen di koleksi 'enrollments' yang merujuk ke kelasId ini.
+  Future<int> _hitungJumlahMahasiswa(String kelasId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(_enrollmentsCollection)
+          // Asumsi setiap dokumen enrollment memiliki field 'kelasId'
+          .where('kelasId', isEqualTo: kelasId)
+          .get();
+
+      return querySnapshot.docs.length;
+    } catch (e) {
+      log('Error counting students for class $kelasId: $e');
+      // Kembalikan 0 jika terjadi error agar aplikasi tidak crash
+      return 0;
+    }
+  }
 
   // ----------------------------------------------------
   // 1. CREATE: Membuat Kelas Baru
   // ----------------------------------------------------
+
   /// Menyimpan objek KelasModelFirebase baru ke Firestore.
   Future<KelasFirebaseModel> createKelas(KelasFirebaseModel kelas) async {
     try {
@@ -32,26 +56,38 @@ class KelasFirebaseService {
   }
 
   // ----------------------------------------------------
-  // 2. READ: Mengambil Kelas Berdasarkan Dosen UID
+  // 2. READ: Mengambil Kelas Berdasarkan Dosen UID (DENGAN JUMLAH MAHASISWA)
   // ----------------------------------------------------
-  /// Mengambil semua kelas yang dibuat oleh Dosen tertentu.
+
+  /// Mengambil semua kelas yang dibuat oleh Dosen tertentu, termasuk jumlah mahasiswa riil.
   Future<List<KelasFirebaseModel>> getKelasByDosen(String dosenUid) async {
     try {
-      // Query berdasarkan dosenUid (harus sama dengan key di toMap)
+      // 1. Query berdasarkan dosenUid
       final QuerySnapshot snapshot = await _firestore
           .collection(_collectionName)
           .where('dosenUid', isEqualTo: dosenUid)
-          // .orderBy('nama_kelas', descending: false) // Urutkan A-Z
           .get();
 
-      // Mapping data dari snapshot Firestore ke List<KelasModelFirebase>
-      return snapshot.docs.map((doc) {
-        // Menggunakan factory fromMap dan menyediakan doc.id sebagai kelasId
-        return KelasFirebaseModel.fromMap(
-          doc.data() as Map<String, dynamic>,
-          id: doc.id,
-        );
-      }).toList();
+      // 2. Mapping data dari snapshot Firestore ke List<KelasModelFirebase>
+      final List<KelasFirebaseModel> daftarKelas = [];
+
+      for (var doc in snapshot.docs) {
+        final kelasId = doc.id;
+        final data = doc.data() as Map<String, dynamic>;
+
+        // 3. Panggil fungsi utility untuk MENGHITUNG JUMLAH MAHASISWA RIIL
+        final jumlahMahasiswa = await _hitungJumlahMahasiswa(kelasId);
+
+        // 4. Buat model dengan data riil jumlah mahasiswa
+        final kelasModel = KelasFirebaseModel.fromMap({
+          ...data,
+          // Injeksi jumlahMahasiswa yang sudah dihitung ke dalam data map
+          'jumlahMahasiswa': jumlahMahasiswa,
+        }, id: kelasId);
+        daftarKelas.add(kelasModel);
+      }
+
+      return daftarKelas;
     } catch (e) {
       log('Error getting classes by Dosen: $e');
       throw Exception('Gagal memuat daftar kelas.');
@@ -61,6 +97,7 @@ class KelasFirebaseService {
   // ----------------------------------------------------
   // 3. UPDATE: Memperbarui Data Kelas
   // ----------------------------------------------------
+
   /// Memperbarui data kelas berdasarkan kelasId.
   Future<void> updateKelas(KelasFirebaseModel kelas) async {
     if (kelas.kelasId == null) {
@@ -81,36 +118,47 @@ class KelasFirebaseService {
   // ----------------------------------------------------
   // 4. DELETE: Menghapus Kelas
   // ----------------------------------------------------
+
   /// Menghapus kelas berdasarkan kelasId.
   Future<void> deleteKelas(String kelasId) async {
     try {
       await _firestore.collection(_collectionName).doc(kelasId).delete();
 
-      // CATATAN PENTING: Untuk Firestore, Anda harus secara manual
-      // menghapus Sub-koleksi (seperti 'anggota_kelas', 'tugas', 'materi')
-      // yang terikat pada kelasId ini, karena Firestore tidak memiliki ON DELETE CASCADE.
-      // Implementasi ini memerlukan pembersihan data yang lebih lanjut.
+      // CATATAN PENTING: Anda mungkin perlu menambahkan
+      // logika untuk menghapus data terkait di koleksi lain
+      // (misalnya, semua dokumen di 'enrollments' yang memiliki kelasId ini).
+      // Contoh: await _deleteRelatedEnrollments(kelasId);
     } catch (e) {
       log('Error deleting class: $e');
       throw Exception('Gagal menghapus kelas.');
     }
   }
 
-  // Tambahkan fungsi ini ke KelasFirebaseService Anda:
+  // ----------------------------------------------------
+  // 5. READ: Mengambil Kelas Berdasarkan ID
+  // ----------------------------------------------------
 
+  /// Mengambil data kelas tunggal berdasarkan kelasId.
   Future<KelasFirebaseModel?> getKelasById(String kelasId) async {
     try {
       final DocumentSnapshot doc = await _firestore
           .collection(_collectionName)
           .doc(kelasId)
           .get();
+
       if (!doc.exists || doc.data() == null) {
         return null;
       }
-      return KelasFirebaseModel.fromMap(
-        doc.data() as Map<String, dynamic>,
-        id: doc.id,
-      );
+
+      final data = doc.data() as Map<String, dynamic>;
+
+      // Opsi: Hitung juga jumlah mahasiswa jika Anda mengambil kelas tunggal
+      final jumlahMahasiswa = await _hitungJumlahMahasiswa(kelasId);
+
+      return KelasFirebaseModel.fromMap({
+        ...data,
+        'jumlahMahasiswa': jumlahMahasiswa,
+      }, id: doc.id);
     } catch (e) {
       log('Error getting class by ID: $e');
       throw Exception('Gagal memuat data kelas.');

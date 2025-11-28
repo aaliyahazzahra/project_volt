@@ -7,10 +7,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:project_volt/core/constants/app_color.dart';
-
+import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 //  Import Service dan Model Firebase
 import 'package:project_volt/data/firebase/service/materi_firebase_service.dart';
-import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 
 class CreateMateriFirebasePage extends StatefulWidget {
   // ID Kelas sekarang bertipe String (UID Kelas)
@@ -44,6 +43,8 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
 
   // Helper untuk menampilkan Awesome Snackbar
   void _showSnackbar(String message, ContentType type) {
+    if (!mounted) return; // Tambahkan pengecekan mounted
+
     final snackBarContent = AwesomeSnackbarContent(
       title: type == ContentType.success ? "Sukses" : "Peringatan",
       message: message,
@@ -64,7 +65,7 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
 
   // untuk memilih file (logika FilePicker)
   Future<void> _pickFile() async {
-    if (_isLoading) return; // Jangan izinkan saat sedang loading
+    if (_isLoading) return;
 
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -81,13 +82,20 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
 
   // untuk menyimpan materi ke Firebase Storage dan Firestore
   Future<void> _saveMateri() async {
+    // 1. VALIDASI JUDUL (Sudah ada)
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_linkController.text.trim().isEmpty && _pickedFile == null) {
+    // 2. VALIDASI KONTEN MINIMAL (Logika baru)
+    // Harus ada Deskripsi ATAU Link ATAU File/Simulasi
+    final bool hasDescription = _deskripsiController.text.trim().isNotEmpty;
+    final bool hasLink = _linkController.text.trim().isNotEmpty;
+    final bool hasFile = _pickedFile != null;
+
+    if (!hasDescription && !hasLink && !hasFile) {
       _showSnackbar(
-        "Harap sertakan Link Materi atau Upload File.",
+        "Harap sertakan Deskripsi, Link Materi, atau Upload File/Simulasi (minimal satu).",
         ContentType.warning,
       );
       return;
@@ -98,16 +106,18 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
     String? fileUrl;
 
     try {
-      // 1. UPLOAD FILE ke Firebase Storage
+      // 3. UPLOAD FILE ke Firebase Storage
       if (_pickedFile != null) {
         fileUrl = await _materiService.uploadFile(_pickedFile!, widget.kelasId);
       }
 
-      // 2. Buat Model Firebase
+      // 4. Buat Model Firebase
       final materi = MateriFirebaseModel(
         kelasId: widget.kelasId,
         judul: _judulController.text.trim(),
-        deskripsi: _deskripsiController.text.trim(),
+        deskripsi: _deskripsiController.text.trim().isEmpty
+            ? null
+            : _deskripsiController.text.trim(),
         linkMateri: _linkController.text.trim().isEmpty
             ? null
             : _linkController.text.trim(),
@@ -116,7 +126,7 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
         tglPosting: DateTime.now().toIso8601String(),
       );
 
-      // 3. Simpan metadata ke Firestore
+      // 5. Simpan metadata ke Firestore
       await _materiService.createMateri(materi);
 
       if (mounted) {
@@ -168,7 +178,6 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
                     decoration: const InputDecoration(
                       labelText: 'Deskripsi (Opsional)',
                     ),
-                    maxLines: 4,
                   ),
                   const SizedBox(height: 24),
                   const Text(
