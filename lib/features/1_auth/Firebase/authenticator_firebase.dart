@@ -23,6 +23,9 @@ class AuthenticatorFirebase extends StatelessWidget {
               AppColor.kGradationBlueLight,
               AppColor.kGradationOrangeLight,
               AppColor.kGradationOrangeDark,
+              AppColor.kGradationOrangeLight,
+              AppColor.kGradationBlueLight,
+              AppColor.kGradationBlueDark,
             ],
             duration: const Duration(seconds: 10),
             child: SafeArea(

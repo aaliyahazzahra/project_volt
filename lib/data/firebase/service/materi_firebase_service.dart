@@ -33,9 +33,31 @@ class MateriFirebaseService {
   }
 
   // ----------------------------------------------------
-  // 2. READ: Mengambil Daftar Materi Berdasarkan Kelas ID
+  // 2. READ: Mengambil Daftar Materi (STREAM - REAL-TIME) 💡 Perubahan Utama
   // ----------------------------------------------------
-  /// Mengambil semua materi untuk Kelas tertentu.
+  /// Mengambil semua materi untuk Kelas tertentu secara REAL-TIME.
+  Stream<List<MateriFirebaseModel>> getMateriStreamByKelas(String kelasId) {
+    // Query yang sama, tetapi menggunakan .snapshots()
+    return _firestore
+        .collection(_collectionName)
+        .where('kelasId', isEqualTo: kelasId)
+        .orderBy('tglPosting', descending: true)
+        .snapshots() // Kunci: Mengembalikan Stream<QuerySnapshot>
+        .map((snapshot) {
+          // Mapping dari QuerySnapshot ke List<MateriFirebaseModel>
+          return snapshot.docs.map((doc) {
+            return MateriFirebaseModel.fromMap(
+              doc.data(),
+              id: doc.id, // Menyediakan ID dokumen sebagai materiId
+            );
+          }).toList();
+        });
+  }
+
+  // ----------------------------------------------------
+  // 2.1. READ: Mengambil Daftar Materi (FUTURE - ONE-TIME FETCH)
+  // ----------------------------------------------------
+  /// Mengambil semua materi untuk Kelas tertentu (hanya sekali).
   Future<List<MateriFirebaseModel>> getMateriByKelas(String kelasId) async {
     try {
       // Query berdasarkan kelasId (Foreign Key)
@@ -46,7 +68,7 @@ class MateriFirebaseService {
             'tglPosting',
             descending: true,
           ) // Tampilkan yang terbaru di atas
-          .get();
+          .get(); // Kunci: Menggunakan .get() untuk Future
 
       // Mapping data dari snapshot Firestore
       return snapshot.docs.map((doc) {

@@ -11,6 +11,9 @@ class BuildTextField extends StatefulWidget {
     this.validator,
     this.readOnly = false,
     this.maxLines,
+    // --- TAMBAHKAN PROPERTI BARU ---
+    this.labelColor,
+    // --- TAMBAHKAN PROPERTI BARU ---
   });
 
   final String? labelText;
@@ -19,6 +22,9 @@ class BuildTextField extends StatefulWidget {
   final String? Function(String?)? validator;
   final bool readOnly;
   final int? maxLines;
+  // --- DEKLARASI PROPERTI BARU ---
+  final Color? labelColor;
+  // --- DEKLARASI PROPERTI BARU ---
 
   @override
   State<BuildTextField> createState() => _BuildTextFieldState();
@@ -35,8 +41,15 @@ class _BuildTextFieldState extends State<BuildTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final Color borderColor = AppColor.kBlackColor;
+    // Tentukan warna label.
+    // Default-nya: AppColor.kTextColor (diasumsikan abu-abu gelap/hitam)
+    // Jika widget.labelColor di-set, gunakan warna itu.
+    final Color effectiveLabelColor = widget.labelColor ?? AppColor.kTextColor;
+
     final Color focusedBorderColor = AppColor.kPrimaryColor;
+    final Color enabledBorderColor = AppColor.kTextSecondaryColor.withOpacity(
+      0.5,
+    );
 
     return TextFormField(
       validator: widget.validator,
@@ -46,13 +59,17 @@ class _BuildTextFieldState extends State<BuildTextField> {
       maxLines: widget.isPassword ? 1 : (widget.maxLines ?? 1),
       decoration: InputDecoration(
         labelText: widget.labelText,
-        labelStyle: TextStyle(color: AppColor.kDisabledColor),
 
+        // --- GUNAKAN effectiveLabelColor ---
+        labelStyle: TextStyle(color: effectiveLabelColor),
+
+        // --- GUNAKAN effectiveLabelColor ---
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: focusedBorderColor, width: 2.0),
         ),
+
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: borderColor, width: 1.0),
+          borderSide: BorderSide(color: enabledBorderColor, width: 1.0),
         ),
 
         errorBorder: UnderlineInputBorder(
@@ -71,7 +88,8 @@ class _BuildTextFieldState extends State<BuildTextField> {
                 },
                 icon: Icon(
                   _obscureText ? Icons.visibility : Icons.visibility_off,
-                  color: AppColor.kDisabledColor,
+                  // Menggunakan warna yang sama dengan label agar konsisten
+                  color: effectiveLabelColor.withOpacity(0.7),
                 ),
               )
             : null,

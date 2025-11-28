@@ -18,15 +18,14 @@ class RegisterFormFirebase extends StatefulWidget {
 
 class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
   final _formKey = GlobalKey<FormState>();
-  // SQF CODE: final AuthDataSource _authDataSource = AuthDataSource();
+
   final Logger logger = Logger(
     printer: PrettyPrinter(
-      // Anda bisa mengatur kustomisasi di sini
-      methodCount: 0, // Tidak menampilkan jumlah method call
-      errorMethodCount: 5, // Tampilkan 5 method call saat error
+      methodCount: 0,
+      errorMethodCount: 5,
       lineLength: 80,
-      colors: true, // Pastikan berwarna
-      printTime: true, // Tampilkan waktu log
+      colors: true,
+      printTime: true,
     ),
   );
 
@@ -36,16 +35,17 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
   final TextEditingController namaLengkapController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController nimNidnController =
-      TextEditingController(); // Controller baru
+  final TextEditingController nimNidnController = TextEditingController();
   String? _selectedKampus;
-  final List<String> daftarKampus = AppData.daftarKampus;
+  final List<String> daftarKampus =
+      AppData.daftarKampus; // Asumsi ini berisi daftar kampus
 
   @override
   void dispose() {
     namaLengkapController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    nimNidnController.dispose(); // Jangan lupa dispose controller yang baru
     super.dispose();
   }
 
@@ -60,24 +60,12 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
     });
 
     try {
-      // SQF CODE:
-      // UserModel newUser = UserModel(
-      //   namaLengkap: namaLengkapController.text,
-      //   email: emailController.text,
-      //   password: passwordController.text,
-      //   role: _selectedRole.toString(),
-      // );
-
-      // Mengambil role dalam bentuk string yang bersih ('mahasiswa' atau 'dosen')
       String roleString = _selectedRole.name;
       final String nimNidn = nimNidnController.text.trim();
       final String namaKampus = _selectedKampus!;
 
       // 2. Panggil Firebase Service
-      // SQF CODE: bool isSuccess = await _authDataSource.registerUser(newUser);
-
       await FirebaseService.registerUser(
-        // <-- GANTI DENGAN FIREBASE SERVICE
         namaLengkap: namaLengkapController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
@@ -90,8 +78,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
       if (!mounted) return;
 
       // 4. Logika Respons Sukses
-      // SQF CODE: if (isSuccess) { ... }
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Registrasi Berhasil! Silakan Login.'),
@@ -104,9 +90,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
       emailController.clear();
       passwordController.clear();
       nimNidnController.clear();
-
-      // *Opsional: Navigasi ke tab Login jika menggunakan TabController di Authenticator
-      // TabController.of(context).animateTo(0);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
@@ -126,12 +109,9 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
         ),
       );
     } catch (e) {
-      // Handle error lain (misal: Firestore error, network error, dll.)
       if (!mounted) return;
 
-      logger.e(
-        'GENERAL ERROR DURING REGISTRATION: $e',
-      ); // Menggunakan logger.e() untuk ERROR
+      logger.e('GENERAL ERROR DURING REGISTRATION: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Terjadi kesalahan tak terduga.'),
@@ -224,9 +204,11 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
               BuildTextField(
                 labelText: "Nama Lengkap",
                 controller: namaLengkapController,
+                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Nama Lengkap tidak boleh kosong';
@@ -234,9 +216,11 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                   return null;
                 },
               ),
+              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
               BuildTextField(
                 labelText: "Email",
                 controller: emailController,
+                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Email tidak boleh kosong';
@@ -252,10 +236,12 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
               ),
               SizedBox(height: 16),
 
+              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
               BuildTextField(
                 labelText: "Password",
                 controller: passwordController,
                 isPassword: true,
+                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Password tidak boleh kosong';
@@ -272,34 +258,47 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                       hasDigit) {
                     return null;
                   } else {
-                    return 'Password harus mengandung: minimal 8 karakter, 1 huruf kapital, 1 huruf kecil, dan 1 angka.';
+                    // Pesan error lebih ringkas
+                    return 'Min. 8 karakter (Kapital, kecil, angka).';
                   }
                 },
               ),
               const SizedBox(height: 16),
+
+              // --- PERBAIKAN: DROP-DOWN FIELD AGAR SEAMLESS (Garis Bawah) ---
               DropdownButtonFormField<String>(
                 initialValue: _selectedKampus,
                 isExpanded: true,
                 decoration: InputDecoration(
                   labelText: 'Nama Kampus / Universitas',
-                  // Warna border saat fokus menggunakan warna peran
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: AppColor.kAppBar, width: 2.0),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: AppColor.kDividerColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide(color: AppColor.kDividerColor),
-                  ),
-                  filled: true,
-                  fillColor: AppColor.kWhiteColor,
+
+                  // Pastikan label memiliki kontras yang baik
                   labelStyle: TextStyle(color: AppColor.kTextColor),
+
+                  // UBAH KE UNDERLINE BORDER (Garis Bawah)
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: AppColor.kPrimaryColor,
+                      width: 2.0,
+                    ),
+                  ),
+                  border: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColor.kDividerColor),
+                  ),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColor.kTextSecondaryColor),
+                  ),
+
+                  // Hapus properti filled dan fillColor agar transparan dan seamless
+                  // filled: true,
+                  // fillColor: AppColor.kWhiteColor,
                 ),
-                hint: const Text('Pilih Kampus'),
+                hint: const Text(
+                  'Pilih Kampus',
+                  style: TextStyle(
+                    color: AppColor.kTextSecondaryColor,
+                  ), // Tetap berikan hint yang terlihat
+                ),
                 items: daftarKampus.map((String kampus) {
                   return DropdownMenuItem<String>(
                     value: kampus,
@@ -319,15 +318,17 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                 },
               ),
               const SizedBox(height: 16),
+
+              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
               BuildTextField(
                 labelText: _selectedRole == UserRole.dosen
                     ? "NIDN/NIDK"
                     : "NIM",
                 controller: nimNidnController,
-
+                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return '${_selectedRole == UserRole.dosen ? "NIDN/NIDK" : "NIM"} tidak boleh kosong'; // Wajib diisi!
+                    return '${_selectedRole == UserRole.dosen ? "NIDN/NIDK" : "NIM"} tidak boleh kosong';
                   }
                   return null;
                 },

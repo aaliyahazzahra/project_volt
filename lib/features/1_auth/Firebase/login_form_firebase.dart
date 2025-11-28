@@ -18,7 +18,6 @@ class LoginFormFirebase extends StatefulWidget {
 
 class _LoginFormFirebaseState extends State<LoginFormFirebase> {
   final _formKey = GlobalKey<FormState>();
-  // final AuthDataSource _authDataSource = AuthDataSource(); // <-- HAPUS: Tidak digunakan lagi
 
   bool _isLoading = false;
 
@@ -31,8 +30,6 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
     _passwordController.dispose();
     super.dispose();
   }
-
-  // File: project_volt/features/1_auth/login_form_firebase.dart (Bagian _handleLogin)
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) {
@@ -52,13 +49,11 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
         password: _passwordController.text,
       );
     } catch (e) {
-      // 2. Tampilkan pesan error jika login gagal (termasuk error koneksi/password salah)
+      // 2. Tampilkan pesan error jika login gagal
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              e.toString().replaceAll('Exception: ', ''),
-            ), // Membersihkan prefix
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.red,
           ),
         );
@@ -104,9 +99,11 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
           children: [
             SizedBox(height: 20),
 
+            // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
             BuildTextField(
               labelText: 'Email',
               controller: _emailController,
+              labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Email tidak boleh kosong';
@@ -122,10 +119,12 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
             ),
             SizedBox(height: 16),
 
+            // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
             BuildTextField(
               labelText: 'Password',
               controller: _passwordController,
               isPassword: true,
+              labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Password tidak boleh kosong';
@@ -146,12 +145,9 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
               child: TextButton(
                 // Style (Gaya) Tombol
                 style: TextButton.styleFrom(
-                  // Padding diatur menjadi 0 agar teks terlihat seperti aslinya
                   padding: EdgeInsets.zero,
-                  // Secara opsional, atur warna splash/hover agar sesuai
                   foregroundColor: AppColor.kAccentColor.withOpacity(0.5),
-                  alignment:
-                      Alignment.centerRight, // Pastikan teks tetap di kanan
+                  alignment: Alignment.centerRight,
                 ),
                 // Fungsi yang dijalankan saat tombol diklik
                 onPressed: () {
