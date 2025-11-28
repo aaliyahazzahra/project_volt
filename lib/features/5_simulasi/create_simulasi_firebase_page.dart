@@ -4,7 +4,6 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-// Import Model dan Service yang dibutuhkan
 import 'package:project_volt/data/firebase/models/simulasi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/simulasi_firebase_service.dart';
@@ -27,7 +26,7 @@ class CreateSimulasiFirebasePage extends StatefulWidget {
     super.key,
     this.kelasId,
     required this.user,
-    this.loadSimulasiId, // Optional ID
+    this.loadSimulasiId,
     this.isReadOnly = false,
   });
 
@@ -36,8 +35,15 @@ class CreateSimulasiFirebasePage extends StatefulWidget {
       _CreateSimulasiFirebasePageState();
 }
 
-class _CreateSimulasiFirebasePageState
-    extends State<CreateSimulasiFirebasePage> {
+class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
+    with AutomaticKeepAliveClientMixin {
+  // <--- PERBAIKAN: TAMBAH MIXIN INI
+
+  // --- IMPLEMENTASI WAJIB UNTUK KEEP ALIVE ---
+  @override
+  bool get wantKeepAlive => true; // <--- AGAR STATE SIMULASI TIDAK HILANG
+  // ------------------------------------------
+
   // FIREBASE SERVICE
   final SimulasiFirebaseService _simulasiService = SimulasiFirebaseService();
   final Uuid _uuid = Uuid();
@@ -62,9 +68,8 @@ class _CreateSimulasiFirebasePageState
 
   bool _isSimulating = false;
   bool _isSaving = false;
-  bool _isTemplateLoading = false; //   STATE BARU: Loading template
+  bool _isTemplateLoading = false;
 
-  // ID dari simulasi yang sedang diedit (null jika baru)
   String? _currentSimulasiId;
 
   @override
@@ -74,6 +79,7 @@ class _CreateSimulasiFirebasePageState
 
     // Muat data jika loadSimulasiId ada
     if (widget.loadSimulasiId != null) {
+      // Pemuatan data Firebase yang memblokir terjadi di sini
       _loadExistingProject(widget.loadSimulasiId!);
     } else {
       _initializeNewProject();
@@ -116,11 +122,8 @@ class _CreateSimulasiFirebasePageState
           _deskripsiController.text = existingSimulasi.deskripsi;
 
           // Isi Project Data (Clone project untuk editor)
-          // Menggunakan clone agar data Dosen asli tidak langsung terpengaruh
           _projects.add(existingSimulasi.projectData.copyWith(id: _uuid.v4()));
 
-          // Jika ini adalah submisi (kelasId ada), ID submisi dikosongkan
-          // agar simulasi tersimpan sebagai simulasi baru milik mahasiswa
           if (widget.kelasId != null) {
             _currentSimulasiId = null;
             _judulController.text = 'Jawaban Tugas';
@@ -131,7 +134,6 @@ class _CreateSimulasiFirebasePageState
         });
         _runSimulation();
       } else {
-        // Jika gagal muat, kembali ke mode buat baru
         _initializeNewProject();
         _showSnackbar(
           "Gagal",
@@ -151,9 +153,10 @@ class _CreateSimulasiFirebasePageState
     }
   }
 
-  // --- LOGIC FIREBASE SAVE/UPDATE ---
+  // --- LOGIC FIREBASE SAVE/UPDATE (Sama seperti sebelumnya) ---
 
   void _showSnackbar(String title, String message, ContentType type) {
+    // ... (Snackbar code)
     final snackBarContent = AwesomeSnackbarContent(
       title: title,
       message: message,
@@ -171,11 +174,10 @@ class _CreateSimulasiFirebasePageState
   }
 
   Future<void> _showSaveDialog() async {
+    // ... (Dialog code)
     return showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
-        // Menggunakan Builder sederhana (tanpa StatefulBuilder) karena tidak perlu
-        // update state UI lokal saat mengetik lagi.
         return AlertDialog(
           title: Text(
             _currentSimulasiId != null
@@ -185,17 +187,14 @@ class _CreateSimulasiFirebasePageState
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                // TextField Judul
                 TextField(
                   controller: _judulController,
-                  // onChanged dihilangkan
                   decoration: const InputDecoration(
                     labelText: 'Judul Simulasi *',
                     hintText: 'Misal: Gerbang Kombinasi Dasar',
                   ),
                 ),
                 const SizedBox(height: 16),
-                // TextField Deskripsi
                 TextField(
                   controller: _deskripsiController,
                   decoration: const InputDecoration(
@@ -213,8 +212,6 @@ class _CreateSimulasiFirebasePageState
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             ElevatedButton(
-              // PERUBAHAN UTAMA DI SINI:
-              // onPressed TIDAK PERNAH null, sehingga tombol SELALU aktif (tidak disabled).
               onPressed: () => _saveProject(dialogContext),
               child: _isSaving
                   ? const SizedBox(
@@ -234,7 +231,6 @@ class _CreateSimulasiFirebasePageState
     if (_judulController.text.isEmpty) return;
 
     if (widget.kelasId == null || widget.kelasId!.isEmpty) {
-      // Tampilkan peringatan, tapi jangan lanjutkan proses simpan ke Firebase.
       if (mounted) {
         _showSnackbar(
           "Peringatan",
@@ -259,25 +255,20 @@ class _CreateSimulasiFirebasePageState
 
       String resultId;
       if (_currentSimulasiId != null) {
-        // UPDATE yang sudah ada
         await _simulasiService.updateSimulasi(simulasiToSave);
         resultId = _currentSimulasiId!;
       } else {
-        // CREATE baru
         resultId = await _simulasiService.createSimulasi(simulasiToSave);
-        // Simpan ID yang baru didapat
         setState(() => _currentSimulasiId = resultId);
       }
 
-      // Notifikasi Sukses dan Keluar
       if (mounted) {
         _showSnackbar(
           "Sukses",
           "Simulasi berhasil disimpan!",
           ContentType.success,
         );
-        Navigator.of(dialogContext).pop(); // Tutup dialog
-        // KEMBALIKAN ID SIMULASI untuk dilampirkan ke Tugas/Submisi
+        Navigator.of(dialogContext).pop();
         Navigator.of(context).pop(resultId);
       }
     } catch (e) {
@@ -293,7 +284,7 @@ class _CreateSimulasiFirebasePageState
     }
   }
 
-  // --- LOGIC ENGINE & HELPER UI (Sama seperti kode sebelumnya) ---
+  // --- LOGIC ENGINE & HELPER UI (Sama seperti sebelumnya) ---
 
   void _resetDragging() {
     setState(() {
@@ -311,6 +302,7 @@ class _CreateSimulasiFirebasePageState
   }
 
   Offset getNodePosition(String componentId, String nodeId) {
+    // ... (getNodePosition logic)
     try {
       final component = _componentsOnCanvas.firstWhere(
         (c) => c.id == componentId,
@@ -337,6 +329,7 @@ class _CreateSimulasiFirebasePageState
   }
 
   ({String componentId, String nodeId})? _findNodeAt(Offset localPosition) {
+    // ... (_findNodeAt logic)
     for (final component in _componentsOnCanvas) {
       if (component.type == 'INPUT') continue;
 
@@ -365,6 +358,7 @@ class _CreateSimulasiFirebasePageState
 
     final payload = SimulationPayload(_activeProject.copyWith());
 
+    // Menggunakan compute untuk menjalankan logika simulasi di Isolate lain
     final SimulationProject updatedProject = await compute(
       runSimulationInBackground,
       payload,
@@ -377,8 +371,6 @@ class _CreateSimulasiFirebasePageState
       _isSimulating = false;
     });
   }
-
-  // FUNGSI _deleteComponent DIHAPUS
 
   void _addCanvas() {
     setState(() {
@@ -416,16 +408,12 @@ class _CreateSimulasiFirebasePageState
     _runSimulation();
   }
 
-  // WIDGET _buildTrashArea DIHAPUS
-
   // UBAH DARI DRAGGABLE MENJADI WIDGET STANDAR (mengunci posisi)
   Widget _buildComponentInPlace(SimulationComponent component) {
-    // Menghapus Draggable dan logika onDrag
     return _buildComponentWidget(component: component);
   }
 
   Widget _buildToolbox() {
-    // Jika ReadOnly, toolbox tidak ditampilkan
     if (widget.isReadOnly) return const SizedBox.shrink();
 
     return Container(
@@ -470,6 +458,7 @@ class _CreateSimulasiFirebasePageState
   }
 
   Widget _buildComponentWidget({required SimulationComponent component}) {
+    // ... (Component Widget Code)
     final bool isInputComponent = component.type == 'INPUT';
     Widget componentVisual = _buildComponentVisual(
       component.type,
@@ -542,6 +531,7 @@ class _CreateSimulasiFirebasePageState
     bool isDragging = false,
     required bool value,
   }) {
+    // ... (Visual Component Code)
     if (type == 'INPUT') {
       return Container(
         height: 60,
@@ -638,6 +628,7 @@ class _CreateSimulasiFirebasePageState
     required String nodeId,
     required bool isInputNode,
   }) {
+    // ... (Connection Node Code)
     bool nodeValue = false;
     try {
       final component = _componentsOnCanvas.firstWhere(
@@ -658,7 +649,6 @@ class _CreateSimulasiFirebasePageState
                 (c) => c.id == componentId,
               );
 
-              // Koneksi hanya boleh dimulai dari output
               if (isInputNode) {
                 _showSnackbar(
                   "Peringatan",
@@ -700,14 +690,12 @@ class _CreateSimulasiFirebasePageState
               if (targetNode != null) {
                 if (targetNode.componentId != _draggingFromComponentId) {
                   setState(() {
-                    // Hapus kabel lama yang terhubung ke input target
                     _wires.removeWhere(
                       (wire) =>
                           wire.toComponentId == targetNode.componentId &&
                           wire.toNodeId == targetNode.nodeId,
                     );
 
-                    // Tambahkan kabel baru
                     _wires.add(
                       WireConnection(
                         fromComponentId: _draggingFromComponentId!,
@@ -750,6 +738,10 @@ class _CreateSimulasiFirebasePageState
 
   @override
   Widget build(BuildContext context) {
+    super.build(
+      context,
+    ); // <--- WAJIB DIPANGGIL KARENA ADA AutomaticKeepAliveClientMixin
+
     if (_isTemplateLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Memuat Simulasi...')),
@@ -776,16 +768,13 @@ class _CreateSimulasiFirebasePageState
           bottom: BorderSide(color: AppColor.kDividerColor, width: 1.5),
         ),
         actions: [
-          // TOMBOL SIMPAN
-          if (!widget.isReadOnly) // Hanya tampilkan jika TIDAK read-only
+          if (!widget.isReadOnly)
             IconButton(
               icon: Icon(Icons.save, color: AppColor.kPrimaryColor),
               tooltip: _currentSimulasiId != null
                   ? "Update Simulasi"
                   : "Simpan Simulasi Baru",
-              onPressed: widget.isReadOnly
-                  ? null
-                  : _showSaveDialog, // Nonaktifkan tombol
+              onPressed: widget.isReadOnly ? null : _showSaveDialog,
             ),
           IconButton(
             icon: Icon(Icons.refresh, color: AppColor.kTextColor),
@@ -799,7 +788,6 @@ class _CreateSimulasiFirebasePageState
             },
           ),
         ],
-        // TAB BAR untuk SWITCH CANVAS
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48.0),
           child: SingleChildScrollView(
@@ -815,7 +803,6 @@ class _CreateSimulasiFirebasePageState
                     padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
                     child: GestureDetector(
                       onTap: () => _switchCanvas(index),
-                      // LongPress untuk delete canvas hanya jika bukan ReadOnly
                       onLongPress: !widget.isReadOnly && _projects.length > 1
                           ? () => _deleteCanvas(index)
                           : null,
@@ -846,7 +833,6 @@ class _CreateSimulasiFirebasePageState
                     ),
                   );
                 }),
-                // Tombol Add Canvas (Hanya jika TIDAK read-only)
                 if (!widget.isReadOnly)
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
@@ -862,16 +848,12 @@ class _CreateSimulasiFirebasePageState
       ),
       body: Column(
         children: [
-          // AREA SAMPAH DIHAPUS
           Expanded(
-            // InteractiveViewer untuk ZOOM/PAN
             child: InteractiveViewer(
               boundaryMargin: const EdgeInsets.all(double.infinity),
               minScale: 0.5,
               maxScale: 3.0,
-              // DragTarget untuk menjatuhkan komponen dari toolbox
               child: DragTarget<String>(
-                // Hanya izinkan drop jika TIDAK read-only
                 onAcceptWithDetails: widget.isReadOnly
                     ? null
                     : (details) {
@@ -920,12 +902,11 @@ class _CreateSimulasiFirebasePageState
                           size: Size.infinite,
                         ),
 
-                      // 3. Gambar komponen (TIDAK ADA LOGIKA DRAG UNTUK GESER/HAPUS)
+                      // 3. Gambar komponen
                       ..._componentsOnCanvas.map((component) {
                         return Positioned(
                           left: component.position.dx,
                           top: component.position.dy,
-                          // Menggunakan fungsi yang dimodifikasi
                           child: _buildComponentInPlace(component),
                         );
                       }),
@@ -943,7 +924,6 @@ class _CreateSimulasiFirebasePageState
               ),
             ),
           ),
-          // Toolbox hanya ditampilkan jika TIDAK read-only
           if (!widget.isReadOnly) _buildToolbox(),
         ],
       ),
