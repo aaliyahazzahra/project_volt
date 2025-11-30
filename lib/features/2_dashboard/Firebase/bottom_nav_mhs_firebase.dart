@@ -6,9 +6,6 @@ import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/homepage_mhs_firebase.dart';
 import 'package:project_volt/features/3_profile/Firebase/profile_page_firebase.dart';
 import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
-// Asumsi import untuk UserFirebaseModel dan AppColor sudah tersedia
-// Asumsi import untuk HomepageMhsFirebase, CreateSimulasiFirebasePage,
-// ProfilePageFirebase, dan BottomBarBubble sudah tersedia
 
 class BottomNavMhsFirebase extends StatefulWidget {
   final UserFirebaseModel user;

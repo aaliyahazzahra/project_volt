@@ -220,11 +220,51 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
+              Text(
+                "Mendaftar Sebagai:",
+                style: TextStyle(color: AppColor.kTextColor, fontSize: 12),
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  // Tombol Mahasiswa
+                  Expanded(
+                    child: RoleButtonfirebase(
+                      text: 'Mahasiswa',
+                      icon: Icons.school,
+                      role: UserRole.mahasiswa,
+                      isSelected: _selectedRole == UserRole.mahasiswa,
+                      onPressed: () {
+                        setState(() {
+                          _selectedRole = UserRole.mahasiswa;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  // Tombol Dosen
+                  Expanded(
+                    child: RoleButtonfirebase(
+                      text: 'Dosen',
+                      icon: Icons.person,
+                      role: UserRole.dosen,
+                      isSelected: _selectedRole == UserRole.dosen,
+                      onPressed: () {
+                        if (_selectedRole != UserRole.dosen) {
+                          _showDosenConfirmationDialog();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 20),
+
               BuildTextField(
                 labelText: "Nama Lengkap",
                 controller: namaLengkapController,
-                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
+                labelColor: AppColor.kTextColor,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Nama Lengkap tidak boleh kosong';
@@ -232,11 +272,12 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                   return null;
                 },
               ),
-              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
+              const SizedBox(height: 16),
+
               BuildTextField(
                 labelText: "Email",
                 controller: emailController,
-                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
+                labelColor: AppColor.kTextColor,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Email tidak boleh kosong';
@@ -250,14 +291,13 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
               BuildTextField(
                 labelText: "Password",
                 controller: passwordController,
                 isPassword: true,
-                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
+                labelColor: AppColor.kTextColor,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Password tidak boleh kosong';
@@ -335,13 +375,12 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
               ),
               const SizedBox(height: 16),
 
-              // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
               BuildTextField(
                 labelText: _selectedRole == UserRole.dosen
                     ? "NIDN/NIDK"
                     : "NIM",
                 controller: nimNidnController,
-                labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
+                labelColor: AppColor.kTextColor,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return '${_selectedRole == UserRole.dosen ? "NIDN/NIDK" : "NIM"} tidak boleh kosong';
@@ -351,44 +390,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
               ),
               SizedBox(height: 20),
 
-              Text(
-                "Mendaftar Sebagai:",
-                style: TextStyle(color: AppColor.kTextColor, fontSize: 12),
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  // Tombol Mahasiswa
-                  Expanded(
-                    child: RoleButtonfirebase(
-                      text: 'Mahasiswa',
-                      icon: Icons.school,
-                      role: UserRole.mahasiswa,
-                      isSelected: _selectedRole == UserRole.mahasiswa,
-                      onPressed: () {
-                        setState(() {
-                          _selectedRole = UserRole.mahasiswa;
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  // Tombol Dosen
-                  Expanded(
-                    child: RoleButtonfirebase(
-                      text: 'Dosen',
-                      icon: Icons.person,
-                      role: UserRole.dosen,
-                      isSelected: _selectedRole == UserRole.dosen,
-                      onPressed: () {
-                        if (_selectedRole != UserRole.dosen) {
-                          _showDosenConfirmationDialog();
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
               SizedBox(height: 30),
 
               // Tombol Daftar

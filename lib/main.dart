@@ -1,13 +1,28 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+// Impor Supabase yang baru ditambahkan
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:project_volt/features/0_splash/Firebase/splash_screen_firebase.dart';
 import 'package:project_volt/firebase_options.dart';
 
+// Kredensial Supabase Anda
+const String supabaseUrl = 'https://fxsskhupmqzzlhsktaqv.supabase.co';
+const String supabaseAnonKey =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4c3NraHVwbXF6emxoc2t0YXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwOTMyMTYsImV4cCI6MjA3OTY2OTIxNn0.itbDsTbdFVPB4yMpBvzupWKfvRx-LSdBUnzcTYEnZ6M';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 1. Inisialisasi format tanggal (intl)
   await initializeDateFormatting('id_ID', null);
+
+  // 2. Inisialisasi Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 3. Inisialisasi Supabase (DITAMBAHKAN)
+  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+
   runApp(const MyApp());
 }
 
@@ -21,21 +36,6 @@ class MyApp extends StatelessWidget {
       title: 'Volt',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: SplashScreenFirebase(),

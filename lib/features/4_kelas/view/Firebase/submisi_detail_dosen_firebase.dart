@@ -9,6 +9,9 @@ import 'package:project_volt/data/firebase/service/simulasi_firebase_service.dar
 import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart';
 import 'package:project_volt/data/firebase/service/tugas_firebase_service.dart';
 import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
+// --- IMPORT BARU UNTUK MEMBUKA URL (Penyelesaian TODO) ---
+import 'package:url_launcher/url_launcher.dart';
+// --------------------------------------------------------
 
 class SubmisiDetailPage extends StatefulWidget {
   final SubmisiDetailFirebase detail;
@@ -72,12 +75,10 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
 
   // --- LOGIC NAVIGATION / VIEW SIMULASI ---
 
-  // Di dalam class _SubmisiDetailPageState di submisi_detail_dosen_firebase.dart
-
   void _viewSimulasiJawaban() async {
-    if (_simulasiJawaban == null) return; // Harus punya ID Tugas
+    if (_simulasiJawaban == null) return;
 
-    //    LANGKAH 1: Dapatkan data Tugas untuk mendapatkan kelasId
+    //    LANGKAH 1: Dapatkan data Tugas untuk mendapatkan kelasId
     final tugas = await _tugasService.getTugasById(
       widget.detail.submisi.tugasId,
     );
@@ -97,7 +98,7 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
       context,
       MaterialPageRoute(
         builder: (context) => CreateSimulasiFirebasePage(
-          //    KOREKSI: Ambil kelasId dari Tugas yang dimuat
+          //    KOREKSI: Ambil kelasId dari Tugas yang dimuat
           kelasId: tugas.kelasId,
           user: widget.detail.mahasiswa,
           loadSimulasiId: _simulasiJawaban!.simulasiId,
@@ -107,7 +108,7 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
     );
   }
 
-  // --- LOGIC PENILAIAN ---
+  // --- LOGIC PENILAIAN & SNACKBAR ---
 
   void _showSnackbar(String title, String message, ContentType type) {
     final snackBarContent = AwesomeSnackbarContent(
@@ -149,7 +150,7 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
     setState(() => _isSaving = true);
 
     try {
-      //   Panggil service untuk mengupdate nilai
+      //   Panggil service untuk mengupdate nilai
       await _submisiService.updateNilai(
         submisiId: widget.detail.submisi.submisiId!,
         nilai: nilai,
@@ -174,6 +175,30 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  // --- LOGIC MEMBUKA URL (Penyelesaian TODO) ---
+
+  Future<void> _openFileUrl(String url) async {
+    if (url.isEmpty) return;
+    final uri = Uri.parse(url);
+
+    try {
+      // Menggunakan LaunchMode.externalApplication agar file diunduh/dibuka di browser
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        _showSnackbar(
+          "Gagal",
+          "Tidak dapat membuka link: $url",
+          ContentType.failure,
+        );
+      }
+    } catch (e) {
+      _showSnackbar(
+        "Gagal",
+        "Terjadi kesalahan saat mencoba membuka link.",
+        ContentType.failure,
+      );
     }
   }
 
@@ -205,7 +230,7 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
       );
     }
 
-    // Tampilan Konten Submisi File Standar
+    // Tampilan Konten Submisi File Standar (Membuka URL Supabase)
     if (submisi.filePathSubmisi != null || submisi.linkSubmisi != null) {
       final String path = submisi.filePathSubmisi ?? submisi.linkSubmisi!;
       return Card(
@@ -215,12 +240,8 @@ class _SubmisiDetailPageState extends State<SubmisiDetailPage> {
           subtitle: Text(path.split('/').last),
           trailing: const Icon(Icons.visibility),
           onTap: () {
-            // 💡 TODO: Implementasi membuka file / link (misal menggunakan url_launcher)
-            _showSnackbar(
-              "Info",
-              "Simulasi membuka file/link: $path",
-              ContentType.help,
-            );
+            // Penyelesaian TODO: Panggil fungsi _openFileUrl
+            _openFileUrl(path);
           },
         ),
       );

@@ -8,17 +8,20 @@ class SubmisiFirebaseModel {
   final String tugasId;
   final String mahasiswaId;
 
-  //   FILE SUBMISI STANDAR
+  // NEW/CORRECTED FIELD: Teks Jawaban Langsung
+  final String? textSubmisi; // Menggunakan nama yang lebih konsisten
+
+  // FILE SUBMISI STANDAR
   final String? linkSubmisi;
   final String? filePathSubmisi; // Path ke file di Storage (jika ada)
 
-  //   FIELD BARU: ID SIMULASI HASIL KERJA MAHASISWA
+  // FIELD BARU: ID SIMULASI HASIL KERJA MAHASISWA
   final String? simulasiSubmisiId;
 
-  //  KOREKSI TIPE DATA: Gunakan DateTime untuk submission date
+  // KOREKSI TIPE DATA: Gunakan DateTime untuk submission date
   final DateTime? tglSubmit;
 
-  //  FIELD BARU: Status Submisi (e.g., 'DISUBMIT', 'TERLAMBAT', 'DINILAI')
+  // FIELD BARU: Status Submisi (e.g., 'DISUBMIT', 'TERLAMBAT', 'DINILAI')
   final String status;
 
   final int? nilai; // 0-100
@@ -27,6 +30,7 @@ class SubmisiFirebaseModel {
     this.submisiId,
     required this.tugasId,
     required this.mahasiswaId,
+    this.textSubmisi, // TAMBAHKAN DI CONSTRUCTOR
     this.linkSubmisi,
     this.filePathSubmisi,
     this.simulasiSubmisiId, // Tambahan
@@ -51,6 +55,7 @@ class SubmisiFirebaseModel {
       submisiId: id,
       tugasId: map['tugasId'] as String,
       mahasiswaId: map['mahasiswaId'] as String,
+      textSubmisi: map['textSubmisi'] as String?, // PARSE TEXT SUBMISI
       linkSubmisi: map['linkSubmisi'] as String?,
       filePathSubmisi: map['filePathSubmisi'] as String?,
       simulasiSubmisiId:
@@ -65,6 +70,7 @@ class SubmisiFirebaseModel {
     return {
       'tugasId': tugasId,
       'mahasiswaId': mahasiswaId,
+      'textSubmisi': textSubmisi, // SIMPAN TEXT SUBMISI
       'linkSubmisi': linkSubmisi,
       'filePathSubmisi': filePathSubmisi,
       'simulasiSubmisiId': simulasiSubmisiId,
@@ -79,6 +85,7 @@ class SubmisiFirebaseModel {
     String? submisiId,
     String? tugasId,
     String? mahasiswaId,
+    String? textSubmisi, // TAMBAHKAN DI copyWith
     String? linkSubmisi,
     String? filePathSubmisi,
     String? simulasiSubmisiId,
@@ -90,6 +97,7 @@ class SubmisiFirebaseModel {
       submisiId: submisiId ?? this.submisiId,
       tugasId: tugasId ?? this.tugasId,
       mahasiswaId: mahasiswaId ?? this.mahasiswaId,
+      textSubmisi: textSubmisi ?? this.textSubmisi, // GUNAKAN DI copyWith
       linkSubmisi: linkSubmisi ?? this.linkSubmisi,
       filePathSubmisi: filePathSubmisi ?? this.filePathSubmisi,
       simulasiSubmisiId: simulasiSubmisiId ?? this.simulasiSubmisiId,

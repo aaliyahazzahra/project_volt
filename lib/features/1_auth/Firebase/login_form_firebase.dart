@@ -5,7 +5,7 @@ import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
-import 'package:project_volt/features/3_profile/password_management_page.dart';
+import 'package:project_volt/features/1_auth/Firebase/password_management_page.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
 

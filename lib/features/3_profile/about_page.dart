@@ -3,17 +3,31 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_image.dart';
+// 1. Tambahkan impor untuk url_launcher
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
   // Helper untuk membuka URL (Memerlukan package url_launcher)
-  void _launchURL(BuildContext context, String url) {
+  void _launchURL(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Membuka: $url"), duration: Duration(seconds: 1)),
+      SnackBar(
+        content: Text("Membuka: $url"),
+        duration: const Duration(seconds: 1),
+      ),
     );
-    // TODO: Tambahkan 'url_launcher' di pubspec.yaml jika ingin link benar-benar bisa diklik
-    // launchUrl(Uri.parse(url));
+
+    // 2. Aktifkan launchUrl
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      // Tampilkan pesan error jika tidak bisa membuka URL
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal membuka tautan: $url")));
+    }
   }
 
   @override
@@ -89,8 +103,9 @@ class AboutPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
+            shape: BoxShape.rectangle,
             color: AppColor.kWhiteColor,
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
                 // Shadow menggunakan warna branding
@@ -119,7 +134,7 @@ class AboutPage extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColor.kTextColor,
+            color: AppColor.kPrimaryColor,
           ),
         ),
         const SizedBox(height: 4),

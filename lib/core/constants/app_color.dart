@@ -3,14 +3,21 @@ import 'package:flutter/material.dart';
 class AppColor {
   // Latar Belakang dan Dasar
   static const Color kBackgroundColor = Color(0xFFFEF5E7);
-  static const Color kWhiteColor = Color(0xFFFFFFFF);
-  static const Color kBlackColor = Color(0xFF000000);
+  static const Color kBackgroundColorMhs = Color(0xFFE7F9FE);
+  static const Color kWhiteColor = Color(0xFFFEFEFA);
+  static const Color kBlackColor = Color(0xFF191919);
   static const Color kIconBgColor = Color(0xFFD6EAF8);
 
   // Teks
   static const Color kTextColor = Color(0xFF34495E);
   static const Color kTextSecondaryColor = Color(0xFF566573);
   static const Color kLightTextColor = Color.fromARGB(255, 255, 227, 227);
+  static const Color kSecondaryLightTextColor = Color.fromARGB(
+    255,
+    218,
+    248,
+    250,
+  );
   static const Color kAppBar = Color.fromARGB(255, 245, 212, 160);
 
   // Divider/Disabled
@@ -32,7 +39,7 @@ class AppColor {
   static const Color kDarkBlue = Color(0xFF062569);
 
   // Warna ini digunakan khusus untuk background di halaman Login/Register
-  static const Color kGradationBlueDark = Color(0xFF64B5F6);
+  static const Color kGradationBlueDark = Color(0xFF97D2FF);
   static const Color kGradationBlueLight = Color(0xFFB3E5FC);
   static const Color kGradationOrangeLight = Color(0xFFFFE0B2);
   static const Color kGradationOrangeDark = Color(0xFFFFCC80);
@@ -58,6 +65,6 @@ class AppColor {
   static const Color kDarkIndigo = Color(0xFF3949AB);
 
   // WARNA BADGE TAMBAHAN
-  static const Color kBadgeGold = Color(0xFFFFC107); // perwakilan Colors.amber
+  static const Color kBadgeGold = Color(0xFFFFC107);
   static const Color kBadgeSilver = Color(0xFF90A4AE);
 }

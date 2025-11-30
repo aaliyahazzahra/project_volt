@@ -132,27 +132,62 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Gabung Kelas Baru'),
+          // Latar belakang default AlertDialog sudah putih, tapi bisa ditegaskan
+          backgroundColor: AppColor.kLightAccentColor, //perubahan
+
+          title: const Text(
+            'Gabung Kelas Baru',
+            style: TextStyle(
+              color: AppColor.kTextColor,
+              fontWeight: FontWeight.bold,
+            ), //perubahan
+          ),
           content: TextField(
             controller: _kodeController,
-            decoration: const InputDecoration(hintText: "Masukkan Kode Kelas"),
+            // Perbaikan styling TextField agar konsisten
+            decoration: InputDecoration(
+              //perubahan
+              hintText: "Masukkan Kode Kelas",
+              // Warna border saat fokus menggunakan warna Mahasiswa (Biru)
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: AppColor.kAccentColor,
+                  width: 2.0,
+                ),
+              ), //perubahan
+              // Warna border saat default
+              enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColor.kDividerColor),
+              ), //perubahan
+              hintStyle: const TextStyle(
+                color: AppColor.kTextSecondaryColor,
+              ), //perubahan
+            ), //perubahan
             autofocus: true,
           ),
           actions: <Widget>[
             TextButton(
               child: Text(
                 'Batal',
-                style: TextStyle(color: AppColor.kAccentColor),
+                // Warna tombol Aksi (Batal) menggunakan warna tema Mahasiswa
+                style: TextStyle(
+                  color: AppColor.kAccentColor,
+                  fontWeight: FontWeight.w600,
+                ), //perubahan
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: Text(
                 'Gabung',
-                style: TextStyle(color: AppColor.kAccentColor),
+                // Warna tombol Aksi (Gabung) menggunakan warna tema Mahasiswa
+                style: TextStyle(
+                  color: AppColor.kAccentColor,
+                  fontWeight: FontWeight.bold,
+                ), //perubahan
               ),
               onPressed: () async {
-                final String userUid = widget.user.uid;
+                final String? userUid = widget.user.uid;
                 if (userUid == null) return;
 
                 if (_kodeController.text.isEmpty) {
@@ -166,7 +201,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
                 try {
                   //  PANGGIL SERVICE FIREBASE: joinKelas
                   final String hasil = await _userManagementService.joinKelas(
-                    userUid,
+                    userUid, // Perbaiki agar tidak ada error di sini
                     _kodeController.text.trim(),
                   );
 
@@ -241,18 +276,19 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.kBackgroundColor,
+      backgroundColor: AppColor.kBackgroundColorMhs,
       appBar: AppBar(
         title: const Text(
           "Ruang Kelas",
           style: TextStyle(
-            color: AppColor.kTextColor,
+            // color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
         centerTitle: true,
-        backgroundColor: AppColor.kAppBar,
+        backgroundColor: AppColor.kAccentColor,
+        foregroundColor: AppColor.kWhiteColor,
       ),
       body: _isLoading
           ? Center(

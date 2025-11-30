@@ -4,10 +4,10 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:project_volt/data/firebase/models/submisi_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart'; // Import user model
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 // Asumsi: SubmisiDetailFirebase didefinisikan di sini atau diimpor
 
-// --- Helper Class (seperti di atas) ---
+// --- Helper Class (Model Join Data untuk Dosen) ---
 class SubmisiDetailFirebase {
   final SubmisiFirebaseModel submisi;
   final UserFirebaseModel mahasiswa;
@@ -25,16 +25,16 @@ class SubmisiFirebaseService {
 
   // ----------------------------------------------------
   // 1. CREATE/UPDATE: Mengumpulkan atau Memperbarui Submisi
+  // (Otomatis menangani textSubmisi karena menggunakan submisi.toMap())
   // ----------------------------------------------------
   /// Menggunakan Compound Key (tugasId + mahasiswaId) untuk cek dan update.
   Future<void> createOrUpdateSubmisi(SubmisiFirebaseModel submisi) async {
-    // 💡 KOREKSI 1: Pastikan ID submisi yang akan digunakan adalah ID gabungan,
-    // jika submisiId di model adalah null (artinya baru pertama kali dibuat/dimuat dari model)
+    // ID yang akan digunakan adalah submisiId, atau ID gabungan jika submisiId null
     final String uniqueId =
         submisi.submisiId ?? '${submisi.tugasId}_${submisi.mahasiswaId}';
 
     try {
-      // 💡 KOREKSI 2: Panggil toMap() yang sudah diupdate
+      // NOTE: submisi.toMap() kini sudah menyertakan field textSubmisi
       await _firestore
           .collection(_collectionName)
           .doc(uniqueId)
@@ -47,6 +47,7 @@ class SubmisiFirebaseService {
 
   // ----------------------------------------------------
   // 2. READ: Mengecek Submisi Mahasiswa
+  // (Otomatis menangani textSubmisi karena menggunakan SubmisiFirebaseModel.fromMap())
   // ----------------------------------------------------
   /// Mengecek submisi Mahasiswa sebelumnya untuk Tugas tertentu.
   Future<SubmisiFirebaseModel?> getSubmisiByTugasAndMahasiswa(
@@ -64,20 +65,20 @@ class SubmisiFirebaseService {
         return null;
       }
 
-      // 💡 KOREKSI 3: Pastikan fromMap menerima tipe data yang benar (Map<String, dynamic>)
+      // NOTE: SubmisiFirebaseModel.fromMap() kini bisa membaca field textSubmisi
       return SubmisiFirebaseModel.fromMap(
         doc.data() as Map<String, dynamic>,
         id: doc.id, // ID dokumen adalah uniqueId gabungan
       );
     } catch (e) {
       log('Error getting submission: $e');
-      // Tidak perlu rethrow jika tujuan utama adalah mengecek keberadaan
       return null;
     }
   }
 
   // ----------------------------------------------------
   // 3. READ: Melihat Semua Submisi (Daftar Dasar)
+  // (Otomatis menangani textSubmisi karena menggunakan SubmisiFirebaseModel.fromMap())
   // ----------------------------------------------------
   /// Melihat semua submisi untuk satu tugas (tanpa detail user).
   Future<List<SubmisiFirebaseModel>> getAllSubmisiByTugas(
@@ -91,6 +92,7 @@ class SubmisiFirebaseService {
           .get();
 
       return snapshot.docs.map((doc) {
+        // NOTE: SubmisiFirebaseModel.fromMap() kini bisa membaca field textSubmisi
         return SubmisiFirebaseModel.fromMap(
           doc.data() as Map<String, dynamic>,
           id: doc.id,
@@ -104,6 +106,7 @@ class SubmisiFirebaseService {
 
   // ----------------------------------------------------
   // 4. READ (Relasional): Melihat Detail Submisi (untuk Dosen)
+  // (Otomatis menangani textSubmisi karena menggunakan SubmisiFirebaseModel.fromMap())
   // ----------------------------------------------------
   /// Mengambil data Submisi dan detail Mahasiswa yang melakukan submisi (Simulasi JOIN).
   Future<List<SubmisiDetailFirebase>> getSubmisiDetailByTugas(
@@ -125,6 +128,7 @@ class SubmisiFirebaseService {
       for (var doc in submisiSnapshot.docs) {
         final Map<String, dynamic> docData = doc.data();
 
+        // NOTE: SubmisiFirebaseModel.fromMap() kini bisa membaca field textSubmisi
         final submisiData = SubmisiFirebaseModel.fromMap(docData, id: doc.id);
 
         // 2. Ambil detail user satu per satu (client-side join)
@@ -136,7 +140,7 @@ class SubmisiFirebaseService {
         if (userDoc.exists) {
           final Map<String, dynamic> userData = userDoc.data()!;
 
-          // 💡 KOREKSI 4: Pastikan UID dari Document ID ditambahkan untuk diinisiasi oleh fromMap UserFirebaseModel
+          // Tambahkan UID dari Document ID agar model dapat menginisiasi UID
           userData['uid'] = userDoc.id;
 
           // 3. Panggil UserFirebaseModel.fromMap yang sudah lengkap
@@ -146,7 +150,7 @@ class SubmisiFirebaseService {
             SubmisiDetailFirebase(submisi: submisiData, mahasiswa: userModel),
           );
         } else {
-          // Jika data user hilang, tetap tambahkan submisi, tapi dengan user model default/kosong
+          // Jika data user hilang, tetap tambahkan submisi dengan user model default
           resultList.add(
             SubmisiDetailFirebase(
               submisi: submisiData,

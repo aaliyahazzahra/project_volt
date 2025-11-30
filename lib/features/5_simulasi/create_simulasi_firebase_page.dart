@@ -1,5 +1,6 @@
 // lib/features/5_simulasi/create_simulasi_firebase_page.dart
 
+import 'dart:async'; // Diperlukan untuk Timer
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -37,12 +38,8 @@ class CreateSimulasiFirebasePage extends StatefulWidget {
 
 class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     with AutomaticKeepAliveClientMixin {
-  // <--- PERBAIKAN: TAMBAH MIXIN INI
-
-  // --- IMPLEMENTASI WAJIB UNTUK KEEP ALIVE ---
   @override
-  bool get wantKeepAlive => true; // <--- AGAR STATE SIMULASI TIDAK HILANG
-  // ------------------------------------------
+  bool get wantKeepAlive => true;
 
   // FIREBASE SERVICE
   final SimulasiFirebaseService _simulasiService = SimulasiFirebaseService();
@@ -72,14 +69,15 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
 
   String? _currentSimulasiId;
 
+  // ⚠️ PERBAIKAN DEBOUNCE
+  Timer? _simulationTimer;
+
   @override
   void initState() {
     super.initState();
     _currentSimulasiId = widget.loadSimulasiId;
 
-    // Muat data jika loadSimulasiId ada
     if (widget.loadSimulasiId != null) {
-      // Pemuatan data Firebase yang memblokir terjadi di sini
       _loadExistingProject(widget.loadSimulasiId!);
     } else {
       _initializeNewProject();
@@ -90,7 +88,20 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
   void dispose() {
     _judulController.dispose();
     _deskripsiController.dispose();
+    _simulationTimer?.cancel(); // Pastikan timer dibatalkan
     super.dispose();
+  }
+
+  // ⚠️ LOGIC DEBOUNCE 45ms
+  void _triggerSimulation() {
+    if (_isSimulating) return;
+
+    _simulationTimer?.cancel();
+
+    _simulationTimer = Timer(const Duration(milliseconds: 45), () {
+      // 45ms Sesuai Permintaan
+      _runSimulation();
+    });
   }
 
   // --- LOGIC TEMPLATE LOADING ---
@@ -117,11 +128,9 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
 
       if (existingSimulasi != null && mounted) {
         setState(() {
-          // Isi metadata
           _judulController.text = existingSimulasi.judul;
           _deskripsiController.text = existingSimulasi.deskripsi;
 
-          // Isi Project Data (Clone project untuk editor)
           _projects.add(existingSimulasi.projectData.copyWith(id: _uuid.v4()));
 
           if (widget.kelasId != null) {
@@ -132,7 +141,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
             _currentSimulasiId = existingSimulasi.simulasiId;
           }
         });
-        _runSimulation();
+        _runSimulation(); // Panggilan simulasi awal tanpa debounce
       } else {
         _initializeNewProject();
         _showSnackbar(
@@ -153,10 +162,9 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     }
   }
 
-  // --- LOGIC FIREBASE SAVE/UPDATE (Sama seperti sebelumnya) ---
+  // --- LOGIC FIREBASE SAVE/UPDATE (Tidak Berubah) ---
 
   void _showSnackbar(String title, String message, ContentType type) {
-    // ... (Snackbar code)
     final snackBarContent = AwesomeSnackbarContent(
       title: title,
       message: message,
@@ -174,7 +182,6 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
   }
 
   Future<void> _showSaveDialog() async {
-    // ... (Dialog code)
     return showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -284,7 +291,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     }
   }
 
-  // --- LOGIC ENGINE & HELPER UI (Sama seperti sebelumnya) ---
+  // --- LOGIC ENGINE & HELPER UI ---
 
   void _resetDragging() {
     setState(() {
@@ -301,16 +308,19 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     return canvasBox.globalToLocal(globalPosition);
   }
 
+  // Menggunakan GateType di sini
   Offset getNodePosition(String componentId, String nodeId) {
-    // ... (getNodePosition logic)
     try {
       final component = _componentsOnCanvas.firstWhere(
         (c) => c.id == componentId,
       );
       final componentPosition = component.position;
-      final type = component.type;
+      final type = component.type; // Mengambil GateType
 
-      double inputAY = (type == 'NOT' || type == 'OUTPUT') ? 30 : 18;
+      // Gunakan GateType untuk penentuan posisi
+      double inputAY = (type == GateType.NOT || type == GateType.OUTPUT)
+          ? 30
+          : 18;
       double inputBY = 42;
 
       if (nodeId == 'input_a') {
@@ -329,9 +339,8 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
   }
 
   ({String componentId, String nodeId})? _findNodeAt(Offset localPosition) {
-    // ... (_findNodeAt logic)
     for (final component in _componentsOnCanvas) {
-      if (component.type == 'INPUT') continue;
+      if (component.type == GateType.INPUT) continue; // Menggunakan GateType
 
       if (component.inputs.containsKey('input_a')) {
         final nodePos = getNodePosition(component.id, 'input_a');
@@ -391,7 +400,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
       _activeIndex = index;
       _resetDragging();
     });
-    _runSimulation();
+    _runSimulation(); // Panggilan simulasi langsung saat ganti tab (tidak perlu debounce)
   }
 
   void _deleteCanvas(int index) {
@@ -405,10 +414,9 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
       }
       _resetDragging();
     });
-    _runSimulation();
+    _runSimulation(); // Panggilan simulasi langsung saat hapus tab (tidak perlu debounce)
   }
 
-  // UBAH DARI DRAGGABLE MENJADI WIDGET STANDAR (mengunci posisi)
   Widget _buildComponentInPlace(SimulationComponent component) {
     return _buildComponentWidget(component: component);
   }
@@ -416,40 +424,43 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
   Widget _buildToolbox() {
     if (widget.isReadOnly) return const SizedBox.shrink();
 
+    // ⚠️ PERBAIKAN OVERFLOW: Menggunakan padding horizontal dan tinggi yang tetap
     return Container(
-      height: 100,
+      height: 90, // Tinggi dikurangi sedikit untuk menghindari overflow
       width: double.infinity,
       color: AppColor.kWarningColor.withOpacity(0.5),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
         child: Row(
           children: [
-            _buildDraggableComponent("INPUT"),
+            _buildDraggableComponent(GateType.INPUT),
             const SizedBox(width: 16),
-            _buildDraggableComponent("OUTPUT"),
+            _buildDraggableComponent(GateType.OUTPUT),
             const SizedBox(width: 16),
-            _buildDraggableComponent("AND"),
+            _buildDraggableComponent(GateType.AND),
             const SizedBox(width: 16),
-            _buildDraggableComponent("OR"),
+            _buildDraggableComponent(GateType.OR),
             const SizedBox(width: 16),
-            _buildDraggableComponent("NOT"),
+            _buildDraggableComponent(GateType.NOT),
             const SizedBox(width: 16),
-            _buildDraggableComponent("NAND"),
+            _buildDraggableComponent(GateType.NAND),
             const SizedBox(width: 16),
-            _buildDraggableComponent("NOR"),
+            _buildDraggableComponent(GateType.NOR),
             const SizedBox(width: 16),
-            _buildDraggableComponent("Ex-OR"),
+            _buildDraggableComponent(GateType.ExOR), // Menggunakan Enum
             const SizedBox(width: 16),
-            _buildDraggableComponent("Ex-NOR"),
+            _buildDraggableComponent(GateType.ExNOR), // Menggunakan Enum
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDraggableComponent(String type) {
-    return Draggable<String>(
+  // GANTI: String type -> GateType type
+  Widget _buildDraggableComponent(GateType type) {
+    return Draggable<GateType>(
+      // GANTI generic type
       data: type,
       feedback: _buildComponentVisual(type, isDragging: true, value: false),
       child: _buildComponentVisual(type, value: false),
@@ -458,8 +469,8 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
   }
 
   Widget _buildComponentWidget({required SimulationComponent component}) {
-    // ... (Component Widget Code)
-    final bool isInputComponent = component.type == 'INPUT';
+    final bool isInputComponent =
+        component.type == GateType.INPUT; // Menggunakan Enum
     Widget componentVisual = _buildComponentVisual(
       component.type,
       value: component.outputValue,
@@ -471,22 +482,22 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
           setState(() {
             component.outputValue = !component.outputValue;
           });
-          _runSimulation();
+          _triggerSimulation(); // GANTI DENGAN DEBOUNCE
         },
         child: componentVisual,
       );
     }
 
     final type = component.type;
-    final bool showInputA = type != 'INPUT';
+    final bool showInputA = type != GateType.INPUT;
     final bool showInputB =
-        type == 'AND' ||
-        type == 'OR' ||
-        type == 'NAND' ||
-        type == 'NOR' ||
-        type == 'Ex-OR' ||
-        type == 'Ex-NOR';
-    final bool showOutput = type != 'OUTPUT';
+        type == GateType.AND ||
+        type == GateType.OR ||
+        type == GateType.NAND ||
+        type == GateType.NOR ||
+        type == GateType.ExOR || // Menggunakan Enum
+        type == GateType.ExNOR; // Menggunakan Enum
+    final bool showOutput = type != GateType.OUTPUT;
 
     return Stack(
       clipBehavior: Clip.none,
@@ -526,13 +537,14 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     );
   }
 
+  // GANTI: String type -> GateType type
   Widget _buildComponentVisual(
-    String type, {
+    GateType type, {
     bool isDragging = false,
     required bool value,
   }) {
-    // ... (Visual Component Code)
-    if (type == 'INPUT') {
+    // Menggunakan GateType untuk identifikasi
+    if (type == GateType.INPUT) {
       return Container(
         height: 60,
         width: 80,
@@ -561,7 +573,8 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
         ),
       );
     }
-    if (type == 'OUTPUT') {
+    // Menggunakan GateType untuk identifikasi
+    if (type == GateType.OUTPUT) {
       return Container(
         height: 60,
         width: 80,
@@ -609,7 +622,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
           children: [
             Center(
               child: Text(
-                type,
+                type.name, // Menggunakan type.name (ExOR, AND, dll)
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -628,7 +641,6 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     required String nodeId,
     required bool isInputNode,
   }) {
-    // ... (Connection Node Code)
     bool nodeValue = false;
     try {
       final component = _componentsOnCanvas.firstWhere(
@@ -649,7 +661,8 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
                 (c) => c.id == componentId,
               );
 
-              if (isInputNode) {
+              // Kabel hanya boleh ditarik dari output
+              if (isInputNode && component.type != GateType.INPUT) {
                 _showSnackbar(
                   "Peringatan",
                   "Kabel hanya boleh ditarik dari output gerbang atau INPUT switch.",
@@ -681,7 +694,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
       onPanEnd: widget.isReadOnly
           ? null
           : (details) {
-              if (_draggingFromComponentId == null) {
+              if (_draggingFromComponentId == null || _draggingOffset == null) {
                 _resetDragging();
                 return;
               }
@@ -705,7 +718,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
                       ),
                     );
                   });
-                  _runSimulation();
+                  _triggerSimulation(); // GANTI DENGAN DEBOUNCE
                 }
               }
               _resetDragging();
@@ -738,9 +751,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(
-      context,
-    ); // <--- WAJIB DIPANGGIL KARENA ADA AutomaticKeepAliveClientMixin
+    super.build(context);
 
     if (_isTemplateLoading) {
       return Scaffold(
@@ -785,6 +796,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
                 _activeProject.wires.clear();
                 _resetDragging();
               });
+              _runSimulation(); // Panggil langsung setelah reset
             },
           ),
         ],
@@ -853,26 +865,31 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
               boundaryMargin: const EdgeInsets.all(double.infinity),
               minScale: 0.5,
               maxScale: 3.0,
-              child: DragTarget<String>(
+              // GANTI DragTarget<String> menjadi DragTarget<GateType>
+              child: DragTarget<GateType>(
                 onAcceptWithDetails: widget.isReadOnly
                     ? null
                     : (details) {
                         final Offset localOffset = _convertGlobalToLocal(
                           details.offset,
                         );
+                        // GANTI details.data (String) menjadi GateType
+                        final GateType gateType = details.data;
                         final newComponent = SimulationComponent(
                           id: _uuid.v4(),
-                          type: details.data,
+                          type: gateType,
                           position: Offset(
                             localOffset.dx - 40,
                             localOffset.dy - 30,
                           ),
-                          inputs: getDefaultInputs(details.data),
+                          inputs: getDefaultInputs(
+                            gateType,
+                          ), // Menggunakan GateType
                         );
                         setState(() {
                           _componentsOnCanvas.add(newComponent);
                         });
-                        _runSimulation();
+                        _triggerSimulation(); // GANTI DENGAN DEBOUNCE
                       },
                 builder: (context, candidateData, rejectedData) {
                   return Stack(

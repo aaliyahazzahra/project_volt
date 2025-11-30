@@ -74,7 +74,7 @@ class AuthenticatorFirebase extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
                     SizedBox(
                       height: 500,

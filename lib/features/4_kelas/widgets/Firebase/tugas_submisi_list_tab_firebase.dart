@@ -1,4 +1,4 @@
-// lib/features/4_kelas/widgets/tabs/tugas_submisi_list_tab.dart (FILE BARU)
+// lib/features/4_kelas/widgets/tabs/tugas_submisi_list_tab.dart
 
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
@@ -8,9 +8,12 @@ import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart
 import 'package:project_volt/features/4_kelas/view/Firebase/submisi_detail_dosen_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
+// Catatan: SubmisiDetailFirebase harus diimpor/didefinisikan di file submisi_firebase_service.dart
+// (sesuai kode yang Anda berikan sebelumnya)
+
 class SubmisiListTab extends StatefulWidget {
-  // Ganti nama dari _SubmisiListTab menjadi SubmisiListTab
   final String tugasId;
+
   const SubmisiListTab({super.key, required this.tugasId});
 
   @override
@@ -19,6 +22,7 @@ class SubmisiListTab extends StatefulWidget {
 
 class _SubmisiListTabState extends State<SubmisiListTab> {
   final SubmisiFirebaseService _submisiService = SubmisiFirebaseService();
+  // Menggunakan tipe List<SubmisiDetailFirebase> yang merupakan join data Submisi dan User
   late Future<List<SubmisiDetailFirebase>> _futureSubmisi;
 
   @override
@@ -28,19 +32,22 @@ class _SubmisiListTabState extends State<SubmisiListTab> {
   }
 
   void _loadSubmisi() {
+    // Memanggil fungsi relasional untuk mendapatkan detail Submisi dan Mahasiswa
     _futureSubmisi = _submisiService.getSubmisiDetailByTugas(widget.tugasId);
   }
 
   // Koreksi Error Navigasi yang Ditemukan Sebelumnya
   void _navigateToSubmisiDetail(SubmisiDetailFirebase detail) async {
+    // Navigasi ke halaman detail penilaian
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        // Panggil Widget Halaman Penilaian yang benar
+        // Panggil Widget Halaman Penilaian yang benar (SubmisiDetailPage sesuai dengan kode keempat Anda)
         builder: (context) => SubmisiDetailPage(detail: detail),
       ),
     );
 
+    // Jika hasil pop dari halaman detail adalah true, lakukan refresh list
     if (result == true && mounted) {
       setState(() {
         _loadSubmisi();
@@ -65,7 +72,6 @@ class _SubmisiListTabState extends State<SubmisiListTab> {
         if (daftarSubmisi.isEmpty) {
           return const EmptyStateWidget(
             imagePath: AppImages.tugasdosen,
-            // icon: Icons.group_off_outlined,
             title: "Belum Ada Submisi",
             message: "Belum ada mahasiswa yang mengumpulkan tugas ini.",
           );
@@ -89,7 +95,7 @@ class _SubmisiListTabState extends State<SubmisiListTab> {
                   backgroundColor: AppColor.kIconBgColor,
                   child: Text(
                     item.mahasiswa.namaLengkap.substring(0, 1),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColor.kPrimaryColor,
                       fontWeight: FontWeight.bold,
                     ),
@@ -100,9 +106,7 @@ class _SubmisiListTabState extends State<SubmisiListTab> {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  item.mahasiswa.nimNidn ??
-                      item.mahasiswa.email ??
-                      'Tidak ada data',
+                  item.mahasiswa.nimNidn ?? "NIM/NIDN tidak tersedia",
                 ),
                 trailing: Chip(
                   label: Text(
