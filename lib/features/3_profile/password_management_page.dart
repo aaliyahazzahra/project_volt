@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:project_volt/core/constants/app_color.dart'; //perubahan: Import AppColor
 
 class PasswordManagementPage extends StatefulWidget {
   const PasswordManagementPage({super.key});
@@ -67,7 +68,6 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
 
     try {
       // 1. RE-AUTENTIKASI (Penting untuk Keamanan!)
-      // Harus dilakukan jika kredensial terakhir sudah terlalu lama.
       AuthCredential credential = EmailAuthProvider.credential(
         email: user.email!,
         password: oldPassword,
@@ -75,7 +75,6 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
       await user.reauthenticateWithCredential(credential);
 
       // 2. MENGGANTI PASSWORD
-      // Ini adalah fungsi utama untuk mengganti password.
       await user.updatePassword(newPassword);
 
       setState(() {
@@ -87,7 +86,6 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
       if (e.code == 'wrong-password') {
         setState(() => _message = 'Password lama salah.');
       } else if (e.code == 'requires-recent-login') {
-        // Ini jarang terjadi jika sudah dilakukan reauthenticate, tapi ini pesan default Firebase
         setState(
           () => _message =
               'Mohon login kembali untuk mengizinkan perubahan password.',
@@ -108,7 +106,18 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Manajemen Password Firebase')),
+      backgroundColor: AppColor.kBackgroundColor, //perubahan
+      appBar: AppBar(
+        title: const Text(
+          'Manajemen Password',
+          style: TextStyle(
+            color: AppColor.kTextColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ), //perubahan
+        backgroundColor: AppColor.kAppBar, //perubahan
+        iconTheme: const IconThemeData(color: AppColor.kTextColor), //perubahan
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -118,12 +127,20 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blueGrey.shade50,
+                // Mengganti Colors.blueGrey.shade50
+                color: AppColor
+                    .kLightAccentColor, //perubahan: Menggunakan warna terang Mahasiswa (Biru)
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColor.kAccentColor.withOpacity(0.5),
+                ), //perubahan
               ),
               child: Text(
                 _message.isEmpty ? 'Pilih salah satu opsi di bawah.' : _message,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColor.kTextColor,
+                ), //perubahan
               ),
             ),
             const SizedBox(height: 20),
@@ -133,23 +150,43 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
             // -----------------------------------------------------------------
             const Text(
               '1. Lupa Password (Reset via Link)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColor.kTextColor,
+              ), //perubahan
             ),
-            const Divider(),
+            const Divider(color: AppColor.kDividerColor), //perubahan
             const Text(
               'Masukkan email terdaftar untuk menerima tautan (link) reset password.',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: AppColor.kTextSecondaryColor), //perubahan
             ),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email Terdaftar'),
+              decoration: InputDecoration(
+                labelText: 'Email Terdaftar',
+                labelStyle: const TextStyle(
+                  color: AppColor.kTextSecondaryColor,
+                ), //perubahan
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: AppColor.kAccentColor,
+                    width: 2.0,
+                  ),
+                ), //perubahan
+              ),
             ),
             const SizedBox(height: 10),
             ElevatedButton.icon(
               icon: const Icon(Icons.email),
               label: const Text('Kirim Email Reset Password'),
               onPressed: sendPasswordResetEmail,
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    AppColor.kAccentColor, //perubahan: Menggunakan Biru Aksen
+                foregroundColor: AppColor.kWhiteColor, //perubahan
+              ),
             ),
 
             // -----------------------------------------------------------------
@@ -161,23 +198,50 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
             // -----------------------------------------------------------------
             const Text(
               '2. Ganti Password (Saat Sudah Login)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColor.kTextColor,
+              ), //perubahan
             ),
-            const Divider(),
+            const Divider(color: AppColor.kDividerColor), //perubahan
             Text(
               'Status Login: ${_auth.currentUser != null ? '✅ Login sebagai ${_auth.currentUser!.email}' : '❌ Belum Login'}',
-              style: const TextStyle(fontStyle: FontStyle.italic),
+              style: TextStyle(
+                fontStyle: FontStyle.italic,
+                color: AppColor.kTextSecondaryColor,
+              ), //perubahan
             ),
             TextField(
               controller: _oldPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password Lama'),
+              decoration: InputDecoration(
+                labelText: 'Password Lama',
+                labelStyle: const TextStyle(
+                  color: AppColor.kTextSecondaryColor,
+                ), //perubahan
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: AppColor.kPrimaryColor,
+                    width: 2.0,
+                  ),
+                ), //perubahan: Menggunakan Orange/Primary
+              ),
             ),
             TextField(
               controller: _newPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password Baru (min 6 karakter)',
+                labelStyle: const TextStyle(
+                  color: AppColor.kTextSecondaryColor,
+                ), //perubahan
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: AppColor.kPrimaryColor,
+                    width: 2.0,
+                  ),
+                ), //perubahan
               ),
             ),
             const SizedBox(height: 10),
@@ -185,7 +249,11 @@ class _PasswordManagementPageState extends State<PasswordManagementPage> {
               icon: const Icon(Icons.lock_reset),
               label: const Text('Ganti Password'),
               onPressed: updatePasswordForLoggedInUser,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor
+                    .kPrimaryColor, //perubahan: Menggunakan Orange/Primary
+                foregroundColor: AppColor.kWhiteColor, //perubahan
+              ),
             ),
             // -----------------------------------------------------------------
           ],

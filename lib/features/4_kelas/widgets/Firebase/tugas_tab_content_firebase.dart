@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
@@ -136,11 +137,12 @@ class _TugasTabContentFirebaseState extends State<TugasTabContentFirebase> {
           if (listTugas.isEmpty) {
             // Empty State dari tangkapan layar awal
             return EmptyStateWidget(
-              icon: Icons.assignment_late_outlined,
+              imagePath: AppImages.tugasdosen,
+              // icon: Icons.assignment_late_outlined,
               title: "Belum Ada Tugas",
               message:
                   "Tekan tombol (+) di bawah untuk membuat tugas pertama di kelas ini.",
-              iconColor: rolePrimaryColor,
+              // iconColor: rolePrimaryColor,
             );
           }
 

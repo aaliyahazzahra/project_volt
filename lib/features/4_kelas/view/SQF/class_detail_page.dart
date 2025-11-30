@@ -247,10 +247,10 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   : TugasTabMhs(kelas: _currentKelasData, user: widget.user),
 
               // Tab 4: Anggota (SAMA)
-              AnggotaTabContent(
-                kelas: _currentKelasData,
-                rolePrimaryColor: rolePrimaryColor,
-              ),
+              // AnggotaTabContent(
+              //   kelas: _currentKelasData,
+              //   rolePrimaryColor: rolePrimaryColor,
+              // ),
             ],
           ),
         ),

@@ -56,7 +56,7 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
     Widget nextPage = const AuthenticatorFirebase();
 
     // Cek apakah ada data lokal dan UID
-    if (savedUser != null && savedUser.uid != null) {
+    if (savedUser != null) {
       // 2. Cek apakah sesi Firebase Auth masih aktif
       final currentUser = FirebaseAuth.instance.currentUser;
 

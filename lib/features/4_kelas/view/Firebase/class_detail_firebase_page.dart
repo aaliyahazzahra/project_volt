@@ -86,8 +86,9 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
         Navigator.of(context).pop(true);
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         _showSnackbar("Gagal memuat ulang data kelas: $e", ContentType.failure);
+      }
     }
   }
 

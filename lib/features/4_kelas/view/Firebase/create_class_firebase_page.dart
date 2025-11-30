@@ -64,7 +64,7 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
       final String newKode = _generateKodeKelas();
 
       // Pastikan UID Dosen ada
-      final String? dosenUid = widget.user.uid;
+      final String dosenUid = widget.user.uid;
       if (dosenUid == null) {
         _showMessage('Error: User ID Dosen tidak ditemukan.', isError: true);
         setState(() => _isSaving = false);

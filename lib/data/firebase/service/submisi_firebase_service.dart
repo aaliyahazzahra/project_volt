@@ -123,7 +123,7 @@ class SubmisiFirebaseService {
       final List<SubmisiDetailFirebase> resultList = [];
 
       for (var doc in submisiSnapshot.docs) {
-        final Map<String, dynamic> docData = doc.data() as Map<String, dynamic>;
+        final Map<String, dynamic> docData = doc.data();
 
         final submisiData = SubmisiFirebaseModel.fromMap(docData, id: doc.id);
 

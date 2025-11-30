@@ -2,6 +2,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
@@ -41,7 +42,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
   }
 
   Future<void> _loadData() async {
-    final String? userUid = widget.user.uid;
+    final String userUid = widget.user.uid;
 
     // 1. Cek User ID
     if (userUid == null) {
@@ -151,7 +152,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
                 style: TextStyle(color: AppColor.kAccentColor),
               ),
               onPressed: () async {
-                final String? userUid = widget.user.uid;
+                final String userUid = widget.user.uid;
                 if (userUid == null) return;
 
                 if (_kodeController.text.isEmpty) {
@@ -207,7 +208,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
 
     // Jika pengguna menekan 'Keluar' (confirm == true)
     if (confirm == true) {
-      final String? userUid = widget.user.uid;
+      final String userUid = widget.user.uid;
       final String? kelasId = kelas.kelasId;
       if (userUid == null || kelasId == null) return;
 
@@ -259,9 +260,10 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
             )
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
-              icon: Icons.school_outlined,
+              imagePath: AppImages.kelasmhs,
+              // icon: Icons.school_outlined,
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
-              iconColor: AppColor.kAccentColor,
+              // iconColor: AppColor.kAccentColor,
               message:
                   "Anda belum bergabung dengan kelas manapun. Silakan gabung kelas dengan menekan tombol (+).",
             )

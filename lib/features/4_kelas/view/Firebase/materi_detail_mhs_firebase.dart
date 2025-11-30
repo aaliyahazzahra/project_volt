@@ -4,6 +4,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/simulasi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
@@ -168,10 +169,6 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
     );
   }
 
-  // Di dalam class _MateriDetailMhsFirebaseState di materi_detail_mhs_firebase.dart
-
-  // ... (Semua fungsi di atas tetap sama)
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -185,7 +182,8 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
       return Scaffold(
         appBar: AppBar(title: const Text("Detail Materi")),
         body: const EmptyStateWidget(
-          icon: Icons.search_off,
+          imagePath: AppImages.materimhs,
+          // icon: Icons.search_off,
           title: "Materi Tidak Ditemukan",
           message: "Mungkin materi ini sudah dihapus oleh Dosen.",
         ),

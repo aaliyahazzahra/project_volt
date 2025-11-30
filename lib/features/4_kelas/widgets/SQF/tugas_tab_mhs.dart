@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/SQF/database/db_helper.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/tugas_model.dart';
@@ -60,10 +61,11 @@ class _TugasTabMhsState extends State<TugasTabMhs> {
             )
           : _daftarTugas.isEmpty
           ? EmptyStateWidget(
-              icon: Icons.assignment_late_outlined,
+              // icon: Icons.assignment_late_outlined,
+              imagePath: AppImages.tugasdosen,
               title: "Belum Ada Tugas",
               message: "Dosen Anda belum memposting tugas apapun di kelas ini.",
-              iconColor: AppColor.kAccentColor,
+              // iconColor: AppColor.kAccentColor,
             )
           : TugasListView(
               daftarTugas: _daftarTugas,

@@ -2,6 +2,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/kelas_firebase_service.dart';
@@ -320,12 +321,13 @@ class _HomepageDosenFirebaseState extends State<HomepageDosenFirebase> {
             )
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
-              icon: Icons.menu_book,
+              imagePath: AppImages.kelasdosen,
+              // icon: Icons.menu_book,
               //  Menggunakan namaLengkap dari user firebase
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
               message:
                   "Anda belum membuat kelas. Silakan buat kelas dengan menekan tombol (+).",
-              iconColor: AppColor.kPrimaryColor,
+              // iconColor: AppColor.kPrimaryColor,
             )
           : ClassListFirebase(
               //  Menggunakan ClassListFirebase

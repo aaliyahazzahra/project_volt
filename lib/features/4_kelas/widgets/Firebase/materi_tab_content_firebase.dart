@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
@@ -110,12 +111,13 @@ class MateriTabContentFirebase extends StatelessWidget {
           // 3. Tangani Data Kosong
           if (daftarMateri.isEmpty) {
             return EmptyStateWidget(
-              icon: Icons.menu_book_outlined,
+              imagePath: AppImages.materidosen,
+              // icon: Icons.menu_book_outlined,
               title: "Belum Ada Materi",
               message: isDosen
-                  ? "Tekan tombol (+) di bawah untuk memposting materi pertama."
+                  ? "Tekan tombol (+) di bawah untuk menambah materi baru."
                   : "Dosen Anda belum memposting materi apapun di kelas ini.",
-              iconColor: rolePrimaryColor,
+              // iconColor: rolePrimaryColor,
             );
           }
 

@@ -115,12 +115,11 @@ class AboutPage extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         const Text(
-          "VOLT",
+          "VOLT - Virtual Logic Trainer",
           style: TextStyle(
-            fontSize: 28,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColor.kPrimaryColor,
-            letterSpacing: 1.5,
+            color: AppColor.kTextColor,
           ),
         ),
         const SizedBox(height: 4),
@@ -315,12 +314,10 @@ class AboutPage extends StatelessWidget {
       "sqflite",
       "provider",
       "uuid",
-      "google_maps_flutter",
-      "geolocator",
       "shared_preferences",
       "awesome_snackbar_content",
       "bottom_bar_matu",
-      "persistent_bottom_nav_bar",
+      "flutter_colorpicker",
       "animated_gradient",
     ];
 

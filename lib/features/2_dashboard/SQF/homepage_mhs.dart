@@ -2,6 +2,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/data/kelas_data_source.dart';
@@ -314,9 +315,10 @@ class _HomepageMhsState extends State<HomepageMhs> {
             )
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
-              icon: Icons.school_outlined,
+              // icon: Icons.school_outlined,
+              imagePath: AppImages.kelasmhs,
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
-              iconColor: AppColor.kAccentColor,
+              // iconColor: AppColor.kAccentColor,
               message:
                   "Anda belum bergabung dengan kelas manapun. Silakan gabung kelas dengan menekan tombol (+).",
             )

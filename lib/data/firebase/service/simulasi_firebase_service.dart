@@ -12,9 +12,7 @@ class SimulasiFirebaseService {
   // Inisiasi UUID generator
   final Uuid _uuid = Uuid();
 
-  /**
-   * 1. CREATE: Menyimpan SimulasiModel baru ke Firestore.
-   */
+  /// 1. CREATE: Menyimpan SimulasiModel baru ke Firestore.
   Future<String> createSimulasi(SimulasiFirebaseModel simulasi) async {
     try {
       final String docId = _uuid.v4();
@@ -31,9 +29,7 @@ class SimulasiFirebaseService {
     }
   }
 
-  /**
-   * 2. READ (LIST): Mengambil semua simulasi untuk kelas tertentu.
-   */
+  /// 2. READ (LIST): Mengambil semua simulasi untuk kelas tertentu.
   Future<List<SimulasiFirebaseModel>> getSimulasiByKelas(String kelasId) async {
     try {
       final querySnapshot = await _firestore
@@ -52,9 +48,7 @@ class SimulasiFirebaseService {
     }
   }
 
-  /**
-   * 3. READ (DETAIL): Mengambil detail satu SimulasiModel berdasarkan ID.
-   */
+  /// 3. READ (DETAIL): Mengambil detail satu SimulasiModel berdasarkan ID.
   Future<SimulasiFirebaseModel?> getSimulasiById(String simulasiId) async {
     try {
       final docSnapshot = await _firestore
@@ -74,9 +68,7 @@ class SimulasiFirebaseService {
     }
   }
 
-  /**
-   * 4. UPDATE: Memperbarui metadata atau projectData simulasi.
-   */
+  /// 4. UPDATE: Memperbarui metadata atau projectData simulasi.
   Future<void> updateSimulasi(SimulasiFirebaseModel simulasi) async {
     if (simulasi.simulasiId == null) {
       throw Exception('Simulasi ID tidak boleh null saat update.');
@@ -91,9 +83,7 @@ class SimulasiFirebaseService {
     }
   }
 
-  /**
-   * 5. DELETE: Menghapus data simulasi.
-   */
+  /// 5. DELETE: Menghapus data simulasi.
   Future<void> deleteSimulasi(String simulasiId) async {
     try {
       await _firestore.collection(_collection).doc(simulasiId).delete();

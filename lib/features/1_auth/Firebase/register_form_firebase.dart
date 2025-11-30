@@ -37,8 +37,7 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nimNidnController = TextEditingController();
   String? _selectedKampus;
-  final List<String> daftarKampus =
-      AppData.daftarKampus; // Asumsi ini berisi daftar kampus
+  final List<String> daftarKampus = AppData.daftarKampus;
 
   @override
   void dispose() {
@@ -137,14 +136,18 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Konfirmasi Pilihan'),
+              title: const Text(
+                'Konfirmasi Pilihan',
+                style: TextStyle(color: AppColor.kTextColor),
+              ),
               content: SingleChildScrollView(
                 child: ListBody(
                   children: <Widget>[
-                    Text(
+                    const Text(
                       'Apakah Anda yakin ingin mendaftar sebagai Dosen? Pilihan ini hanya untuk Dosen/Staf Pengajar.',
+                      style: TextStyle(color: AppColor.kTextSecondaryColor),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Checkbox(
@@ -156,10 +159,13 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                             });
                           },
                         ),
-                        Expanded(
+                        const Expanded(
                           child: Text(
                             'Saya mengerti dan saya adalah seorang Dosen.',
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColor.kTextColor,
+                            ),
                           ),
                         ),
                       ],
@@ -169,7 +175,10 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
               ),
               actions: <Widget>[
                 TextButton(
-                  child: const Text('Batal'),
+                  child: const Text(
+                    'Batal',
+                    style: TextStyle(color: AppColor.kTextColor),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -177,14 +186,21 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                 TextButton(
                   onPressed: isChecked
                       ? () {
-                          // Update State RegisterFormFirebase
                           setState(() {
                             _selectedRole = UserRole.dosen;
                           });
                           Navigator.of(context).pop();
                         }
                       : null,
-                  child: const Text('Yakin'),
+                  child: Text(
+                    'Yakin',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isChecked
+                          ? AppColor.kPrimaryColor
+                          : AppColor.kDisabledColor,
+                    ),
+                  ),
                 ),
               ],
             );

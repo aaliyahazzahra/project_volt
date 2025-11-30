@@ -2,6 +2,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/data/kelas_data_source.dart';
@@ -311,11 +312,12 @@ class _HomepageDosenState extends State<HomepageDosen> {
             )
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
-              icon: Icons.menu_book,
+              imagePath: AppImages.kelasdosen,
+              // icon: Icons.menu_book,
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
               message:
                   "Anda belum membuat kelas. Silakan buat kelas dengan menekan tombol (+).",
-              iconColor: AppColor.kPrimaryColor,
+              // iconColor: AppColor.kPrimaryColor,
             )
           : ClassList(
               daftarKelas: _daftarKelas,

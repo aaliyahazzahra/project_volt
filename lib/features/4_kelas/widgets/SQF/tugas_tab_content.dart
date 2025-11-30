@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/SQF/database/db_helper.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/tugas_model.dart';
@@ -75,11 +76,12 @@ class _TugasTabContentState extends State<TugasTabContent> {
           ? Center(child: CircularProgressIndicator(color: rolePrimaryColor))
           : _daftarTugas.isEmpty
           ? EmptyStateWidget(
-              icon: Icons.assignment_late_outlined,
+              // icon: Icons.assignment_late_outlined,
+              imagePath: AppImages.tugasdosen,
               title: "Belum Ada Tugas",
               message:
                   "Tekan tombol (+) di bawah untuk membuat tugas pertama di kelas ini.",
-              iconColor: rolePrimaryColor,
+              // iconColor: rolePrimaryColor,
             )
           : TugasListView(
               daftarTugas: _daftarTugas,

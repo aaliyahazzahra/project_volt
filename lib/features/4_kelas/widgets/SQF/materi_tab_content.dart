@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/SQF/database/db_helper.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/materi_model.dart';
@@ -82,12 +83,13 @@ class _MateriTabContentState extends State<MateriTabContent> {
           ? Center(child: CircularProgressIndicator(color: rolePrimaryColor))
           : _daftarMateri.isEmpty
           ? EmptyStateWidget(
-              icon: Icons.menu_book_outlined,
+              imagePath: AppImages.materidosen,
+              // icon: Icons.menu_book_outlined,
               title: "Belum Ada Materi",
               message: widget.isDosen
-                  ? "Tekan tombol (+) di bawah untuk memposting materi pertama."
+                  ? "Tekan tombol (+) di bawah untuk menambah materi baru."
                   : "Dosen Anda belum memposting materi apapun di kelas ini.",
-              iconColor: rolePrimaryColor,
+              // iconColor: rolePrimaryColor,
             )
           : MateriListView(
               daftarMateri: _daftarMateri,

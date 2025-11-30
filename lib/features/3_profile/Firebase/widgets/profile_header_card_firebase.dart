@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 
 class ProfileHeaderCardFirebase extends StatelessWidget {
@@ -98,7 +99,9 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
             child: CircleAvatar(
               radius: 35,
               backgroundColor: roleColor.withOpacity(0.1),
-              child: Icon(Icons.person, size: 40, color: roleColor),
+              child: isDosen
+                  ? Image.asset(AppImages.ppdosen, width: 50, height: 50)
+                  : Image.asset(AppImages.ppmhs, width: 50, height: 50),
             ),
           ),
 

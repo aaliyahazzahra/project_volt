@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/tugas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
@@ -117,10 +118,11 @@ class _TugasTabMhsFirebaseState extends State<TugasTabMhsFirebase> {
           if (listTugas.isEmpty) {
             // Empty State
             return EmptyStateWidget(
-              icon: Icons.assignment_late_outlined,
+              imagePath: AppImages.tugasdosen,
+              // icon: Icons.assignment_late_outlined,
               title: "Belum Ada Tugas",
               message: "Dosen Anda belum memposting tugas apapun di kelas ini.",
-              iconColor: accentColor,
+              // iconColor: accentColor,
             );
           }
 

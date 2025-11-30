@@ -23,7 +23,7 @@ class SettingsSwitchTile extends StatelessWidget {
       value: value,
       onChanged: onChanged,
 
-      activeColor: roleColor,
+      activeThumbColor: roleColor,
       contentPadding: const EdgeInsets.only(left: 16, right: 8),
 
       // Ikon

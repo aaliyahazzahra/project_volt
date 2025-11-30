@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/SQF/database/db_helper.dart';
 import 'package:project_volt/data/SQF/models/tugas_model.dart';
 import 'package:project_volt/features/4_kelas/view/edit_tugas_page.dart';
@@ -229,7 +230,8 @@ class _SubmisiListTabState extends State<_SubmisiListTab> {
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return EmptyStateWidget(
-            icon: Icons.group_off_outlined,
+            // icon: Icons.group_off_outlined,
+            imagePath: AppImages.tugasdosen,
             title: "Belum Ada Submisi",
             message: "Belum ada mahasiswa yang mengumpulkan tugas ini.",
           );

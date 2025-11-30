@@ -1,11 +1,9 @@
 // lib/features/4_kelas/widgets/tabs/tugas_submisi_list_tab.dart (FILE BARU)
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:project_volt/core/constants/app_color.dart';
+import 'package:project_volt/core/constants/app_image.dart';
 // Import dependencies Service dan Model
-import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/data/firebase/models/submisi_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/submisi_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/submisi_detail_dosen_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
@@ -66,7 +64,8 @@ class _SubmisiListTabState extends State<SubmisiListTab> {
 
         if (daftarSubmisi.isEmpty) {
           return const EmptyStateWidget(
-            icon: Icons.group_off_outlined,
+            imagePath: AppImages.tugasdosen,
+            // icon: Icons.group_off_outlined,
             title: "Belum Ada Submisi",
             message: "Belum ada mahasiswa yang mengumpulkan tugas ini.",
           );
