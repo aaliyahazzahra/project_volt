@@ -1,4 +1,4 @@
-// lib/features/simulasi/simulation_painters.dart
+// lib/features/5_simulasi/simulation_painters.dart
 
 import 'package:flutter/material.dart';
 import 'package:project_volt/data/simulation_models.dart';
@@ -9,11 +9,14 @@ class WirePainter extends CustomPainter {
   final List<WireConnection> wires;
   final Function(String, String) getNodePosition;
 
+  // OPTIMASI: Map untuk akses O(1) di paint
+  final Map<String, SimulationComponent> componentMap;
+
   WirePainter({
     required this.components,
     required this.wires,
     required this.getNodePosition,
-  });
+  }) : componentMap = {for (var c in components) c.id: c};
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -25,9 +28,11 @@ class WirePainter extends CustomPainter {
         );
         final endPoint = getNodePosition(wire.toComponentId, wire.toNodeId);
 
-        final sourceComponent = components.firstWhere(
-          (c) => c.id == wire.fromComponentId,
-        );
+        // OPTIMASI: Akses komponen O(1)
+        final sourceComponent = componentMap[wire.fromComponentId];
+
+        if (sourceComponent == null) continue; // Guard
+
         final bool value = sourceComponent.outputValue;
 
         final paint = Paint()
@@ -63,7 +68,21 @@ class WirePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant WirePainter oldDelegate) {
+    //   PERBAIKAN KRITIS: Hanya repaint jika data berubah!
+    if (oldDelegate.wires.length != wires.length) return true;
+    if (oldDelegate.components.length != components.length) return true;
+
+    // Cek apakah ada perubahan output
+    // Asumsi komponen di list urutannya stabil
+    for (int i = 0; i < components.length; i++) {
+      if (oldDelegate.components[i].id == components[i].id &&
+          oldDelegate.components[i].outputValue != components[i].outputValue) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 // PAINTER UNTUK KABEL SEMENTARA (SAAT DRAG)
@@ -103,5 +122,9 @@ class TemporaryWirePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant TemporaryWirePainter oldDelegate) {
+    //   PERBAIKAN KRITIS: Hanya repaint jika posisi kabel berubah
+    return oldDelegate.startOffset != startOffset ||
+        oldDelegate.endOffset != endOffset;
+  }
 }

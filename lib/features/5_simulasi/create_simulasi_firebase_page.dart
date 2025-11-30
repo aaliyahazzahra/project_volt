@@ -69,7 +69,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
 
   String? _currentSimulasiId;
 
-  // ⚠️ PERBAIKAN DEBOUNCE
+  //   PERBAIKAN DEBOUNCE
   Timer? _simulationTimer;
 
   @override
@@ -92,14 +92,14 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     super.dispose();
   }
 
-  // ⚠️ LOGIC DEBOUNCE 45ms
+  //   LOGIC DEBOUNCE 45ms
   void _triggerSimulation() {
     if (_isSimulating) return;
 
     _simulationTimer?.cancel();
 
-    _simulationTimer = Timer(const Duration(milliseconds: 45), () {
-      // 45ms Sesuai Permintaan
+    _simulationTimer = Timer(const Duration(milliseconds: 450), () {
+      // 450ms Sesuai Permintaan
       _runSimulation();
     });
   }
@@ -424,7 +424,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
   Widget _buildToolbox() {
     if (widget.isReadOnly) return const SizedBox.shrink();
 
-    // ⚠️ PERBAIKAN OVERFLOW: Menggunakan padding horizontal dan tinggi yang tetap
+    //   PERBAIKAN OVERFLOW: Menggunakan padding horizontal dan tinggi yang tetap
     return Container(
       height: 90, // Tinggi dikurangi sedikit untuk menghindari overflow
       width: double.infinity,

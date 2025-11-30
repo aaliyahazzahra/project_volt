@@ -1,13 +1,16 @@
-// File: lib/data/simulation_models.dart (KOREKSI LENGKAP)
-
 import 'package:flutter/material.dart';
+
+// ========================================================================
+// 0. ENUM GATE TYPE
+// ========================================================================
+enum GateType { AND, OR, NOT, NAND, NOR, ExOR, ExNOR, INPUT, OUTPUT, unknown }
 
 // ========================================================================
 // 1. SimulationComponent
 // ========================================================================
 class SimulationComponent {
   final String id;
-  final String type;
+  final GateType type;
   Offset position;
   Map<String, bool> inputs;
   bool outputValue;
@@ -20,7 +23,6 @@ class SimulationComponent {
     this.outputValue = false,
   });
 
-  //   TAMBAH: fromMap
   factory SimulationComponent.fromMap(Map<String, dynamic> map) {
     final List<dynamic> posList = map['position'] ?? [0.0, 0.0];
     final Map<String, bool> inputsMap =
@@ -29,20 +31,28 @@ class SimulationComponent {
         ) ??
         {};
 
+    // PERBAIKAN NULL SAFETY
+    final typeString = map['type'] as String?;
+    final searchType = typeString?.toLowerCase() ?? '';
+
     return SimulationComponent(
       id: map['id'] ?? '',
-      type: map['type'] ?? 'unknown',
+      // KONVERSI STRING KE ENUM DENGAN NULL SAFETY
+      type: GateType.values.firstWhere(
+        (e) => e.name.toLowerCase() == searchType,
+        orElse: () => GateType.unknown,
+      ),
       position: Offset(posList[0] as double, posList[1] as double),
       inputs: inputsMap,
       outputValue: map['outputValue'] ?? false,
     );
   }
 
-  //   TAMBAH: toMap
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'type': type,
+      // KONVERSI ENUM KE STRING
+      'type': type.name,
       'position': [position.dx, position.dy],
       'inputs': inputs,
       'outputValue': outputValue,
@@ -54,11 +64,12 @@ class SimulationComponent {
     Map<String, bool>? inputs,
     bool? outputValue,
   }) {
+    final newInputs = inputs ?? Map<String, bool>.from(this.inputs);
     return SimulationComponent(
       id: id,
       type: type,
       position: position ?? this.position,
-      inputs: inputs ?? Map<String, bool>.from(this.inputs),
+      inputs: newInputs,
       outputValue: outputValue ?? this.outputValue,
     );
   }
@@ -80,7 +91,6 @@ class WireConnection {
     required this.toNodeId,
   });
 
-  //   TAMBAH: fromMap
   factory WireConnection.fromMap(Map<String, dynamic> map) {
     return WireConnection(
       fromComponentId: map['fromComponentId'] ?? '',
@@ -90,7 +100,6 @@ class WireConnection {
     );
   }
 
-  //   TAMBAH: toMap
   Map<String, dynamic> toMap() {
     return {
       'fromComponentId': fromComponentId,
@@ -126,7 +135,6 @@ class SimulationProject {
     required this.wires,
   });
 
-  //   TAMBAH: fromMap
   factory SimulationProject.fromMap(Map<String, dynamic> map) {
     return SimulationProject(
       id: map['id'] ?? '',
@@ -146,7 +154,6 @@ class SimulationProject {
     );
   }
 
-  //   TAMBAH: toMap
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -173,11 +180,9 @@ class SimulationProject {
 }
 
 // ========================================================================
-// 4. SimulationPayload (HARUS ADA DI simulation_models.dart)
+// 4. SimulationPayload
 // ========================================================================
 class SimulationPayload {
   final SimulationProject project;
-
-  // Konstruktor menerima objek SimulationProject yang akan dikerjakan di background
   SimulationPayload(this.project);
 }
