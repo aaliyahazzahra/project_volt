@@ -3,13 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:project_volt/data/simulation_models.dart';
 
-// PAINTER UNTUK KABEL YANG TERSIMPAN
+// PAINTER FOR SAVED WIRES (SIMULATION SIGNAL PATH)
 class WirePainter extends CustomPainter {
   final List<SimulationComponent> components;
   final List<WireConnection> wires;
   final Function(String, String) getNodePosition;
 
-  // OPTIMASI: Map untuk akses O(1) di paint
+  // Optimization: Map for O(1) access during paint
   final Map<String, SimulationComponent> componentMap;
 
   WirePainter({
@@ -28,19 +28,20 @@ class WirePainter extends CustomPainter {
         );
         final endPoint = getNodePosition(wire.toComponentId, wire.toNodeId);
 
-        // OPTIMASI: Akses komponen O(1)
+        // Optimization: Access component O(1)
         final sourceComponent = componentMap[wire.fromComponentId];
 
-        if (sourceComponent == null) continue; // Guard
+        if (sourceComponent == null) continue; // Guard against missing component
 
         final bool value = sourceComponent.outputValue;
 
+        // Dynamic wire color based on simulation value (Orange for High/True)
         final paint = Paint()
           ..color = value ? Colors.orange : Colors.black87
           ..strokeWidth = 3
           ..style = PaintingStyle.stroke;
 
-        // Gambar kurva cubicTo
+        // Draw cubic Bézier curve for smooth connections
         final path = Path();
         path.moveTo(startPoint.dx, startPoint.dy);
         final controlPoint1 = Offset(
@@ -62,19 +63,19 @@ class WirePainter extends CustomPainter {
 
         canvas.drawPath(path, paint);
       } catch (e) {
-        // Komponen mungkin sedang dihapus
+        // Handle cases where a component might be in the process of being deleted
       }
     }
   }
 
   @override
   bool shouldRepaint(covariant WirePainter oldDelegate) {
-    //   PERBAIKAN KRITIS: Hanya repaint jika data berubah!
+    // CRITICAL: Only repaint if data changes (wires added/removed or component outputs change)
     if (oldDelegate.wires.length != wires.length) return true;
     if (oldDelegate.components.length != components.length) return true;
 
-    // Cek apakah ada perubahan output
-    // Asumsi komponen di list urutannya stabil
+    // Check for output value changes (triggers repaint to update wire color)
+    // Assumes component order in the list is stable
     for (int i = 0; i < components.length; i++) {
       if (oldDelegate.components[i].id == components[i].id &&
           oldDelegate.components[i].outputValue != components[i].outputValue) {
@@ -85,7 +86,7 @@ class WirePainter extends CustomPainter {
   }
 }
 
-// PAINTER UNTUK KABEL SEMENTARA (SAAT DRAG)
+// PAINTER FOR TEMPORARY WIRE (DURING DRAG ACTION)
 class TemporaryWirePainter extends CustomPainter {
   final Offset startOffset;
   final Offset endOffset;
@@ -95,10 +96,11 @@ class TemporaryWirePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.blue.withOpacity(0.7)
+      ..color = Colors.blue.withOpacity(0.7) // Neutral color for temporary drag
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
+    // Draw cubic Bézier curve
     final path = Path();
     path.moveTo(startOffset.dx, startOffset.dy);
     final controlPoint1 = Offset(
@@ -123,7 +125,7 @@ class TemporaryWirePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant TemporaryWirePainter oldDelegate) {
-    //   PERBAIKAN KRITIS: Hanya repaint jika posisi kabel berubah
+    // CRITICAL: Only repaint if the wire position changes
     return oldDelegate.startOffset != startOffset ||
         oldDelegate.endOffset != endOffset;
   }

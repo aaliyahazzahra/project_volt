@@ -105,10 +105,9 @@ class AboutPage extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
             color: AppColor.kWhiteColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                // Shadow menggunakan warna branding
                 color: AppColor.kPrimaryColor.withOpacity(0.2),
                 blurRadius: 20,
                 offset: const Offset(0, 5),
@@ -326,8 +325,11 @@ class AboutPage extends StatelessWidget {
     final List<String> libraries = [
       "Flutter",
       "Dart",
-      "sqflite",
-      "provider",
+      "file_picker",
+      "firebase_auth",
+      "firebase_core",
+      "supabase_flutter",
+      "url_launcher",
       "uuid",
       "shared_preferences",
       "awesome_snackbar_content",

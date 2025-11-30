@@ -17,7 +17,6 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final bool isDosen = user.role == UserRole.dosen.toString();
     final bool isDosen = user.role == 'dosen';
     final String roleText = isDosen ? "Dosen" : "Mahasiswa";
 
@@ -43,9 +42,9 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nama Lengkap
+                // Full Name
                 Text(
-                  user.namaLengkap ?? user.email ?? 'Pengguna',
+                  user.namaLengkap ?? user.email ?? 'User',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -65,7 +64,7 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 12),
-                // Badge Role
+                // Role Badge
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -90,7 +89,7 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
           ),
           const SizedBox(width: 16),
 
-          // Avatar dan Tombol Edit
+          // Avatar
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -104,28 +103,6 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
                   : Image.asset(AppImages.ppmhs, width: 50, height: 50),
             ),
           ),
-
-          //     Positioned(
-          //       right: 0,
-          //       top: 0,
-          //       child: Material(
-          //         color: AppColor.kWhiteColor,
-          //         shape: const CircleBorder(),
-          //         elevation: 2,
-          //         child: InkWell(
-          //           onTap: onEdit,
-          //           customBorder: const CircleBorder(),
-          //           child: Container(
-          //             padding: const EdgeInsets.all(6),
-          //             decoration: BoxDecoration(
-          //               shape: BoxShape.circle,
-          //               border: Border.all(color: AppColor.kDividerColor),
-          //             ),
-          //             // child: Icon(Icons.edit, size: 16, color: roleColor),
-          //           ),
-          //         ),
-          //       ),
-          //     ),
         ],
       ),
     );

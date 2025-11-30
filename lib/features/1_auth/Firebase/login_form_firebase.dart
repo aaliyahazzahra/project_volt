@@ -142,32 +142,32 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
             SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(
-                // Style (Gaya) Tombol
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  foregroundColor: AppColor.kAccentColor.withOpacity(0.5),
-                  alignment: Alignment.centerRight,
-                ),
+              // child: TextButton(
+              //   // Style (Gaya) Tombol
+              //   style: TextButton.styleFrom(
+              //     padding: EdgeInsets.zero,
+              //     foregroundColor: AppColor.kAccentColor.withOpacity(0.5),
+              //     alignment: Alignment.centerRight,
+              //   ),
                 // Fungsi yang dijalankan saat tombol diklik
-                onPressed: () {
-                  // Navigasi ke halaman PasswordManagementScreen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PasswordManagementPage(),
-                    ),
-                  );
-                },
+                // onPressed: () {
+                //   // Navigasi ke halaman PasswordManagementScreen
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //       builder: (context) => const PasswordManagementPage(),
+                //     ),
+                //   );
+                // },
                 // Teks yang ditampilkan dalam Tombol
-                child: Text(
-                  'Lupa Password?',
-                  style: TextStyle(
-                    color:
-                        AppColor.kAccentColor, // Pastikan warna teks diterapkan
-                  ),
-                ),
-              ),
+                // child: Text(
+                //   'Lupa Password?',
+                //   style: TextStyle(
+                //     color:
+                //         AppColor.kAccentColor, // Pastikan warna teks diterapkan
+                //   ),
+                // ),
+              // ),
             ),
             SizedBox(height: 30),
 

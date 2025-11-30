@@ -55,6 +55,20 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
   final List<SimulationProject> _projects = [];
   int _activeIndex = 0;
 
+  late UserFirebaseModel _currentUser;
+  late bool _isDosen; // True if the user role is 'dosen'
+
+  /// Determines the scaffold background color based on user role.
+  Color get _scaffoldBgColor =>
+      _isDosen ? AppColor.kBackgroundColor : AppColor.kBackgroundColorMhs;
+
+  /// Determines the appbar background color based on user role.
+  Color get _appBarColor => _isDosen ? AppColor.kAppBar : AppColor.kAccentColor;
+
+  /// Determines the appbar title color based on user role.
+  Color get _appBarTitleColor =>
+      _isDosen ? AppColor.kTextColor : AppColor.kWhiteColor;
+
   SimulationProject get _activeProject => _projects[_activeIndex];
   List<SimulationComponent> get _componentsOnCanvas =>
       _activeProject.components;
@@ -70,13 +84,14 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
 
   String? _currentSimulasiId;
 
-  //   PERBAIKAN DEBOUNCE
   Timer? _simulationTimer;
 
   @override
   void initState() {
     super.initState();
     _currentSimulasiId = widget.loadSimulasiId;
+    _currentUser = widget.user;
+    _isDosen = _currentUser.role == 'dosen';
 
     if (widget.loadSimulasiId != null) {
       _loadExistingProject(widget.loadSimulasiId!);
@@ -84,6 +99,9 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
       _initializeNewProject();
     }
   }
+
+  Color get _roleColor =>
+      _isDosen ? AppColor.kPrimaryColor : AppColor.kAccentColor;
 
   @override
   void dispose() {
@@ -545,9 +563,12 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     required bool value,
   }) {
     // Menggunakan GateType untuk identifikasi
+    // file: CreateSimulasiFirebasePage.dart (Potongan kode _buildComponentVisual)
+
+    // Menggunakan GateType untuk identifikasi
     if (type == GateType.INPUT) {
       return Container(
-        height: 70,
+        height: 60,
         width: 80,
         decoration: BoxDecoration(
           color: AppColor.kWhiteColor,
@@ -555,25 +576,34 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
           border: Border.all(color: AppColor.kPrimaryColor, width: 2),
         ),
         child: Column(
+          // Menggunakan start alignment untuk memanfaatkan ruang lebih baik
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "INPUT",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: AppColor.kPrimaryColor,
+            // Padding(
+            //   padding: const EdgeInsets.only(top: 2.0),
+            //   child: const Text(
+            //     "INPUT",
+            //     style: TextStyle(
+            //       fontWeight: FontWeight.bold,
+            //       fontSize: 8,
+            //       color: AppColor.kTextColor,
+            //     ),
+            //   ),
+            // ),
+            Transform.scale(
+              scale: 0.7,
+              child: Switch(
+                value: value,
+                onChanged: null,
+                activeThumbColor: AppColor.kPrimaryColor,
+                activeTrackColor: AppColor.kPrimaryColor.withOpacity(0.5),
               ),
-            ),
-            Switch(
-              value: value,
-              onChanged: null,
-              activeThumbColor: AppColor.kPrimaryColor,
             ),
           ],
         ),
       );
     }
+
     // Menggunakan GateType untuk identifikasi
     if (type == GateType.OUTPUT) {
       return Container(
@@ -593,14 +623,14 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
               color: value ? Colors.yellow[600] : Colors.grey,
             ),
             const SizedBox(height: 4),
-            const Text(
-              "OUTPUT",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Colors.black54,
-              ),
-            ),
+            // const Text(
+            //   "OUTPUT",
+            //   style: TextStyle(
+            //     fontWeight: FontWeight.bold,
+            //     fontSize: 12,
+            //     color: Colors.black54,
+            //   ),
+            // ),
           ],
         ),
       );
@@ -753,25 +783,31 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
 
     if (_isTemplateLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Memuat Simulasi...')),
-        body: Center(
-          child: CircularProgressIndicator(color: AppColor.kPrimaryColor),
+        appBar: AppBar(
+          title: const Text(
+            'Memuat Simulasi...',
+            style: TextStyle(
+              color: AppColor.kTextColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
+        body: Center(child: CircularProgressIndicator(color: _roleColor)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColor.kBackgroundColor,
+      backgroundColor: _scaffoldBgColor,
       appBar: AppBar(
         title: Text(
           "Editor: ${_judulController.text.isNotEmpty ? _judulController.text : _activeProject.name}",
           style: TextStyle(
-            color: AppColor.kTextColor,
+            color: _appBarTitleColor,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        backgroundColor: AppColor.kBackgroundColor,
+        backgroundColor: _appBarColor,
         elevation: 0,
         shape: Border(
           bottom: BorderSide(color: AppColor.kDividerColor, width: 1.5),
@@ -779,7 +815,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
         actions: [
           if (!widget.isReadOnly)
             IconButton(
-              icon: Icon(Icons.save, color: AppColor.kPrimaryColor),
+              icon: Icon(Icons.save, color: _appBarTitleColor),
               tooltip: _currentSimulasiId != null
                   ? "Update Simulasi"
                   : "Simpan Simulasi Baru",
@@ -847,7 +883,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
                     child: IconButton(
-                      icon: Icon(Icons.add_box, color: AppColor.kPrimaryColor),
+                      icon: Icon(Icons.add_box, color: _appBarTitleColor),
                       onPressed: _addCanvas,
                     ),
                   ),

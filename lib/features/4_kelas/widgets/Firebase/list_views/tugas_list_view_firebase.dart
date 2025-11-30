@@ -55,10 +55,12 @@ class TugasListViewFirebase extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          color: AppColor.kBackgroundColor,
+
           child: ListTile(
             leading: CircleAvatar(
               backgroundColor: AppColor.kIconBgColor,
-              child: Icon(Icons.assignment, color: AppColor.kPrimaryColor),
+              child: Icon(Icons.assignment, color: roleColor),
             ),
             title: Text(
               tugas.judul,

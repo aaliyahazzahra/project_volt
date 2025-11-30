@@ -1,5 +1,3 @@
-// file: ClassListFirebase.dart (FINAL REFACTOR - PERBAIKAN)
-
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
@@ -20,7 +18,7 @@ class ClassListFirebase extends StatelessWidget {
     required this.roleColor,
   });
 
-  // 1. KOLEKSI WARNA (GRADIENT) - Tetap menggunakan konstanta AppColor
+  // Card Gradient Collection
   static final List<LinearGradient> _cardGradients = [
     const LinearGradient(
       colors: [AppColor.kAccentColor, AppColor.kDarkBlue],
@@ -61,31 +59,22 @@ class ClassListFirebase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Tentukan warna latar belakang menu
+    // Dynamic menu background color based on role
     final Color menuBackgroundColor = isDosen
-        ? AppColor.kLightPrimaryColor.withOpacity(0.95) // Orange Muda Dosen
-        : AppColor.kBackgroundColorMhs.withOpacity(0.95); // Biru Muda Mahasiswa
-
-    // Tentukan warna latar belakang kartu
-    final Color cardBackgroundColor = isDosen
-        ? AppColor.kLightPrimaryColor.withOpacity(0.1) // Lebih soft untuk dosen
-        : AppColor.kLightAccentColor.withOpacity(0.1); // Lebih soft untuk mhs
-
-    // Tentukan warna teks (Nama Kelas)
-    final Color namaKelasColor = isDosen
         ? AppColor
-              .kTextColor // Warna gelap untuk kontras di latar terang
-        : AppColor.kDarkBlue; // Warna biru gelap untuk mhs
+              .kLightPrimaryColor // Solid Light Orange (Dosen)
+        : AppColor.kLightAccentColor; // Solid Light Blue (Mahasiswa)
 
-    // Tentukan warna teks (Kode Kelas)
-    final Color kodeColor = isDosen
-        ? AppColor.kTextSecondaryColor
-        : AppColor.kSecondaryLightTextColor;
+    // Dynamic card background color based on role
+    final Color cardBackgroundColor = isDosen
+        ? AppColor
+              .kBackgroundColor // Beige/Krem (Dosen)
+        : AppColor.kBackgroundColorMhs; // Light Blue (Mahasiswa)
 
-    // Tentukan warna ikon di footer dan teks jumlah mahasiswa
-    final Color footerTextColor = isDosen
-        ? AppColor.kTextSecondaryColor
-        : AppColor.kSecondaryLightTextColor;
+    // Text colors for contrast
+    final Color classNameColor = AppColor.kTextColor;
+    final Color classCodeColor = AppColor.kTextSecondaryColor;
+    final Color footerTextColor = AppColor.kTextSecondaryColor;
 
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
@@ -93,24 +82,21 @@ class ClassListFirebase extends StatelessWidget {
       itemBuilder: (context, index) {
         final kelas = daftarKelas[index];
 
-        // LOGIKA PENTING: Menghitung nilai unik nama untuk menentukan gradien warna.
-        int nilaiUnikNama = kelas.namaKelas.codeUnits.fold(
+        // IMPORTANT LOGIC: Calculate a unique hash based on the class name to determine gradient color.
+        int uniqueNameValue = kelas.namaKelas.codeUnits.fold(
           0,
-          (hasil, huruf) => hasil + huruf,
+          (result, unit) => result + unit,
         );
 
-        // Modulus (%) supaya angkanya pas dengan jumlah pilihan warna
-        int indexWarna = nilaiUnikNama % _cardGradients.length;
+        // Modulus to cycle through the gradient options
+        int gradientIndex = uniqueNameValue % _cardGradients.length;
 
-        // Pilih warna berdasarkan hasil hitungan di atas
-        final gradient = _cardGradients[indexWarna];
-        //
+        final gradient = _cardGradients[gradientIndex];
 
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
           elevation: 4,
-          // Menggunakan warna latar belakang yang telah disesuaikan
-          color: cardBackgroundColor,
+          color: cardBackgroundColor, // Dynamic card background color
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -120,7 +106,7 @@ class ClassListFirebase extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // BAGIAN BANNER (Gradient)
+                // GRADIENT BANNER SECTION
                 Stack(
                   children: [
                     Container(
@@ -131,12 +117,11 @@ class ClassListFirebase extends StatelessWidget {
                       top: 4,
                       right: 4,
                       child: PopupMenuButton<String>(
-                        // Mengatur warna latar belakang Popup Menu
-                        color: menuBackgroundColor,
+                        color:
+                            menuBackgroundColor, // Solid menu background color
                         icon: const Icon(
                           Icons.more_vert,
-                          color: AppColor
-                              .kWhiteColor, // Ikon selalu putih di atas gradient
+                          color: AppColor.kWhiteColor,
                         ),
                         onSelected: (value) {
                           if (onMenuAction != null) {
@@ -144,17 +129,18 @@ class ClassListFirebase extends StatelessWidget {
                           }
                         },
                         itemBuilder: (BuildContext context) {
-                          // List Menu Dasar (Salin Kode)
+                          // Base Menu: Copy Code
                           List<PopupMenuEntry<String>> menus = [
                             _buildPopupMenuItem(
                               value: 'Salin Kode',
                               icon: Icons.copy,
-                              label: 'Salin Kode',
-                              color: AppColor.kTextColor,
+                              label: 'Copy Code',
+                              color: AppColor
+                                  .kTextColor, // Dark text/icon for contrast
                             ),
                           ];
 
-                          // Jika DOSEN, Tambah Menu Edit & Hapus (Logika tetap utuh)
+                          // If DOSEN, Add Edit & Delete Menu
                           if (isDosen) {
                             menus.addAll([
                               _buildPopupMenuItem(
@@ -166,18 +152,18 @@ class ClassListFirebase extends StatelessWidget {
                               _buildPopupMenuItem(
                                 value: 'Hapus',
                                 icon: Icons.delete,
-                                label: 'Hapus',
+                                label: 'Delete',
                                 color: AppColor.kErrorColor,
                               ),
                             ]);
                           }
-                          // Jika MAHASISWA, Tambah Menu Keluar (Logika tetap utuh)
+                          // If MAHASISWA (Student), Add Leave Class Menu
                           else {
                             menus.add(
                               _buildPopupMenuItem(
                                 value: 'Keluar Kelas',
                                 icon: Icons.exit_to_app,
-                                label: 'Keluar',
+                                label: 'Leave Class',
                                 color: AppColor.kErrorColor,
                               ),
                             );
@@ -190,7 +176,7 @@ class ClassListFirebase extends StatelessWidget {
                   ],
                 ),
 
-                // INFO KELAS
+                // CLASS INFO SECTION
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                   child: Column(
@@ -201,17 +187,17 @@ class ClassListFirebase extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: namaKelasColor, // Warna dinamis
+                          color: classNameColor,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Kode: ${kelas.kodeKelas}',
+                        'Code: ${kelas.kodeKelas}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: kodeColor, // Warna dinamis
+                          color: classCodeColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -225,29 +211,29 @@ class ClassListFirebase extends StatelessWidget {
                   color: AppColor.kDividerColor,
                 ),
 
-                // FOOTER INFO
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.people_outline,
-                        size: 20,
-                        color: footerTextColor, // Warna dinamis
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        // Menggunakan properti jumlahMahasiswa dari model
-                        '${kelas.jumlahMahasiswa ?? 0} Mahasiswa',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: footerTextColor, // Warna dinamis
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // // FOOTER INFO (Member Count)
+                // Padding(
+                //   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                //   child: Row(
+                //     children: [
+                //       Icon(
+                //         Icons.people_outline,
+                //         size: 20,
+                //         color: footerTextColor, // Dynamic color
+                //       ),
+                //       const SizedBox(width: 8),
+                //       Text(
+                //         // Use jumlahMahasiswa property from the model
+                //         '${kelas.jumlahMahasiswa ?? 0} Students',
+                //         style: TextStyle(
+                //           fontSize: 14,
+                //           color: footerTextColor, // Dynamic color
+                //           fontWeight: FontWeight.w500,
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -256,7 +242,7 @@ class ClassListFirebase extends StatelessWidget {
     );
   }
 
-  // Helper method untuk membuat PopupMenuItem agar kode lebih rapi
+  // Helper method to build PopupMenuItem for cleaner code
   PopupMenuItem<String> _buildPopupMenuItem({
     required String value,
     required IconData icon,

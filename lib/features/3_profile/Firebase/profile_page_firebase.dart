@@ -9,7 +9,6 @@ import 'package:project_volt/features/3_profile/about_page.dart';
 import 'package:project_volt/features/1_auth/Firebase/password_management_page.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_group.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_list_tile.dart';
-import 'package:project_volt/features/3_profile/widgets/settings_switch_tile.dart';
 import 'package:project_volt/widgets/dialogs/confirmation_dialog_helper.dart';
 
 class ProfilePageFirebase extends StatefulWidget {
@@ -23,26 +22,32 @@ class ProfilePageFirebase extends StatefulWidget {
 class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
   final AuthDataSource _authDataSource = AuthDataSource();
 
-  late bool _isMahasiswa;
-
-  // State Dummy untuk Toggle Switch
-  bool _isDarkMode = false;
+  late UserFirebaseModel _currentUser;
+  late bool _isDosen; // True if the user role is 'dosen'
 
   @override
   void initState() {
     super.initState();
-    // PERBAIKAN: Membandingkan langsung dengan string 'mahasiswa'
-    // agar logika boolean ini benar (True jika Mahasiswa, False jika Dosen)
-    _isMahasiswa = widget.user.role == 'mahasiswa';
+    _currentUser = widget.user;
+    _isDosen = _currentUser.role == 'dosen';
   }
 
-  // LOGIKA WARNA SESUAI INSTRUKSI:
-  // Mahasiswa -> Biru (kPrimaryColor)
-  // Dosen    -> Orange (kAccentColor)
+  /// Determines the primary color based on user role.
   Color get _roleColor =>
-      _isMahasiswa ? AppColor.kPrimaryColor : AppColor.kAccentColor;
+      _isDosen ? AppColor.kPrimaryColor : AppColor.kAccentColor;
 
-  // LOGIKA SESI (Logout)
+  /// Determines the scaffold background color based on user role.
+  Color get _scaffoldBgColor =>
+      _isDosen ? AppColor.kBackgroundColor : AppColor.kBackgroundColorMhs;
+
+  /// Determines the appbar background color based on user role.
+  Color get _appBarColor => _isDosen ? AppColor.kAppBar : AppColor.kAccentColor;
+
+  /// Determines the appbar title color based on user role.
+  Color get _appBarTitleColor =>
+      _isDosen ? AppColor.kTextColor : AppColor.kWhiteColor;
+
+  /// Handles the logout process after confirmation.
   Future<void> _logout() async {
     final bool? confirm = await showConfirmationDialog(
       context: context,
@@ -55,6 +60,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
     if (confirm == true) {
       await _authDataSource.logout();
       if (mounted) {
+        // Navigate to the login page and clear the navigation stack
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -66,58 +72,65 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
     }
   }
 
-  // LOGIKA NAVIGASI
-  void _navigateToEditProfile() {
-    Navigator.push(
+  /// Navigates to the Edit Profile page and updates the local user data on return.
+  void _navigateToEditProfile() async {
+    final updatedUser = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditProfileFirebasePage(user: widget.user),
+        builder: (context) => EditProfileFirebasePage(user: _currentUser),
       ),
     );
+
+    if (updatedUser != null && updatedUser is UserFirebaseModel) {
+      // Update local state with new user data
+      setState(() {
+        _currentUser = updatedUser;
+        _isDosen = _currentUser.role == 'dosen'; // Refresh role state
+      });
+    }
   }
 
   void _navigateToChangePassword() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => PasswordManagementPage()),
+      MaterialPageRoute(builder: (context) => const PasswordManagementPage()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Background TETAP (Tidak berubah sesuai role)
-      backgroundColor: AppColor.kBackgroundColor,
+      backgroundColor: _scaffoldBgColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "Profil Saya",
           style: TextStyle(
-            color: AppColor.kTextColor,
+            color: _appBarTitleColor, // Title text color
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        // AppBar TETAP (Tidak berubah sesuai role)
-        backgroundColor: AppColor.kAppBar,
+        backgroundColor: _appBarColor,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColor.kTextColor),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. KARTU PROFIL UTAMA (Menggunakan _roleColor)
+            // Profile Header Card
             ProfileHeaderCardFirebase(
-              user: widget.user,
+              user: _currentUser,
               onEdit: _navigateToEditProfile,
-              roleColor: _roleColor, // Biru (Mhs) atau Orange (Dosen)
+              roleColor: _roleColor,
             ),
 
             const SizedBox(height: 20),
 
-            // 2. LIST PENGATURAN
+            // Settings Groups
 
-            // GROUP 1: AKUN
+            // GROUP: Akun
             SettingsGroup(
               title: "Akun",
               children: [
@@ -127,28 +140,18 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
                   roleColor: _roleColor,
                   onTap: _navigateToEditProfile,
                 ),
+                // SettingsListTile(
+                //   icon: Icons.lock_outline,
+                //   title: "Ubah Kata Sandi",
+                //   roleColor: _roleColor,
+                //   onTap: _navigateToChangePassword,
+                // ),
               ],
             ),
 
             const SizedBox(height: 20),
 
-            // GROUP 2: PREFERENSI APLIKASI
-            SettingsGroup(
-              title: "Preferensi Aplikasi",
-              children: [
-                SettingsSwitchTile(
-                  icon: Icons.dark_mode_outlined,
-                  title: "Tampilan Gelap",
-                  roleColor: _roleColor, // Icon & Switch berubah warna
-                  value: _isDarkMode,
-                  onChanged: (val) => setState(() => _isDarkMode = val),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // GROUP 3: INFO
+            // GROUP: Info
             SettingsGroup(
               title: "Info",
               children: [
@@ -171,7 +174,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
             const SizedBox(height: 30),
             const Spacer(),
 
-            // GROUP 4: KELUAR (Tombol Full Width)
+            // Logout Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -198,14 +201,4 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
       ),
     );
   }
-
-  // // Garis pemisah antar item
-  // Widget _buildDivider() {
-  //   return const Divider(
-  //     height: 1,
-  //     thickness: 1,
-  //     color: AppColor.kDividerColor,
-  //     indent: 60,
-  //   );
-  // }
 }
