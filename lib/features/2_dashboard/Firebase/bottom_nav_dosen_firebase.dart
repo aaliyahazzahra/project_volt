@@ -21,7 +21,8 @@ class BottomNavDosenFirebase extends StatefulWidget {
 }
 
 class _BottomNavDosenFirebaseState extends State<BottomNavDosenFirebase> {
-  int _tabIndex = 0; // indeks awal
+  // int _tabIndex = 0; // indeks awal
+  final ValueNotifier<int> _tabIndex = ValueNotifier<int>(0);
 
   // Definisikan list halaman
   late final List<Widget> _widgetOptions = <Widget>[
@@ -33,30 +34,35 @@ class _BottomNavDosenFirebaseState extends State<BottomNavDosenFirebase> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // --- SOLUSI: IndexedStack (TIDAK ADA SWIPE) ---
-      body: IndexedStack(
-        // IndexedStack hanya menampilkan widget yang sesuai dengan index saat ini
-        index: _tabIndex,
-        children: _widgetOptions,
-      ),
+    return ValueListenableBuilder<int>(
+      valueListenable: _tabIndex,
+      builder: (context, currentIndex, _) {
+        return Scaffold(
+          // --- SOLUSI: IndexedStack (TIDAK ADA SWIPE) ---
+          body: IndexedStack(
+            // IndexedStack hanya menampilkan widget yang sesuai dengan index saat ini
+            index: currentIndex,
+            children: _widgetOptions,
+          ),
 
-      // ------------------------------------------------
-      bottomNavigationBar: BottomBarBubble(
-        color: Colors.blue, // Ganti dengan AppColor.kPrimaryColor
-        selectedIndex: _tabIndex,
-        items: [
-          BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
-          BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
-          BottomBarItem(iconData: Icons.group, label: 'Profil'),
-        ],
-        onSelect: (newIndex) {
-          // Hanya perlu setState untuk mengubah index IndexedStack
-          setState(() {
-            _tabIndex = newIndex;
-          });
-        },
-      ),
+          // ------------------------------------------------
+          bottomNavigationBar: BottomBarBubble(
+            color: Colors.blue, // Ganti dengan AppColor.kPrimaryColor
+            selectedIndex: currentIndex,
+            items: [
+              BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
+              BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
+              BottomBarItem(iconData: Icons.group, label: 'Profil'),
+            ],
+            onSelect: (newIndex) {
+              // Hanya perlu setState untuk mengubah index IndexedStack
+              // setState(() {
+              _tabIndex.value = newIndex;
+              // });
+            },
+          ),
+        );
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 // lib/features/5_simulasi/create_simulasi_firebase_page.dart
 
 import 'dart:async'; // Diperlukan untuk Timer
+
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -546,7 +547,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     // Menggunakan GateType untuk identifikasi
     if (type == GateType.INPUT) {
       return Container(
-        height: 60,
+        height: 70,
         width: 80,
         decoration: BoxDecoration(
           color: AppColor.kWhiteColor,
@@ -576,7 +577,7 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
     // Menggunakan GateType untuk identifikasi
     if (type == GateType.OUTPUT) {
       return Container(
-        height: 60,
+        height: 70,
         width: 80,
         decoration: BoxDecoration(
           color: AppColor.kWhiteColor,
@@ -604,34 +605,31 @@ class _CreateSimulasiFirebasePageState extends State<CreateSimulasiFirebasePage>
         ),
       );
     }
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        height: 60,
-        width: 80,
-        decoration: BoxDecoration(
-          color: isDragging
-              ? Colors.blueAccent.withOpacity(0.5)
-              : AppColor.kWhiteColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColor.kPrimaryColor, width: 2),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            Center(
-              child: Text(
-                type.name, // Menggunakan type.name (ExOR, AND, dll)
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: AppColor.kPrimaryColor,
-                ),
+    return Container(
+      height: 70,
+      width: 80,
+      decoration: BoxDecoration(
+        color: isDragging
+            ? Colors.blueAccent.withOpacity(0.5)
+            : AppColor.kWhiteColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColor.kPrimaryColor, width: 2),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Center(
+            child: Text(
+              type.name, // Menggunakan type.name (ExOR, AND, dll)
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: AppColor.kPrimaryColor,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

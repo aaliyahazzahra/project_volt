@@ -16,59 +16,60 @@ class BottomNavMhsFirebase extends StatefulWidget {
 }
 
 class _BottomNavMhsFirebaseState extends State<BottomNavMhsFirebase> {
-  int _tabIndex = 0; // indeks awal: 0 = Kelas, 1 = Simulasi, 2 = Profil
+  // pakai ValueNotifier biar konsisten sama dosen
+  final ValueNotifier<int> _tabIndex = ValueNotifier<int>(0);
 
-  // 1. TAMBAHKAN: Deklarasi PageController
-  final PageController controller = PageController();
+  // PageController tetap dipakai
+  final PageController controller = PageController(initialPage: 0);
 
-  // Definisikan list halaman
   late final List<Widget> _widgetOptions = <Widget>[
     HomepageMhsFirebase(user: widget.user), // Index 0: Kelas
     CreateSimulasiFirebasePage(
-      // Index 1: Simulasi
       user: widget.user,
-      // Tidak ada kelasId/template saat masuk dari navigasi utama Mhs
       kelasId: null,
-    ),
+    ), // Index 1: Simulasi
     ProfilePageFirebase(user: widget.user), // Index 2: Profil
   ];
 
   @override
   void dispose() {
-    // 5. TAMBAHKAN: Disposal PageController
     controller.dispose();
+    _tabIndex.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // 2. MODIFIKASI: Mengganti IndexedStack dengan PageView
-      body: PageView(
-        controller: controller,
-        // 4. TAMBAHKAN: Menonaktifkan Swipe
-        physics: const NeverScrollableScrollPhysics(),
-        children: _widgetOptions,
-      ),
-      bottomNavigationBar: BottomBarBubble(
-        // Catatan: Properti color/backgroundColor bisa disesuaikan lagi.
-        backgroundColor: AppColor.kWhiteColor,
-        color: AppColor.kAccentColor,
-        selectedIndex: _tabIndex,
-        items: [
-          BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
-          BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
-          BottomBarItem(iconData: Icons.group, label: 'Profil'),
-        ],
-        onSelect: (newIndex) {
-          // 3. MODIFIKASI: Tambahkan setState dan logika navigasi PageController
-          setState(() {
-            _tabIndex = newIndex;
-          });
-          // Mengubah halaman pada PageView
-          controller.jumpToPage(newIndex);
-        },
-      ),
+    return ValueListenableBuilder<int>(
+      valueListenable: _tabIndex,
+      builder: (context, currentIndex, _) {
+        return Scaffold(
+          body: PageView(
+            controller: controller,
+            physics: const NeverScrollableScrollPhysics(), // no swipe
+            children: _widgetOptions,
+            // kalau nanti physics diubah (swipe aktif), index tetap sync
+            onPageChanged: (page) {
+              _tabIndex.value = page;
+            },
+          ),
+          bottomNavigationBar: BottomBarBubble(
+            backgroundColor: AppColor.kWhiteColor,
+            color: AppColor.kAccentColor,
+            selectedIndex: currentIndex,
+            items: [
+              BottomBarItem(iconData: Icons.assignment, label: 'Kelas'),
+              BottomBarItem(iconData: Icons.memory, label: 'Simulasi'),
+              BottomBarItem(iconData: Icons.group, label: 'Profil'),
+            ],
+            onSelect: (newIndex) {
+              // tanpa setState
+              _tabIndex.value = newIndex;
+              controller.jumpToPage(newIndex);
+            },
+          ),
+        );
+      },
     );
   }
 }
