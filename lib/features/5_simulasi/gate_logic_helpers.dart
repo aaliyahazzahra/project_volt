@@ -1,10 +1,7 @@
-// lib/features/5_simulasi/gate_logic_helpers.dart
-
 import 'package:project_volt/data/simulation_models.dart';
 
-/// Fungsi murni untuk menghitung output gerbang logika tunggal.
 bool calculateGateOutput({
-  required GateType type, // Menggunakan Enum baru
+  required GateType type,
   required bool a,
   required bool b,
 }) {

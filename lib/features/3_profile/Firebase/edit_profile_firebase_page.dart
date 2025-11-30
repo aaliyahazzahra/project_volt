@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_data.dart' as AppData;
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-//  TAMBAH: Import Service Manajemen Pengguna
-import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
+import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart'; // Import User Management Service
 
 class EditProfileFirebasePage extends StatefulWidget {
   final UserFirebaseModel user;
@@ -20,7 +19,7 @@ class EditProfileFirebasePage extends StatefulWidget {
 class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
   final _formKey = GlobalKey<FormState>();
 
-  //  INISIASI SERVICE FIREBASE
+  // Initialize Firebase Service
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
 
@@ -32,7 +31,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
   late bool _isDosen;
   String _nomorIndukLabel = "NIM";
 
-  // Asumsi: Daftar kampus diimpor dari app_data.dart
+  // Assumption: Campus list is imported from app_data.dart
   final List<String> daftarKampus = AppData.daftarKampus;
 
   @override
@@ -40,7 +39,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     super.initState();
     _nomorIndukController = TextEditingController();
 
-    // ASUMSI: role disimpan sebagai string 'dosen'
+    // Determine role and label based on UserFirebaseModel
     _isDosen = widget.user.role == 'dosen';
     _nomorIndukLabel = _isDosen ? "NIDN/NIDK" : "NIM";
 
@@ -53,14 +52,14 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     super.dispose();
   }
 
-  //  UPDATE: Menggunakan data dari model sesi (BUKAN query DB terpisah)
+  // Load profile data from the session model (UserFirebaseModel)
   Future<void> _loadProfileData() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // 1. Ambil data langsung dari UserFirebaseModel (yang dimuat saat login/AuthWrapper)
+      // 1. Get data directly from UserFirebaseModel
       final String? loadedNamaKampus = widget.user.namaKampus;
       final String? loadedNomorInduk = widget.user.nimNidn;
 
@@ -73,12 +72,13 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
 
       _nomorIndukController.text = loadedNomorInduk ?? '';
     } catch (e) {
+      // Log error for debugging
       print("Error loading profile: $e");
       if (mounted) {
-        // PERBAIKAN SNACKBAR: Menggunakan AwesomeSnackbar untuk konsistensi
+        // Show consistent error Snackbar
         final snackBarContent = AwesomeSnackbarContent(
           title: "Error",
-          message: "Gagal memuat data profil.",
+          message: "Failed to load profile data.",
           contentType: ContentType.failure,
         );
         ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +99,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     }
   }
 
-  //  UPDATE: Menyimpan data ke Firestore (TANPA DbHelper)
+  // Save data to Firestore using the service
   Future<void> _saveProfileData() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -115,26 +115,25 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
       final String newNimNidn = _nomorIndukController.text.trim();
       final String newNamaKampus = _selectedKampus!;
 
-      // 1. Panggil service untuk update dokumen user di Firestore
+      // 1. Call service to update user document in Firestore
       await _userManagementService.updateProfileDetails(
         uid: userUid,
         nimNidn: newNimNidn,
         namaKampus: newNamaKampus,
       );
 
-      // 2. Buat Model Pengguna yang Baru dan Terupdate
+      // 2. Create the new, updated User Model
       final UserFirebaseModel updatedUser = widget.user.copyWith(
         nimNidn: newNimNidn,
         namaKampus: newNamaKampus,
-        // Perlu update updatedAt jika field tersebut penting
         updatedAt: DateTime.now().toIso8601String(),
       );
 
-      // 3. Sukses: Sinyal ke parent DAN KEMBALIKAN DATA BARU
+      // 3. Success: Signal to parent and RETURN NEW DATA
       if (mounted) {
         final snackBarContent = AwesomeSnackbarContent(
-          title: "Sukses",
-          message: "Berhasil merubah profil.",
+          title: "Success",
+          message: "Successfully updated profile.",
           contentType: ContentType.success,
         );
 
@@ -149,17 +148,17 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
             ),
           );
 
-        // Kirim sinyal ke parent untuk refresh data (penting!)
+        // Return the updated user model to the previous page
         Navigator.pop(context, updatedUser);
       }
     } catch (e) {
+      // Log error for debugging
       print("Error saving profile: $e");
       if (mounted) {
         final snackBarContent = AwesomeSnackbarContent(
           title: "Error",
           message:
-              "Gagal menyimpan profil: ${e.toString().replaceAll('Exception: ', '')}",
-          // Mengganti ContentType.warning menjadi ContentType.failure untuk error yang lebih serius
+              "Failed to save profile: ${e.toString().replaceAll('Exception: ', '')}",
           contentType: ContentType.failure,
         );
 
@@ -185,29 +184,30 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Tentukan warna tema peran secara dinamis
+    // Determine the role-based theme color dynamically
     final Color rolePrimaryColor = _isDosen
-        ? AppColor.kPrimaryColor
-        : AppColor.kAccentColor;
+        ? AppColor
+              .kPrimaryColor // Orange for Dosen
+        : AppColor.kAccentColor; // Blue for Mahasiswa
 
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Ubah Profil Akademik",
           style: TextStyle(
-            color: rolePrimaryColor,
+            color: AppColor.kTextColor, // Neutral App Bar Title
             fontWeight: FontWeight.bold,
           ),
         ),
-        // Ikon kembali menggunakan warna peran
+        // Back icon theme uses role color
         iconTheme: IconThemeData(color: rolePrimaryColor),
         backgroundColor: AppColor.kBackgroundColor,
         elevation: 0,
       ),
       body: _isLoading
           ? Center(
-              // Loading indicator menggunakan warna peran
+              // Loading indicator uses role color
               child: CircularProgressIndicator(color: rolePrimaryColor),
             )
           : ListView(
@@ -218,13 +218,13 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Dropdown Kampus
+                      // Campus Dropdown
                       DropdownButtonFormField<String>(
                         initialValue: _selectedKampus,
                         isExpanded: true,
                         decoration: InputDecoration(
                           labelText: 'Nama Kampus / Universitas',
-                          // Warna border saat fokus menggunakan warna peran
+                          // Focused border color uses role color
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide(
@@ -234,7 +234,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: AppColor.kDividerColor,
                             ),
                           ),
@@ -246,7 +246,13 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                           ),
                           filled: true,
                           fillColor: AppColor.kWhiteColor,
-                          labelStyle: TextStyle(color: AppColor.kTextColor),
+                          labelStyle: const TextStyle(
+                            color: AppColor.kTextColor,
+                          ),
+                          // Error text color
+                          errorStyle: const TextStyle(
+                            color: AppColor.kErrorColor,
+                          ),
                         ),
                         hint: const Text('Pilih Kampus'),
                         items: daftarKampus.map((String kampus) {
@@ -265,7 +271,7 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                         },
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Harap pilih nama kampus';
+                            return 'Please select a campus name';
                           }
                           return null;
                         },
@@ -273,12 +279,12 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
 
                       const SizedBox(height: 16),
 
-                      // Nomor Induk (NIM/NIDN)
+                      // ID Number (NIM/NIDN)
                       TextFormField(
                         controller: _nomorIndukController,
                         decoration: InputDecoration(
                           labelText: _nomorIndukLabel,
-                          // Warna border saat fokus menggunakan warna peran
+                          // Focused border color uses role color
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide(
@@ -286,9 +292,24 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                               width: 2.0,
                             ),
                           ),
+                          // Error border color
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: const BorderSide(
+                              color: AppColor.kErrorColor,
+                              width: 1.0,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: const BorderSide(
+                              color: AppColor.kErrorColor,
+                              width: 2.0,
+                            ),
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: AppColor.kDividerColor,
                             ),
                           ),
@@ -300,39 +321,58 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                           ),
                           filled: true,
                           fillColor: AppColor.kWhiteColor,
-                          labelStyle: TextStyle(color: AppColor.kTextColor),
+                          labelStyle: const TextStyle(
+                            color: AppColor.kTextColor,
+                          ),
+                          // Error text color
+                          errorStyle: const TextStyle(
+                            color: AppColor.kErrorColor,
+                          ),
                         ),
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '$_nomorIndukLabel tidak boleh kosong';
+                            return '$_nomorIndukLabel cannot be empty';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 32),
 
-                      // Tombol Simpan
+                      // Save Button
                       ElevatedButton(
-                        onPressed: _saveProfileData,
+                        onPressed: _isLoading
+                            ? null
+                            : _saveProfileData, // Disable button when loading
                         style: ElevatedButton.styleFrom(
-                          // Background tombol menggunakan warna peran
+                          // Button background uses role color
                           backgroundColor: rolePrimaryColor,
+                          // Disabled color uses kDisabledColor
+                          disabledBackgroundColor: AppColor.kDisabledColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.0),
                           ),
-                          // Foreground (teks) sudah benar menggunakan kWhiteColor
+                          // Text color uses kWhiteColor
                           foregroundColor: AppColor.kWhiteColor,
                         ),
-                        child: const Text(
-                          'Simpan Perubahan',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          // Warna teks sudah ditentukan oleh foregroundColor di styleFrom
-                        ),
+                        child:
+                            _isLoading // Show loading spinner
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: AppColor.kWhiteColor,
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            : const Text(
+                                'Simpan Perubahan',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ],
                   ),

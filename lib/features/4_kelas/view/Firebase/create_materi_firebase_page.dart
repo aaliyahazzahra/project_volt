@@ -64,21 +64,21 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
   }
 
   // untuk memilih file (logika FilePicker)
-  Future<void> _pickFile() async {
-    if (_isLoading) return;
+  // Future<void> _pickFile() async {
+  //   if (_isLoading) return;
 
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles();
+  //   try {
+  //     FilePickerResult? result = await FilePicker.platform.pickFiles();
 
-      if (result != null) {
-        setState(() {
-          _pickedFile = File(result.files.single.path!);
-        });
-      }
-    } catch (e) {
-      _showSnackbar("Gagal memilih file.", ContentType.warning);
-    }
-  }
+  //     if (result != null) {
+  //       setState(() {
+  //         _pickedFile = File(result.files.single.path!);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     _showSnackbar("Gagal memilih file.", ContentType.warning);
+  //   }
+  // }
 
   // untuk menyimpan materi ke Firebase Storage dan Firestore
   Future<void> _saveMateri() async {
@@ -95,7 +95,7 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
 
     if (!hasDescription && !hasLink && !hasFile) {
       _showSnackbar(
-        "Harap sertakan Deskripsi, Link Materi, atau Upload File/Simulasi (minimal satu).",
+        "Harap sertakan Deskripsi atau Link Materi.",
         ContentType.warning,
       );
       return;
@@ -196,25 +196,25 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
                   const SizedBox(height: 16),
 
                   // tombol pilih file
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.attach_file),
-                    label: Text(
-                      _pickedFile == null
-                          ? 'Upload File (PDF/Simulasi)'
-                          : p.basename(_pickedFile!.path),
-                    ),
-                    onPressed: _pickFile,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _pickedFile != null
-                          ? Colors.green
-                          : AppColor.kTextColor,
-                      side: BorderSide(
-                        color: _pickedFile != null ? Colors.green : Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // OutlinedButton.icon(
+                  //   icon: const Icon(Icons.attach_file),
+                  //   label: Text(
+                  //     _pickedFile == null
+                  //         ? 'Upload File (PDF/Simulasi)'
+                  //         : p.basename(_pickedFile!.path),
+                  //   ),
+                  //   onPressed: _pickFile,
+                  //   style: OutlinedButton.styleFrom(
+                  //     foregroundColor: _pickedFile != null
+                  //         ? Colors.green
+                  //         : AppColor.kTextColor,
+                  //     side: BorderSide(
+                  //       color: _pickedFile != null ? Colors.green : Colors.grey,
+                  //     ),
+                  //   ),
+                  // ),
 
-                  const SizedBox(height: 32),
+                  // const SizedBox(height: 32),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _saveMateri,
                     style: ElevatedButton.styleFrom(
