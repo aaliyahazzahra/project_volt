@@ -9,7 +9,7 @@ import 'package:project_volt/features/4_kelas/view/Firebase/submisi_detail_dosen
 import 'package:project_volt/widgets/emptystate.dart';
 
 // Catatan: SubmisiDetailFirebase harus diimpor/didefinisikan di file submisi_firebase_service.dart
-// (sesuai kode yang Anda berikan sebelumnya)
+// (sesuai kode yang   berikan sebelumnya)
 
 class SubmisiListTab extends StatefulWidget {
   final String tugasId;
@@ -42,7 +42,7 @@ class _SubmisiListTabState extends State<SubmisiListTab> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        // Panggil Widget Halaman Penilaian yang benar (SubmisiDetailPage sesuai dengan kode keempat Anda)
+        // Panggil Widget Halaman Penilaian yang benar (SubmisiDetailPage sesuai dengan kode keempat  )
         builder: (context) => SubmisiDetailPage(detail: detail),
       ),
     );

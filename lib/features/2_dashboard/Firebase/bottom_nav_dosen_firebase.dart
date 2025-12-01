@@ -5,13 +5,6 @@ import 'package:project_volt/features/2_dashboard/Firebase/homepage_dosen_fireba
 import 'package:project_volt/features/3_profile/Firebase/profile_page_firebase.dart';
 import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
 
-// Ganti import ini dengan yang sesuai di proyek Anda
-// import 'package:project_volt/core/constants/app_color.dart';
-// import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-// import 'package:project_volt/features/2_dashboard/Firebase/homepage_dosen_firebase.dart';
-// import 'package:project_volt/features/3_profile/Firebase/profile_page_firebase.dart';
-// import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
-
 class BottomNavDosenFirebase extends StatefulWidget {
   final dynamic user; // Gunakan tipe data yang sesuai
   const BottomNavDosenFirebase({super.key, required this.user});
@@ -27,7 +20,7 @@ class _BottomNavDosenFirebaseState extends State<BottomNavDosenFirebase> {
   // Definisikan list halaman
   late final List<Widget> _widgetOptions = <Widget>[
     HomepageDosenFirebase(user: widget.user), // Index 0: Kelas
-    // Gunakan SimulasiWrapper jika Anda menerapkan Keep Alive di file terpisah
+    // Gunakan SimulasiWrapper jika   menerapkan Keep Alive di file terpisah
     CreateSimulasiFirebasePage(user: widget.user), // Index 1: Simulasi
     ProfilePageFirebase(user: widget.user), // Index 2: Profil
   ];

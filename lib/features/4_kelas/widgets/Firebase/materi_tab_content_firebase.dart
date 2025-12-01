@@ -1,18 +1,15 @@
-// features/4_kelas/view/Firebase/materi_tab_content_firebase.dart
-
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/data/firebase/service/materi_firebase_service.dart'; // Import Service
+import 'package:project_volt/data/firebase/service/materi_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/create_materi_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/materi_detail_mhs_firebase.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/list_views/materi_list_view_firebase.dart';
 import 'package:project_volt/widgets/emptystate.dart';
 
-// Diubah dari StatefulWidget menjadi StatelessWidget
 class MateriTabContentFirebase extends StatelessWidget {
   final KelasFirebaseModel kelas;
   final UserFirebaseModel user;
@@ -25,15 +22,12 @@ class MateriTabContentFirebase extends StatelessWidget {
     required this.isDosen,
   });
 
-  // INISIASI SERVICE FIREBASE (sekali saja)
   final MateriFirebaseService _materiFirebaseService = MateriFirebaseService();
 
-  // Fungsi navigasi dipindah ke StatelessWidget
   void _navigateToCreateMateri(BuildContext context) async {
     final String? kelasId = kelas.kelasId;
     if (kelasId == null) return;
 
-    // Tidak perlu memanggil _loadMateri() lagi, karena StreamBuilder akan otomatis refresh
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -41,15 +35,6 @@ class MateriTabContentFirebase extends StatelessWidget {
       ),
     );
   }
-
-  // void _navigateToDetailMateri(MateriFirebaseModel materi) {
-  //   MaterialPageRoute(
-  //     // GANTI: Panggil ClassDetailPage versi Firebase
-  //     builder: (context) =>
-  //         MateriDetailMhsFirebase(materiId: materi.materiId!, user: user),
-  //   );
-  //   print("TODO: Navigasi ke MateriDetailPage untuk ${materi.judul}");
-  // }
 
   void _navigateToDetailMateri(
     BuildContext context,
@@ -60,7 +45,6 @@ class MateriTabContentFirebase extends StatelessWidget {
       return;
     }
 
-    // 🎯 PERBAIKAN: Lakukan navigasi dengan Navigator.push()
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -78,7 +62,6 @@ class MateriTabContentFirebase extends StatelessWidget {
         ? AppColor.kPrimaryColor
         : AppColor.kAccentColor;
 
-    // Cek ID Kelas
     if (kelasId == null) {
       return const Center(child: Text("ID Kelas tidak valid."));
     }
@@ -86,9 +69,7 @@ class MateriTabContentFirebase extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.kWhiteColor,
 
-      // Menggunakan StreamBuilder untuk data Real-time
       body: StreamBuilder<List<MateriFirebaseModel>>(
-        // Panggil Stream dari Service
         stream: _materiFirebaseService.getMateriStreamByKelas(kelasId),
         builder: (context, snapshot) {
           // 1. Tangani Error
@@ -105,19 +86,16 @@ class MateriTabContentFirebase extends StatelessWidget {
             );
           }
 
-          // Data sudah siap, pastikan tidak null (walaupun harusnya tidak jika stream berhasil)
           final daftarMateri = snapshot.data ?? [];
 
           // 3. Tangani Data Kosong
           if (daftarMateri.isEmpty) {
             return EmptyStateWidget(
               imagePath: AppImages.materidosen,
-              // icon: Icons.menu_book_outlined,
               title: "Belum Ada Materi",
               message: isDosen
                   ? "Tekan tombol (+) di bawah untuk menambah materi baru."
                   : "Dosen Anda belum memposting materi apapun di kelas ini.",
-              // iconColor: rolePrimaryColor,
             );
           }
 

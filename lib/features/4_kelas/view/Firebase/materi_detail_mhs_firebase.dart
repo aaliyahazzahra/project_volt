@@ -1,4 +1,4 @@
-// lib/features/4_kelas/view/Firebase/materi_detail_mhs_firebase.dart
+// lib/features//view/Firebase/materi_detail_mhs_firebase.dart
 
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
@@ -14,9 +14,7 @@ import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.d
 import 'package:project_volt/widgets/emptystate.dart';
 
 class MateriDetailMhsFirebase extends StatefulWidget {
-  // Hanya perlu Materi ID untuk memuat datanya dari service
   final String materiId;
-  // Perlu User Mahasiswa untuk membuka editor simulasi (walau read-only)
   final UserFirebaseModel user;
 
   const MateriDetailMhsFirebase({
@@ -36,8 +34,20 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
 
   // State untuk data Materi
   MateriFirebaseModel? _materi;
-  // State untuk data Simulasi yang dilampirkan (jika ada)
   SimulasiFirebaseModel? _simulasiMateri;
+
+  late bool _isDosen;
+
+  /// Determines the scaffold background color based on user role.
+  Color get _scaffoldBgColor =>
+      _isDosen ? AppColor.kBackgroundColor : AppColor.kBackgroundColorMhs;
+
+  /// Determines the appbar background color based on user role.
+  Color get _appBarColor => _isDosen ? AppColor.kAppBar : AppColor.kAccentColor;
+
+  /// Determines the appbar title color based on user role.
+  Color get _appBarTitleColor =>
+      _isDosen ? AppColor.kTextColor : AppColor.kWhiteColor;
 
   bool _isLoading = true;
 
@@ -59,7 +69,6 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
           _isLoading = false;
         });
 
-        // Jika materi memiliki lampiran simulasi, muat data simulasinya
         if (_materi!.simulasiId != null) {
           _loadSimulasiLampiran(_materi!.simulasiId!);
         }
@@ -100,15 +109,14 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
   void _viewSimulasiMateri() {
     if (_materi == null || _simulasiMateri == null) return;
 
-    // 🎯 Mahasiswa membuka Editor Simulasi Dosen dalam mode Read-Only
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => CreateSimulasiFirebasePage(
           kelasId: _materi!.kelasId,
-          user: widget.user, // User Mahasiswa
-          loadSimulasiId: _simulasiMateri!.simulasiId, // ID Simulasi Materi
-          isReadOnly: true, // WAJIB Read-Only untuk Materi
+          user: widget.user,
+          loadSimulasiId: _simulasiMateri!.simulasiId,
+          isReadOnly: true,
         ),
       ),
     );
@@ -180,7 +188,19 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
 
     if (_materi == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Detail Materi")),
+        backgroundColor: _scaffoldBgColor,
+
+        appBar: AppBar(
+          title: Text(
+            "Detail Materi",
+            style: TextStyle(
+              color: _appBarTitleColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: _appBarColor,
+        ),
         body: const EmptyStateWidget(
           imagePath: AppImages.materimhs,
           // icon: Icons.search_off,
@@ -190,7 +210,6 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
       );
     }
 
-    //   KOREKSI LOGIC TANGGAL
     // 1. Ambil String dari model
     final String tglPostingString = _materi!.tglPosting;
     // 2. Parse String ke DateTime
@@ -212,7 +231,6 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Judul & Meta ---
             Text(
               _materi!.judul,
               style: const TextStyle(
@@ -230,7 +248,6 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
             ),
             const Divider(height: 30),
 
-            // --- Deskripsi Konten ---
             const Text(
               "Konten Materi:",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -247,10 +264,7 @@ class _MateriDetailMhsFirebaseState extends State<MateriDetailMhsFirebase> {
 
             const SizedBox(height: 30),
 
-            // --- Lampiran Simulasi ---
             _buildLampiranSimulasi(),
-
-            // 💡 TODO: Tambahkan Widget untuk Lampiran File/Link jika ada
           ],
         ),
       ),

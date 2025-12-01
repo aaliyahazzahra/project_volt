@@ -1,18 +1,12 @@
-// File: project_volt/features/4_kelas/view/create_materi_page.dart
-
 import 'dart:io';
 
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/data/firebase/models/materi_firebase_model.dart';
-//  Import Service dan Model Firebase
 import 'package:project_volt/data/firebase/service/materi_firebase_service.dart';
 
 class CreateMateriFirebasePage extends StatefulWidget {
-  // ID Kelas sekarang bertipe String (UID Kelas)
   final String kelasId;
   const CreateMateriFirebasePage({super.key, required this.kelasId});
 
@@ -27,7 +21,6 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
   final _deskripsiController = TextEditingController();
   final _linkController = TextEditingController();
 
-  //  INISIASI SERVICE FIREBASE
   final MateriFirebaseService _materiService = MateriFirebaseService();
 
   File? _pickedFile;
@@ -41,9 +34,8 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
     super.dispose();
   }
 
-  // Helper untuk menampilkan Awesome Snackbar
   void _showSnackbar(String message, ContentType type) {
-    if (!mounted) return; // Tambahkan pengecekan mounted
+    if (!mounted) return;
 
     final snackBarContent = AwesomeSnackbarContent(
       title: type == ContentType.success ? "Sukses" : "Peringatan",
@@ -63,32 +55,13 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
       ..showSnackBar(snackBar);
   }
 
-  // untuk memilih file (logika FilePicker)
-  // Future<void> _pickFile() async {
-  //   if (_isLoading) return;
-
-  //   try {
-  //     FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-  //     if (result != null) {
-  //       setState(() {
-  //         _pickedFile = File(result.files.single.path!);
-  //       });
-  //     }
-  //   } catch (e) {
-  //     _showSnackbar("Gagal memilih file.", ContentType.warning);
-  //   }
-  // }
-
-  // untuk menyimpan materi ke Firebase Storage dan Firestore
   Future<void> _saveMateri() async {
-    // 1. VALIDASI JUDUL (Sudah ada)
+    // 1. VALIDASI JUDUL
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     // 2. VALIDASI KONTEN MINIMAL (Logika baru)
-    // Harus ada Deskripsi ATAU Link ATAU File/Simulasi
     final bool hasDescription = _deskripsiController.text.trim().isNotEmpty;
     final bool hasLink = _linkController.text.trim().isNotEmpty;
     final bool hasFile = _pickedFile != null;
@@ -121,7 +94,6 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
         linkMateri: _linkController.text.trim().isEmpty
             ? null
             : _linkController.text.trim(),
-        // filePathMateri adalah URL hasil upload
         filePathMateri: fileUrl,
         tglPosting: DateTime.now().toIso8601String(),
       );
@@ -131,7 +103,7 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
 
       if (mounted) {
         _showSnackbar("Materi berhasil diposting!", ContentType.success);
-        Navigator.of(context).pop(true); // Kirim 'true' untuk refresh
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       print("Error saving materi/uploading file: $e");
@@ -195,26 +167,6 @@ class _CreateMateriFirebasePageState extends State<CreateMateriFirebasePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // tombol pilih file
-                  // OutlinedButton.icon(
-                  //   icon: const Icon(Icons.attach_file),
-                  //   label: Text(
-                  //     _pickedFile == null
-                  //         ? 'Upload File (PDF/Simulasi)'
-                  //         : p.basename(_pickedFile!.path),
-                  //   ),
-                  //   onPressed: _pickFile,
-                  //   style: OutlinedButton.styleFrom(
-                  //     foregroundColor: _pickedFile != null
-                  //         ? Colors.green
-                  //         : AppColor.kTextColor,
-                  //     side: BorderSide(
-                  //       color: _pickedFile != null ? Colors.green : Colors.grey,
-                  //     ),
-                  //   ),
-                  // ),
-
-                  // const SizedBox(height: 32),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _saveMateri,
                     style: ElevatedButton.styleFrom(

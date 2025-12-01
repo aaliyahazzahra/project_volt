@@ -1,6 +1,5 @@
-// project_volt/data/firebase/models/submisi_firebase_model.dart
-
 import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SubmisiFirebaseModel {
@@ -8,20 +7,15 @@ class SubmisiFirebaseModel {
   final String tugasId;
   final String mahasiswaId;
 
-  // NEW/CORRECTED FIELD: Teks Jawaban Langsung
-  final String? textSubmisi; // Menggunakan nama yang lebih konsisten
+  final String? textSubmisi;
 
-  // FILE SUBMISI STANDAR
   final String? linkSubmisi;
-  final String? filePathSubmisi; // Path ke file di Storage (jika ada)
+  final String? filePathSubmisi;
 
-  // FIELD BARU: ID SIMULASI HASIL KERJA MAHASISWA
   final String? simulasiSubmisiId;
 
-  // KOREKSI TIPE DATA: Gunakan DateTime untuk submission date
   final DateTime? tglSubmit;
 
-  // FIELD BARU: Status Submisi (e.g., 'DISUBMIT', 'TERLAMBAT', 'DINILAI')
   final String status;
 
   final int? nilai; // 0-100
@@ -30,16 +24,14 @@ class SubmisiFirebaseModel {
     this.submisiId,
     required this.tugasId,
     required this.mahasiswaId,
-    this.textSubmisi, // TAMBAHKAN DI CONSTRUCTOR
+    this.textSubmisi,
     this.linkSubmisi,
     this.filePathSubmisi,
-    this.simulasiSubmisiId, // Tambahan
-    this.tglSubmit, // Tipe DateTime
-    this.status = 'DRAFT', // Default Status
+    this.simulasiSubmisiId,
+    this.tglSubmit,
+    this.status = 'DRAFT',
     this.nilai,
   });
-
-  // --- Konversi ke/dari Map (untuk Firestore) ---
 
   factory SubmisiFirebaseModel.fromMap(Map<String, dynamic> map, {String? id}) {
     DateTime? parseDateTime(dynamic value) {
@@ -55,13 +47,12 @@ class SubmisiFirebaseModel {
       submisiId: id,
       tugasId: map['tugasId'] as String,
       mahasiswaId: map['mahasiswaId'] as String,
-      textSubmisi: map['textSubmisi'] as String?, // PARSE TEXT SUBMISI
+      textSubmisi: map['textSubmisi'] as String?,
       linkSubmisi: map['linkSubmisi'] as String?,
       filePathSubmisi: map['filePathSubmisi'] as String?,
-      simulasiSubmisiId:
-          map['simulasiSubmisiId'] as String?, // Ambil ID Simulasi
-      tglSubmit: parseDateTime(map['tglSubmit']), // Gunakan helper parse
-      status: map['status'] as String? ?? 'DRAFT', // Ambil Status
+      simulasiSubmisiId: map['simulasiSubmisiId'] as String?,
+      tglSubmit: parseDateTime(map['tglSubmit']),
+      status: map['status'] as String? ?? 'DRAFT',
       nilai: map['nilai'] as int?,
     );
   }
@@ -74,7 +65,6 @@ class SubmisiFirebaseModel {
       'linkSubmisi': linkSubmisi,
       'filePathSubmisi': filePathSubmisi,
       'simulasiSubmisiId': simulasiSubmisiId,
-      // Simpan DateTime sebagai Timestamp untuk ketepatan waktu
       'tglSubmit': tglSubmit != null ? Timestamp.fromDate(tglSubmit!) : null,
       'status': status,
       'nilai': nilai,
@@ -85,7 +75,7 @@ class SubmisiFirebaseModel {
     String? submisiId,
     String? tugasId,
     String? mahasiswaId,
-    String? textSubmisi, // TAMBAHKAN DI copyWith
+    String? textSubmisi,
     String? linkSubmisi,
     String? filePathSubmisi,
     String? simulasiSubmisiId,
@@ -97,7 +87,7 @@ class SubmisiFirebaseModel {
       submisiId: submisiId ?? this.submisiId,
       tugasId: tugasId ?? this.tugasId,
       mahasiswaId: mahasiswaId ?? this.mahasiswaId,
-      textSubmisi: textSubmisi ?? this.textSubmisi, // GUNAKAN DI copyWith
+      textSubmisi: textSubmisi ?? this.textSubmisi,
       linkSubmisi: linkSubmisi ?? this.linkSubmisi,
       filePathSubmisi: filePathSubmisi ?? this.filePathSubmisi,
       simulasiSubmisiId: simulasiSubmisiId ?? this.simulasiSubmisiId,

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_image.dart';
-import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 import 'package:project_volt/data/firebase/models/kelas_firebase_model.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
+import 'package:project_volt/data/firebase/service/user_management_firebase_service.dart';
 import 'package:project_volt/features/4_kelas/view/Firebase/class_detail_firebase_page.dart';
 import 'package:project_volt/features/4_kelas/widgets/Firebase/class_list_firebase.dart';
 import 'package:project_volt/widgets/dialogs/confirmation_dialog_helper.dart';
@@ -23,9 +23,8 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
 
-  List<KelasFirebaseModel> _daftarKelas = []; //  UBAH TIPE LIST
+  List<KelasFirebaseModel> _daftarKelas = [];
   bool _isLoading = true;
-  // bool _isProfileComplete = false;
 
   final TextEditingController _kodeController = TextEditingController();
 
@@ -44,21 +43,6 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
   Future<void> _loadData() async {
     final String userUid = widget.user.uid;
 
-    // 1. Cek User ID
-    if (userUid == null) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _showSnackbar("User ID tidak ditemukan.", ContentType.warning);
-      }
-      return;
-    }
-
-    // 2.  Cek Kelengkapan Profil dari Model Sesi (nimNidn dan namaKampus sudah ada di user object)
-    // bool profileComplete =
-    //     widget.user.nimNidn?.isNotEmpty == true &&
-    //     widget.user.namaKampus?.isNotEmpty == true;
-
-    // 3.  Ambil Data Kelas yang Diikuti dari Firebase Service
     try {
       final dataKelas = await _userManagementService.getKelasByMahasiswa(
         userUid,
@@ -67,7 +51,6 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       if (mounted) {
         setState(() {
           _daftarKelas = dataKelas;
-          // _isProfileComplete = profileComplete;
           _isLoading = false;
         });
       }
@@ -79,7 +62,6 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     }
   }
 
-  // Helper untuk menampilkan Awesome Snackbar
   void _showSnackbar(String message, ContentType type) {
     final snackBarContent = AwesomeSnackbarContent(
       title: type == ContentType.success ? "Sukses" : "Peringatan",
@@ -99,12 +81,10 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       ..showSnackBar(snackBar);
   }
 
-  //  UBAH TIPE MODEL: KelasModel -> KelasFirebaseModel
   void _navigateToDetail(KelasFirebaseModel kelas) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        //  GANTI: Panggil ClassDetailPage versi Firebase
         builder: (context) =>
             ClassDetailFirebasePage(kelas: kelas, user: widget.user),
       ),
@@ -116,7 +96,6 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     }
   }
 
-  //  UBAH TIPE MODEL: KelasModel -> KelasFirebaseModel
   void _handleMenuAction(String action, KelasFirebaseModel kelas) {
     if (action == 'Salin Kode') {
       Clipboard.setData(ClipboardData(text: kelas.kodeKelas));
@@ -132,63 +111,53 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          // Latar belakang default AlertDialog sudah putih, tapi bisa ditegaskan
-          backgroundColor: AppColor.kLightAccentColor, //perubahan
+          backgroundColor: AppColor.kLightAccentColor,
 
           title: const Text(
             'Gabung Kelas Baru',
             style: TextStyle(
               color: AppColor.kTextColor,
               fontWeight: FontWeight.bold,
-            ), //perubahan
+            ),
           ),
           content: TextField(
             controller: _kodeController,
-            // Perbaikan styling TextField agar konsisten
             decoration: InputDecoration(
-              //perubahan
               hintText: "Masukkan Kode Kelas",
-              // Warna border saat fokus menggunakan warna Mahasiswa (Biru)
               focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(
                   color: AppColor.kAccentColor,
                   width: 2.0,
                 ),
-              ), //perubahan
-              // Warna border saat default
+              ),
               enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColor.kDividerColor),
-              ), //perubahan
-              hintStyle: const TextStyle(
-                color: AppColor.kTextSecondaryColor,
-              ), //perubahan
-            ), //perubahan
+              ),
+              hintStyle: const TextStyle(color: AppColor.kTextSecondaryColor),
+            ),
             autofocus: true,
           ),
           actions: <Widget>[
             TextButton(
               child: Text(
                 'Batal',
-                // Warna tombol Aksi (Batal) menggunakan warna tema Mahasiswa
                 style: TextStyle(
                   color: AppColor.kAccentColor,
                   fontWeight: FontWeight.w600,
-                ), //perubahan
+                ),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: Text(
                 'Gabung',
-                // Warna tombol Aksi (Gabung) menggunakan warna tema Mahasiswa
                 style: TextStyle(
                   color: AppColor.kAccentColor,
                   fontWeight: FontWeight.bold,
-                ), //perubahan
+                ),
               ),
               onPressed: () async {
-                final String? userUid = widget.user.uid;
-                if (userUid == null) return;
+                final String userUid = widget.user.uid;
 
                 if (_kodeController.text.isEmpty) {
                   _showSnackbar(
@@ -199,9 +168,8 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
                 }
 
                 try {
-                  //  PANGGIL SERVICE FIREBASE: joinKelas
                   final String hasil = await _userManagementService.joinKelas(
-                    userUid, // Perbaiki agar tidak ada error di sini
+                    userUid,
                     _kodeController.text.trim(),
                   );
 
@@ -245,33 +213,23 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
     if (confirm == true) {
       final String userUid = widget.user.uid;
       final String? kelasId = kelas.kelasId;
-      if (userUid == null || kelasId == null) return;
+      if (kelasId == null) return;
 
       try {
-        // 🔥 PANGGIL SERVICE FIREBASE: leaveKelas
         await _userManagementService.leaveKelas(userUid, kelasId);
 
         if (mounted) {
           _showSnackbar("Anda berhasil keluar dari kelas", ContentType.success);
-          // Tetap refresh data setelah sukses
           setState(() => _isLoading = true);
           _loadData();
         }
       } catch (e) {
         if (mounted) {
-          // Tampilkan snackbar error
           _showSnackbar("Gagal keluar kelas: $e", ContentType.failure);
         }
       }
     }
   }
-
-  // void _showProfileWarning() {
-  //   _showSnackbar(
-  //     "Harap lengkapi Profil (NIM dan Kampus) sebelum bergabung.",
-  //     ContentType.warning,
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -280,11 +238,7 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       appBar: AppBar(
         title: const Text(
           "Ruang Kelas",
-          style: TextStyle(
-            // color: AppColor.kTextColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
         centerTitle: true,
         backgroundColor: AppColor.kAccentColor,
@@ -297,14 +251,11 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
           : _daftarKelas.isEmpty
           ? EmptyStateWidget(
               imagePath: AppImages.kelasmhs,
-              // icon: Icons.school_outlined,
               title: "Selamat Datang,\n${widget.user.namaLengkap}",
-              // iconColor: AppColor.kAccentColor,
               message:
                   "Anda belum bergabung dengan kelas manapun. Silakan gabung kelas dengan menekan tombol (+).",
             )
           : ClassListFirebase(
-              //  Menggunakan ClassListFirebase
               daftarKelas: _daftarKelas,
               onKelasTap: _navigateToDetail,
               isDosen: false,
@@ -314,9 +265,6 @@ class _HomepageMhsFirebaseState extends State<HomepageMhsFirebase> {
       floatingActionButton: FloatingActionButton(
         onPressed: _showGabungKelasDialog,
         backgroundColor: AppColor.kAccentColor,
-        // backgroundColor: _isProfileComplete
-        //     ? AppColor.kAccentColor
-        //     : AppColor.kDisabledColor,
         tooltip: 'Gabung Kelas Baru',
         child: const Icon(Icons.add, color: AppColor.kWhiteColor),
       ),

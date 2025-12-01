@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_gradients/flutter_animated_gradients.dart';
-// WAJIB import AppColor
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/features/1_auth/Firebase/login_form_firebase.dart';
@@ -17,7 +16,6 @@ class AuthenticatorFirebase extends StatelessWidget {
         body: SizedBox(
           height: double.infinity,
           child: AnimatedGradientBackground(
-            // Mengganti hardcode warna gradasi
             colors: const [
               AppColor.kGradationBlueDark,
               AppColor.kGradationBlueLight,
@@ -44,12 +42,10 @@ class AuthenticatorFirebase extends StatelessWidget {
                     Container(
                       height: 50,
                       decoration: BoxDecoration(
-                        // Mengganti Colors.white
                         color: AppColor.kWhiteColor.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(25.0),
                         boxShadow: [
                           BoxShadow(
-                            // Mengganti Colors.black
                             color: AppColor.kBlackColor.withOpacity(0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
@@ -58,14 +54,10 @@ class AuthenticatorFirebase extends StatelessWidget {
                       ),
                       child: TabBar(
                         indicator: BoxDecoration(
-                          // Mengganti Colors.blueAccent dengan kAccentColor (Biru)
-                          color: AppColor.kAccentColor,
                           borderRadius: BorderRadius.circular(25.0),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
-                        // Mengganti Colors.white
                         labelColor: AppColor.kWhiteColor,
-                        // Mengganti Colors.grey
                         unselectedLabelColor: AppColor.kTextSecondaryColor,
                         tabs: const [
                           Tab(text: 'Login'),
