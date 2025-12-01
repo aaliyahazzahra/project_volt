@@ -54,6 +54,7 @@ class AuthenticatorFirebase extends StatelessWidget {
                       ),
                       child: TabBar(
                         indicator: BoxDecoration(
+                          color: AppColor.kAccentColor,
                           borderRadius: BorderRadius.circular(25.0),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
