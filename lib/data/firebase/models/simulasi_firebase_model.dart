@@ -1,20 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:project_volt/data/simulation_models.dart';
 
-// ------------------------------------------------------------------------
-// MODEL INDUK: Merepresentasikan data simulasi sebagai konten di VOLT
-// ------------------------------------------------------------------------
-
 class SimulasiFirebaseModel {
-  // Metadata VOLT
-  final String? simulasiId; // ID Dokumen Firebase
+  final String? simulasiId;
   final String kelasId;
   final String dosenId;
   String judul;
   String deskripsi;
 
-  // Konten Utama Simulasi (Model yang Anda buat sebelumnya)
-  // Perubahan: SimulationProject harus bisa diubah ke/dari JSON/Map
   final SimulationProject projectData;
 
   final Timestamp? tglDibuat;
@@ -29,12 +22,7 @@ class SimulasiFirebaseModel {
     this.tglDibuat,
   });
 
-  // ----------------------------------------------------
-  // Konversi ke/dari Firebase (Map)
-  // ----------------------------------------------------
-
   factory SimulasiFirebaseModel.fromMap(Map<String, dynamic> map, String id) {
-    // Membangun SimulationProject dari data JSON
     final projectMap = map['project_data'] as Map<String, dynamic>? ?? {};
     final project = SimulationProject.fromMap(projectMap);
 
@@ -55,7 +43,7 @@ class SimulasiFirebaseModel {
       'dosen_id': dosenId,
       'judul': judul,
       'deskripsi': deskripsi,
-      'project_data': projectData.toMap(), // Harus bisa dikonversi ke Map
+      'project_data': projectData.toMap(),
       'tgl_dibuat': tglDibuat ?? FieldValue.serverTimestamp(),
     };
   }

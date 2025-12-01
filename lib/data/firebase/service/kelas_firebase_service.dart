@@ -124,7 +124,7 @@ class KelasFirebaseService {
     try {
       await _firestore.collection(_collectionName).doc(kelasId).delete();
 
-      // CATATAN PENTING: Anda mungkin perlu menambahkan
+      // CATATAN PENTING:   mungkin perlu menambahkan
       // logika untuk menghapus data terkait di koleksi lain
       // (misalnya, semua dokumen di 'enrollments' yang memiliki kelasId ini).
       // Contoh: await _deleteRelatedEnrollments(kelasId);
@@ -152,7 +152,7 @@ class KelasFirebaseService {
 
       final data = doc.data() as Map<String, dynamic>;
 
-      // Opsi: Hitung juga jumlah mahasiswa jika Anda mengambil kelas tunggal
+      // Opsi: Hitung juga jumlah mahasiswa jika   mengambil kelas tunggal
       final jumlahMahasiswa = await _hitungJumlahMahasiswa(kelasId);
 
       return KelasFirebaseModel.fromMap({

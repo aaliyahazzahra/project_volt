@@ -197,7 +197,7 @@ class _TugasDetailDosenFirebaseState extends State<TugasDetailDosenFirebase> {
         }
       } catch (e) {
         if (mounted) {
-          // Asumsi: Anda memiliki fungsi _showSnackbar di sini
+          // Asumsi:   memiliki fungsi _showSnackbar di sini
 
           _showSnackbar("Gagal menghapus tugas: $e", ContentType.failure);
         }

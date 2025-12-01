@@ -1,15 +1,13 @@
-// File: project_volt/features/1_auth/auth_splash_screen.dart
-
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart'; //  Tambah ini untuk cek Auth
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:project_volt/core/constants/app_image.dart'; // Asumsi path AppImages sudah benar
+import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/features/1_auth/Firebase/authenticator_firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
-import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart'; // Asumsi ini adalah halaman Login/Register
+import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
 
 class SplashScreenFirebase extends StatefulWidget {
   const SplashScreenFirebase({super.key});
@@ -24,7 +22,6 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
   @override
   void initState() {
     super.initState();
-    // Animasi akan dimulai segera
     _startAnimationAndNavigation();
   }
 
@@ -100,7 +97,6 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
 
   @override
   Widget build(BuildContext context) {
-    // Tampilan Splash Screen kustom Anda
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -108,24 +104,17 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
         children: [
           Center(
             child: AnimatedCrossFade(
-              //  Menggunakan asset kustom & animasi Anda
               firstChild: Image.asset(AppImages.vAja, height: 250),
               secondChild: Image.asset(AppImages.volt, height: 200),
               crossFadeState: _showFullLogo
                   ? CrossFadeState.showSecond
                   : CrossFadeState.showFirst,
               duration: const Duration(seconds: 2),
-              // Durasi animasi yang sudah Anda tentukan
               firstCurve: const Interval(0.0, 0.5, curve: Curves.easeOut),
               secondCurve: const Interval(0.6, 1.0, curve: Curves.easeIn),
             ),
           ),
           const SizedBox(height: 16),
-          // Tambahkan CircularProgressIndicator di bawah logo saat sesi dicek (opsional)
-          // const Padding(
-          //   padding: EdgeInsets.only(top: 20.0),
-          //   child: CircularProgressIndicator(),
-          // )
         ],
       ),
     );

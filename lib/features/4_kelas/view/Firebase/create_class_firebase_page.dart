@@ -23,7 +23,7 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
 
   //  INISIASI SERVICE FIREBASE
   final KelasFirebaseService _kelasService = KelasFirebaseService();
-  bool _isSaving = false; // Tambahkan state untuk tombol loading
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -43,11 +43,9 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
     }
   }
 
-  // Fungsi untuk generate kode unik (tetap sama)
   String _generateKodeKelas() {
     const String chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     Random rnd = Random();
-    // Menggunakan kode 6 karakter seperti sebelumnya
     return String.fromCharCodes(
       Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
     );
@@ -55,7 +53,7 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      if (_isSaving) return; // Mencegah double submit
+      if (_isSaving) return;
 
       setState(() {
         _isSaving = true;
@@ -63,38 +61,23 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
 
       final String newKode = _generateKodeKelas();
 
-      // Pastikan UID Dosen ada
       final String dosenUid = widget.user.uid;
-      if (dosenUid == null) {
-        _showMessage('Error: User ID Dosen tidak ditemukan.', isError: true);
-        setState(() => _isSaving = false);
-        return;
-      }
 
-      //  1. Buat KelasModelFirebase (menggunakan dosenUid String)
       final newKelas = KelasFirebaseModel(
         namaKelas: _namaController.text.trim(),
         deskripsi: _deskripsiController.text.trim(),
         kodeKelas: newKode,
-        dosenUid: dosenUid, //  GANTI: dosenId (int) -> dosenUid (String)
+        dosenUid: dosenUid,
       );
 
       try {
-        //  2. Panggil Service Firebase
-        // Service mengembalikan KelasModelFirebase yang sudah memiliki kelasId (doc.id)
         final createdKelas = await _kelasService.createKelas(newKelas);
 
-        // 3. Sukses & Navigasi
         if (mounted) {
-          // Mengirim objek KelasFirebaseModel yang sudah lengkap kembali ke homepage
           Navigator.pop(context, createdKelas);
         }
       } catch (e) {
-        // Penanganan error (misal: koneksi, Firestore, dll.)
-        _showMessage(
-          'Error saat membuat kelas: Coba lagi.', // Pesan generik, karena kode kelas harusnya unik secara acak
-          isError: true,
-        );
+        _showMessage('Error saat membuat kelas: Coba lagi.', isError: true);
         print("Create Class Error: $e");
       } finally {
         if (mounted) {
@@ -149,9 +132,7 @@ class _CreateClassFirebasePageState extends State<CreateClassFirebasePage> {
                 const SizedBox(height: 16),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: _isSaving
-                      ? null
-                      : _submitForm, // Matikan tombol saat loading
+                  onPressed: _isSaving ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColor.kPrimaryColor,
                     foregroundColor: AppColor.kWhiteColor,

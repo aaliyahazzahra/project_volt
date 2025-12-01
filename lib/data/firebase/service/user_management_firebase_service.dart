@@ -62,7 +62,7 @@ class UserManagementFirebaseService {
           .get();
 
       if (anggotaDoc.exists) {
-        return "Error: Anda sudah terdaftar di kelas ini.";
+        return "Error:   sudah terdaftar di kelas ini.";
       }
 
       // 3. Masukkan relasi keanggotaan

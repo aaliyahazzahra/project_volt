@@ -44,7 +44,7 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
     namaLengkapController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    nimNidnController.dispose(); // Jangan lupa dispose controller yang baru
+    nimNidnController.dispose();
     super.dispose();
   }
 
@@ -53,7 +53,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
       return;
     }
 
-    // 1. Set State Loading
     setState(() {
       _isLoading = true;
     });
@@ -63,7 +62,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
       final String nimNidn = nimNidnController.text.trim();
       final String namaKampus = _selectedKampus!;
 
-      // 2. Panggil Firebase Service
       await FirebaseService.registerUser(
         namaLengkap: namaLengkapController.text.trim(),
         email: emailController.text.trim(),
@@ -73,10 +71,8 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
         namaKampus: namaKampus,
       );
 
-      // Stop Loading sebelum tampilkan UI Feedback
       if (!mounted) return;
 
-      // 4. Logika Respons Sukses
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Registrasi Berhasil! Silakan Login.'),
@@ -84,7 +80,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
         ),
       );
 
-      // Clear field setelah sukses
       namaLengkapController.clear();
       emailController.clear();
       passwordController.clear();
@@ -119,7 +114,6 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
       );
     }
 
-    // Stop Loading di finally atau setelah semua respons ditangani
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -314,24 +308,20 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                       hasDigit) {
                     return null;
                   } else {
-                    // Pesan error lebih ringkas
                     return 'Min. 8 karakter (Kapital, kecil, angka).';
                   }
                 },
               ),
               const SizedBox(height: 16),
 
-              // --- PERBAIKAN: DROP-DOWN FIELD AGAR SEAMLESS (Garis Bawah) ---
               DropdownButtonFormField<String>(
                 initialValue: _selectedKampus,
                 isExpanded: true,
                 decoration: InputDecoration(
                   labelText: 'Nama Kampus / Universitas',
 
-                  // Pastikan label memiliki kontras yang baik
                   labelStyle: TextStyle(color: AppColor.kTextColor),
 
-                  // UBAH KE UNDERLINE BORDER (Garis Bawah)
                   focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(
                       color: AppColor.kPrimaryColor,
@@ -344,16 +334,10 @@ class _RegisterFormFirebaseState extends State<RegisterFormFirebase> {
                   enabledBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: AppColor.kTextSecondaryColor),
                   ),
-
-                  // Hapus properti filled dan fillColor agar transparan dan seamless
-                  // filled: true,
-                  // fillColor: AppColor.kWhiteColor,
                 ),
                 hint: const Text(
                   'Pilih Kampus',
-                  style: TextStyle(
-                    color: AppColor.kTextSecondaryColor,
-                  ), // Tetap berikan hint yang terlihat
+                  style: TextStyle(color: AppColor.kTextSecondaryColor),
                 ),
                 items: daftarKampus.map((String kampus) {
                   return DropdownMenuItem<String>(

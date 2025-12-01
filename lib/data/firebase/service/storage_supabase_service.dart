@@ -1,13 +1,14 @@
 // lib/data/supabase/service/storage_supabase_service.dart
 
 import 'dart:io';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StorageSupabaseService {
   // Asumsikan Supabase client sudah diinisialisasi
   final SupabaseClient _supabaseClient = Supabase.instance.client;
 
-  // GANTI DENGAN NAMA BUCKET SUPABASE ANDA
+  // GANTI DENGAN NAMA BUCKET SUPABASE
   final String _bucketName = 'submisi';
 
   // ===================================================

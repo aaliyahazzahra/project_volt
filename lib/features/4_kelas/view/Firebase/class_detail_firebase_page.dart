@@ -30,7 +30,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
   late bool _isDosen;
   bool _dataEdited = false;
 
-  // 	INISIASI FIREBASE SERVICES
   final KelasFirebaseService _kelasService = KelasFirebaseService();
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
@@ -39,7 +38,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
   void initState() {
     super.initState();
     _currentKelasData = widget.kelas;
-    // ASUMSI: role dosen disimpan sebagai string 'dosen' di UserFirebaseModel
     _isDosen = widget.user.role == 'dosen';
   }
 
@@ -58,22 +56,16 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
       setState(() {
         _dataEdited = true;
       });
-      // Panggil fungsi refresh setelah edit sukses
       _refreshKelasData();
     }
   }
 
-  // 	UPDATE LOGIKA REFRESH DATA (Menggunakan FirebaseService)
   Future<void> _refreshKelasData() async {
-    // Pastikan ID kelas tersedia dan bertipe String
     final String? kelasId = widget.kelas.kelasId;
     if (kelasId == null) return;
 
     try {
-      // Panggil service untuk mendapatkan 1 data kelas
-      final updatedKelas = await _kelasService.getKelasById(
-        kelasId,
-      ); // ASUMSI: Anda tambahkan getKelasById ke KelasFirebaseService
+      final updatedKelas = await _kelasService.getKelasById(kelasId);
 
       if (!mounted) return;
 
@@ -82,7 +74,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
           _currentKelasData = updatedKelas;
         });
       } else {
-        // Jika kelas dihapus saat user mengedit (null), keluar dari halaman
         Navigator.of(context).pop(true);
       }
     } catch (e) {
@@ -96,7 +87,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
   // FUNGSI KHUSUS MAHASISWA
   // ----------------------------------------------------
 
-  // 	UPDATE LOGIKA KELUAR KELAS (Menggunakan UserManagementFirebaseService)
   Future<void> _exitClass() async {
     // 1. Tampilkan Dialog Konfirmasi
     final bool? confirm = await showDialog<bool>(
@@ -143,12 +133,10 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
       }
 
       try {
-        // 	Panggil service leaveKelas yang sudah dikonversi
         await _userManagementService.leaveKelas(userUid, kelasId);
 
         if (mounted) {
           _showSnackbar("Anda berhasil keluar dari kelas", ContentType.success);
-          // Keluar dari halaman detail dan refresh daftar kelas di homepage
           Navigator.of(context).pop(true);
         }
       } catch (e) {
@@ -162,7 +150,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
     }
   }
 
-  // Helper untuk menampilkan Awesome Snackbar
   void _showSnackbar(String message, ContentType type) {
     final snackBarContent = AwesomeSnackbarContent(
       title: type == ContentType.success ? "Sukses" : "Peringatan",
@@ -184,7 +171,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
 
   @override
   Widget build(BuildContext context) {
-    // ... (Logika warna UI tetap sama)
     final Color rolePrimaryColor = _isDosen
         ? AppColor.kPrimaryColor
         : AppColor.kAccentColor;
@@ -209,7 +195,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
       onPopInvoked: (bool didPop) {
         if (didPop) return;
 
-        // Jika data diedit oleh Dosen, beri sinyal ke halaman sebelumnya untuk refresh
         if (_isDosen && _dataEdited) {
           Navigator.of(context).pop(true);
         } else {
@@ -217,7 +202,7 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
         }
       },
       child: DefaultTabController(
-        length: 3, // 🎉 DIUBAH: Hanya 3 tab (Info, Materi, Tugas)
+        length: 3,
         child: Scaffold(
           backgroundColor: scaffoldBgColor,
           appBar: AppBar(
@@ -229,7 +214,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
 
             actions: _isDosen
                 ? [
-                    // Dosen: Tombol Edit
                     IconButton(
                       icon: const Icon(Icons.edit_note),
                       onPressed: _navigateToEditKelas,
@@ -237,7 +221,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
                     ),
                   ]
                 : [
-                    // Mahasiswa: Popup Menu (Keluar Kelas)
                     PopupMenuButton<String>(
                       onSelected: (value) {
                         if (value == 'keluar_kelas') {
@@ -264,7 +247,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
                 Tab(icon: Icon(Icons.info_outline), text: "Info"),
                 Tab(icon: Icon(Icons.menu_book), text: "Materi"),
                 Tab(icon: Icon(Icons.assignment), text: "Tugas"),
-                // Tab Anggota DIHAPUS
               ],
             ),
           ),
@@ -294,8 +276,6 @@ class _ClassDetailPageState extends State<ClassDetailFirebasePage> {
                       kelas: _currentKelasData,
                       user: widget.user,
                     ),
-
-              // Widget Anggota DIHAPUS
             ],
           ),
         ),

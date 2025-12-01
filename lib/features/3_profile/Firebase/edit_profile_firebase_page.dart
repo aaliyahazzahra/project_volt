@@ -1,5 +1,3 @@
-// file: EditProfileFirebasePage.dart
-
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:project_volt/core/constants/app_color.dart';
@@ -19,7 +17,6 @@ class EditProfileFirebasePage extends StatefulWidget {
 class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Initialize Firebase Service
   final UserManagementFirebaseService _userManagementService =
       UserManagementFirebaseService();
 
@@ -31,7 +28,6 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
   late bool _isDosen;
   String _nomorIndukLabel = "NIM";
 
-  // Assumption: Campus list is imported from app_data.dart
   final List<String> daftarKampus = AppData.daftarKampus;
 
   @override
@@ -72,10 +68,8 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
 
       _nomorIndukController.text = loadedNomorInduk ?? '';
     } catch (e) {
-      // Log error for debugging
       print("Error loading profile: $e");
       if (mounted) {
-        // Show consistent error Snackbar
         final snackBarContent = AwesomeSnackbarContent(
           title: "Error",
           message: "Failed to load profile data.",
@@ -99,7 +93,6 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
     }
   }
 
-  // Save data to Firestore using the service
   Future<void> _saveProfileData() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -186,9 +179,8 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
   Widget build(BuildContext context) {
     // Determine the role-based theme color dynamically
     final Color rolePrimaryColor = _isDosen
-        ? AppColor
-              .kPrimaryColor // Orange for Dosen
-        : AppColor.kAccentColor; // Blue for Mahasiswa
+        ? AppColor.kPrimaryColor
+        : AppColor.kAccentColor;
 
     return Scaffold(
       backgroundColor: AppColor.kBackgroundColor,
@@ -196,20 +188,16 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
         title: const Text(
           "Ubah Profil Akademik",
           style: TextStyle(
-            color: AppColor.kTextColor, // Neutral App Bar Title
+            color: AppColor.kTextColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        // Back icon theme uses role color
         iconTheme: IconThemeData(color: rolePrimaryColor),
         backgroundColor: AppColor.kBackgroundColor,
         elevation: 0,
       ),
       body: _isLoading
-          ? Center(
-              // Loading indicator uses role color
-              child: CircularProgressIndicator(color: rolePrimaryColor),
-            )
+          ? Center(child: CircularProgressIndicator(color: rolePrimaryColor))
           : ListView(
               padding: const EdgeInsets.all(16.0),
               children: [
@@ -218,13 +206,11 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Campus Dropdown
                       DropdownButtonFormField<String>(
                         initialValue: _selectedKampus,
                         isExpanded: true,
                         decoration: InputDecoration(
                           labelText: 'Nama Kampus / Universitas',
-                          // Focused border color uses role color
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.0),
                             borderSide: BorderSide(
@@ -249,7 +235,6 @@ class _EditProfileFirebasePageState extends State<EditProfileFirebasePage> {
                           labelStyle: const TextStyle(
                             color: AppColor.kTextColor,
                           ),
-                          // Error text color
                           errorStyle: const TextStyle(
                             color: AppColor.kErrorColor,
                           ),

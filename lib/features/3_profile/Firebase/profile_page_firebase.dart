@@ -6,7 +6,6 @@ import 'package:project_volt/features/1_auth/Firebase/authenticator_firebase.dar
 import 'package:project_volt/features/3_profile/Firebase/edit_profile_firebase_page.dart';
 import 'package:project_volt/features/3_profile/Firebase/widgets/profile_header_card_firebase.dart';
 import 'package:project_volt/features/3_profile/about_page.dart';
-import 'package:project_volt/features/1_auth/Firebase/password_management_page.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_group.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_list_tile.dart';
 import 'package:project_volt/widgets/dialogs/confirmation_dialog_helper.dart';
@@ -82,19 +81,11 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
     );
 
     if (updatedUser != null && updatedUser is UserFirebaseModel) {
-      // Update local state with new user data
       setState(() {
         _currentUser = updatedUser;
-        _isDosen = _currentUser.role == 'dosen'; // Refresh role state
+        _isDosen = _currentUser.role == 'dosen';
       });
     }
-  }
-
-  void _navigateToChangePassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const PasswordManagementPage()),
-    );
   }
 
   @override
@@ -105,7 +96,7 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
         title: Text(
           "Profil Saya",
           style: TextStyle(
-            color: _appBarTitleColor, // Title text color
+            color: _appBarTitleColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -140,12 +131,6 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
                   roleColor: _roleColor,
                   onTap: _navigateToEditProfile,
                 ),
-                // SettingsListTile(
-                //   icon: Icons.lock_outline,
-                //   title: "Ubah Kata Sandi",
-                //   roleColor: _roleColor,
-                //   onTap: _navigateToChangePassword,
-                // ),
               ],
             ),
 

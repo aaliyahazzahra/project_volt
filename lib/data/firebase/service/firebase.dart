@@ -1,19 +1,17 @@
-// File: project_volt/data/firebase/service/firebase.dart
+// File: /data/firebase/service/firebase.dart
 
-import 'dart:developer'; // Tambahkan ini untuk logging
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 
 class FirebaseService {
-  // Instance statis untuk kemudahan akses
   static final FirebaseAuth auth = FirebaseAuth.instance;
   static final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   static const String userCollection = 'users';
 
-  /// Registrasi pengguna baru di Firebase Auth dan menyimpan data di Firestore.
   static Future<UserFirebaseModel> registerUser({
     required String email,
     required String namaLengkap,
@@ -33,11 +31,10 @@ class FirebaseService {
       // 2. Membuat Model Sesi Awal (dengan data profil dasar)
       final model = UserFirebaseModel(
         uid: user.uid,
-        token: null, // Token belum perlu diambil di sini
+        token: null,
         email: email,
         namaLengkap: namaLengkap,
         role: role,
-        // Properti yang masih null (akan diisi di langkah berikutnya, misal NIM/Kampus)
         nimNidn: null,
         namaKampus: null,
         createdAt: DateTime.now().toIso8601String(),
@@ -45,7 +42,6 @@ class FirebaseService {
       );
 
       // 3. Firestore: Menyimpan data profil dasar ke collection 'users'
-      // Menggunakan uid sebagai Document ID
       await firestore
           .collection(userCollection)
           .doc(user.uid)
@@ -53,14 +49,14 @@ class FirebaseService {
 
       return model;
     } on FirebaseAuthException {
-      rethrow; // Biarkan UI/Business Logic menangani error spesifik Auth (misal: email-already-in-use)
+      rethrow;
     } catch (e) {
       log('Error registering user: $e');
-      throw Exception('Gagal melakukan pendaftaran. Periksa koneksi Anda.');
+      throw Exception('Gagal melakukan pendaftaran. Periksa koneksi  .');
     }
   }
 
-  /// 🔑 Login pengguna menggunakan Firebase Auth dan mengambil data profil dari Firestore.
+  ///   Login pengguna menggunakan Firebase Auth dan mengambil data profil dari Firestore.
   static Future<UserFirebaseModel?> loginUser({
     required String email,
     required String password,
@@ -85,7 +81,6 @@ class FirebaseService {
           .get();
 
       if (!snap.exists || snap.data() == null) {
-        // Jika Auth berhasil, tapi data di Firestore hilang
         await auth.signOut(); // Logout dari Auth
         throw Exception('Data profil tidak ditemukan. Sesi dibatalkan.');
       }
@@ -95,12 +90,11 @@ class FirebaseService {
       // 4. Gabungkan data Auth dan Firestore ke Model
       return UserFirebaseModel.fromMap({
         'uid': user.uid,
-        'token': idToken, // Tambahkan token sesi ke model
-        'email': user.email, // Pastikan email ada
+        'token': idToken,
+        'email': user.email,
         ...userData, // Timpa dengan data dari Firestore (namaLengkap, role, dll.)
       });
     } on FirebaseAuthException catch (e) {
-      // Handle error kredensial (Invalid-credential, user-not-found, wrong-password)
       if (e.code == 'invalid-credential' ||
           e.code == 'wrong-password' ||
           e.code == 'user-not-found') {
@@ -112,11 +106,11 @@ class FirebaseService {
       rethrow; // Lempar ulang exception untuk ditangani di UI (misal: error koneksi)
     } catch (e) {
       log('Error logging in: $e');
-      throw Exception('Gagal terhubung ke server. Periksa koneksi Anda.');
+      throw Exception('Gagal terhubung ke server. Periksa koneksi  .');
     }
   }
 
-  /// 🚪 Logout pengguna dari Firebase Auth
+  ///   Logout pengguna dari Firebase Auth
   static Future<void> logoutUser() async {
     try {
       await auth.signOut();

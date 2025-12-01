@@ -464,7 +464,7 @@ class DbHelper {
     } catch (e) {
       // error jika sudah join
       print(e);
-      return "Error: Anda sudah terdaftar di kelas ini.";
+      return "Error:   sudah terdaftar di kelas ini.";
     }
   }
 

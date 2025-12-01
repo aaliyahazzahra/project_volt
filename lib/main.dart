@@ -1,12 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-// Impor Supabase yang baru ditambahkan
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:project_volt/features/0_splash/Firebase/splash_screen_firebase.dart';
 import 'package:project_volt/firebase_options.dart';
+// Impor Supabase yang baru ditambahkan
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Kredensial Supabase Anda
+// Kredensial Supabase
 const String supabaseUrl = 'https://fxsskhupmqzzlhsktaqv.supabase.co';
 const String supabaseAnonKey =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4c3NraHVwbXF6emxoc2t0YXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwOTMyMTYsImV4cCI6MjA3OTY2OTIxNn0.itbDsTbdFVPB4yMpBvzupWKfvRx-LSdBUnzcTYEnZ6M';

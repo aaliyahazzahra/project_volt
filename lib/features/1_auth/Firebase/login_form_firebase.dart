@@ -5,7 +5,6 @@ import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
 import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
-import 'package:project_volt/features/1_auth/Firebase/password_management_page.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
 
@@ -67,7 +66,6 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
 
     // 3. Jika user berhasil didapatkan: Lanjutkan proses navigasi
     if (user != null) {
-      // Simpan status sesi secara lokal
       await PreferenceHandlerFirebase.saveUser(user);
 
       String userRole = user.role ?? 'unknown';
@@ -78,7 +76,6 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
       } else if (userRole == 'dosen') {
         nextScreen = BottomNavDosenFirebase(user: user);
       } else {
-        // Role tidak dikenal, mungkin arahkan ke halaman error atau logout
         return;
       }
 
@@ -99,11 +96,10 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
           children: [
             SizedBox(height: 20),
 
-            // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
             BuildTextField(
               labelText: 'Email',
               controller: _emailController,
-              labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
+              labelColor: AppColor.kTextColor,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Email tidak boleh kosong';
@@ -119,12 +115,11 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
             ),
             SizedBox(height: 16),
 
-            // --- PERBAIKAN: MENAMBAHKAN labelColor UNTUK KONTRAST TINGGI ---
             BuildTextField(
               labelText: 'Password',
               controller: _passwordController,
               isPassword: true,
-              labelColor: AppColor.kTextColor, // Warna gelap untuk kontras
+              labelColor: AppColor.kTextColor,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Password tidak boleh kosong';
@@ -140,35 +135,7 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
             ),
 
             SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              // child: TextButton(
-              //   // Style (Gaya) Tombol
-              //   style: TextButton.styleFrom(
-              //     padding: EdgeInsets.zero,
-              //     foregroundColor: AppColor.kAccentColor.withOpacity(0.5),
-              //     alignment: Alignment.centerRight,
-              //   ),
-                // Fungsi yang dijalankan saat tombol diklik
-                // onPressed: () {
-                //   // Navigasi ke halaman PasswordManagementScreen
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //       builder: (context) => const PasswordManagementPage(),
-                //     ),
-                //   );
-                // },
-                // Teks yang ditampilkan dalam Tombol
-                // child: Text(
-                //   'Lupa Password?',
-                //   style: TextStyle(
-                //     color:
-                //         AppColor.kAccentColor, // Pastikan warna teks diterapkan
-                //   ),
-                // ),
-              // ),
-            ),
+
             SizedBox(height: 30),
 
             PrimaryAuthButton(

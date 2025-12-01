@@ -33,7 +33,7 @@ class MateriFirebaseService {
   }
 
   // ----------------------------------------------------
-  // 2. READ: Mengambil Daftar Materi (STREAM - REAL-TIME) 💡 Perubahan Utama
+  // 2. READ: Mengambil Daftar Materi (STREAM - REAL-TIME)   Perubahan Utama
   // ----------------------------------------------------
   /// Mengambil semua materi untuk Kelas tertentu secara REAL-TIME.
   Stream<List<MateriFirebaseModel>> getMateriStreamByKelas(String kelasId) {
