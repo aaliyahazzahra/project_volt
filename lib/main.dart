@@ -6,10 +6,10 @@ import 'package:project_volt/firebase_options.dart';
 // Impor Supabase yang baru ditambahkan
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Kredensial Supabase
-const String supabaseUrl = 'https://fxsskhupmqzzlhsktaqv.supabase.co';
-const String supabaseAnonKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4c3NraHVwbXF6emxoc2t0YXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwOTMyMTYsImV4cCI6MjA3OTY2OTIxNn0.itbDsTbdFVPB4yMpBvzupWKfvRx-LSdBUnzcTYEnZ6M';
+// Kredensial Supabase, diisi lewat --dart-define-from-file=config/supabase.json
+// (lihat config/supabase.example.json dan README)
+const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+const String supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,13 @@ void main() async {
   // 2. Inisialisasi Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // 3. Inisialisasi Supabase (DITAMBAHKAN)
+  // 3. Inisialisasi Supabase
+  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+    throw StateError(
+      'SUPABASE_URL / SUPABASE_ANON_KEY kosong. Jalankan dengan '
+      '--dart-define-from-file=config/supabase.json',
+    );
+  }
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
   runApp(const MyApp());
