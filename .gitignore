@@ -46,3 +46,7 @@ app.*.map.json
 /android/key.properties
 /android/app/release-key.jks
 /android/build.gradle.kts
+# Local secrets (Supabase keys). Copy config/supabase.example.json and fill in.
+config/supabase.json
+*.env
+.env*
