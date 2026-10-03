@@ -44,7 +44,7 @@ class ProfileHeaderCardFirebase extends StatelessWidget {
               children: [
                 // Full Name
                 Text(
-                  user.namaLengkap ?? user.email ?? 'User',
+                  user.namaLengkap.isNotEmpty ? user.namaLengkap : user.email,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
