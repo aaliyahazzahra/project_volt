@@ -25,7 +25,6 @@ bool calculateGateOutput({
     case GateType.INPUT:
     case GateType.OUTPUT:
     case GateType.unknown:
-    default:
       // Default: Jika tipe tidak dikenali, output sama dengan input A
       return a;
   }

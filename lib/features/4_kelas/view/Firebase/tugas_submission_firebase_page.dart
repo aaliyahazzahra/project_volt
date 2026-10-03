@@ -272,7 +272,6 @@ class _TugasSubmissionFirebasePageState
           folderPath: folderPath,
         );
 
-        if (storageUrl == null) throw Exception("Gagal mendapatkan URL file.");
       }
 
       // B. SIMPAN DATA KE FIRESTORE (File atau Simulasi)

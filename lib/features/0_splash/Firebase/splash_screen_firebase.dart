@@ -59,7 +59,7 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
 
       if (currentUser != null && currentUser.uid == savedUser.uid) {
         // Sesi VALID: Ambil role dari data lokal
-        final String userRole = savedUser.role ?? '';
+        final String userRole = savedUser.role;
 
         if (userRole == 'mahasiswa') {
           nextPage = BottomNavMhsFirebase(user: savedUser);

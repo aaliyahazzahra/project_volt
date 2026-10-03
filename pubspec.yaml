@@ -52,6 +52,7 @@ dependencies:
   intl: null
   logger: ^2.6.2
   material: ^1.0.1
+  path: ^1.9.1
   path_provider: ^2.1.5
   persistent_bottom_nav_bar_v2: ^6.2.0
   provider: ^6.1.5+1

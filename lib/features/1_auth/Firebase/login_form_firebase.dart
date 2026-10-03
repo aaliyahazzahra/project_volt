@@ -68,7 +68,7 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
     if (user != null) {
       await PreferenceHandlerFirebase.saveUser(user);
 
-      String userRole = user.role ?? 'unknown';
+      String userRole = user.role;
 
       Widget nextScreen;
       if (userRole == 'mahasiswa') {

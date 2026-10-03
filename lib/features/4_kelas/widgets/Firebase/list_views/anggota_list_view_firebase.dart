@@ -25,7 +25,7 @@ class AnggotaListViewFirebase extends StatelessWidget {
         //  Logika Subtitle: NIM/NIDN (jika ada) atau Email
         final String subtitleText = anggota.nimNidn?.isNotEmpty == true
             ? anggota.nimNidn! // Gunakan NIM/NIDN jika ada
-            : anggota.email ?? 'Email tidak tersedia'; // Fallback ke email
+            : anggota.email; // Fallback ke email
 
         return Card(
           margin: const EdgeInsets.only(bottom: 12.0),
@@ -43,7 +43,7 @@ class AnggotaListViewFirebase extends StatelessWidget {
               //  Menggunakan namaLengkap, fallback ke Email jika namaLengkap hilang
               anggota.namaLengkap.isNotEmpty
                   ? anggota.namaLengkap
-                  : (anggota.email ?? 'Pengguna'),
+                  : anggota.email,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: AppColor.kTextColor,
