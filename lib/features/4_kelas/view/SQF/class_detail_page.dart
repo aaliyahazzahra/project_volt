@@ -5,7 +5,6 @@ import 'package:project_volt/data/SQF/database/db_helper.dart';
 import 'package:project_volt/data/SQF/models/kelas_model.dart';
 import 'package:project_volt/data/SQF/models/user_model.dart';
 import 'package:project_volt/features/4_kelas/view/edit_class_page.dart';
-import 'package:project_volt/features/4_kelas/widgets/SQF/anggota_tab_content.dart';
 import 'package:project_volt/features/4_kelas/widgets/SQF/info_tab_content.dart';
 import 'package:project_volt/features/4_kelas/widgets/SQF/materi_tab_content.dart';
 import 'package:project_volt/features/4_kelas/widgets/SQF/tugas_tab_content.dart';

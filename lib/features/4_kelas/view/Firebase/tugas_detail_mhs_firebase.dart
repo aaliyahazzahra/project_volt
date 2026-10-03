@@ -208,7 +208,7 @@ class _TugasDetailMhsFirebaseState extends State<TugasDetailMhsFirebase> {
     } else {
       icon = Icons.warning;
       color = Colors.red;
-      statusText = "Status: ${submisi.status ?? 'Tidak Diketahui'}";
+      statusText = "Status: ${submisi.status}";
     }
 
     return Column(

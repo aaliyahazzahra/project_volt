@@ -74,7 +74,6 @@ class ClassListFirebase extends StatelessWidget {
     // Text colors for contrast
     final Color classNameColor = AppColor.kTextColor;
     final Color classCodeColor = AppColor.kTextSecondaryColor;
-    final Color footerTextColor = AppColor.kTextSecondaryColor;
 
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),

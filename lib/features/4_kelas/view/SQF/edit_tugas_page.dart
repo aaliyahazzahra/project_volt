@@ -82,8 +82,6 @@ class _EditTugasPageState extends State<EditTugasPage> {
   }
 
   void _submitUpdate() async {
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     if (_formKey.currentState!.validate()) {
       final String? tglTenggat = _selectedDateTime?.toIso8601String();
 
@@ -160,7 +158,6 @@ class _EditTugasPageState extends State<EditTugasPage> {
                 // Ambil context SEBELUM await
                 final dialogNavigator = Navigator.of(dialogContext);
                 final mainNavigator = Navigator.of(context);
-                final mainMessenger = ScaffoldMessenger.of(context);
 
                 if (_currentTugasData.id == null) return;
                 try {
