@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:project_volt/app/app_shell.dart';
 import 'package:project_volt/app/session_controller.dart';
+import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/features/0_splash/Firebase/splash_screen_firebase.dart';
 import 'package:project_volt/features/1_auth/Firebase/authenticator_firebase.dart';
+import 'package:project_volt/features/2_dashboard/Firebase/homepage_dosen_firebase.dart';
+import 'package:project_volt/features/2_dashboard/Firebase/homepage_mhs_firebase.dart';
+import 'package:project_volt/features/3_profile/Firebase/profile_page_firebase.dart';
+import 'package:project_volt/features/5_simulasi/create_simulasi_firebase_page.dart';
+import 'package:project_volt/features/home/beranda_page.dart';
+import 'package:provider/provider.dart';
+
+/// The signed-in user. Only called below the redirect, so it is never null.
+UserFirebaseModel _currentUser(BuildContext context) {
+  return context.read<SessionController>().user!;
+}
+
+/// Dosen and mahasiswa share the Kelas tab but see different class lists.
+Widget _kelasPage(BuildContext context) {
+  final user = _currentUser(context);
+  if (user.role == 'dosen') {
+    return HomepageDosenFirebase(user: user);
+  }
+  return HomepageMhsFirebase(user: user);
+}
 
 /// Decides whether [location] must be redirected for the current session.
 /// Returns the path to go to, or null to stay where we are.
@@ -31,15 +53,16 @@ GoRouter buildAppRouter(SessionController session) {
         path: '/login',
         builder: (context, state) => const AuthenticatorFirebase(),
       ),
-      // Placeholder shell until Task 4 adds the bottom bar and real pages.
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => navigationShell,
+        builder: (context, state, navigationShell) =>
+            AppShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/beranda',
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) =>
+                    BerandaPage(user: _currentUser(context)),
               ),
             ],
           ),
@@ -47,7 +70,7 @@ GoRouter buildAppRouter(SessionController session) {
             routes: [
               GoRoute(
                 path: '/kelas',
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) => _kelasPage(context),
               ),
             ],
           ),
@@ -55,7 +78,8 @@ GoRouter buildAppRouter(SessionController session) {
             routes: [
               GoRoute(
                 path: '/simulasi',
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) =>
+                    CreateSimulasiFirebasePage(user: _currentUser(context)),
               ),
             ],
           ),
@@ -63,7 +87,8 @@ GoRouter buildAppRouter(SessionController session) {
             routes: [
               GoRoute(
                 path: '/profil',
-                builder: (context, state) => const Placeholder(),
+                builder: (context, state) =>
+                    ProfilePageFirebase(user: _currentUser(context)),
               ),
             ],
           ),
