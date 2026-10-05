@@ -13,12 +13,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Unit tests for `SimulationComponent` (`test/data/simulation_component_test.dart`).
 - Unit tests for `TugasFirebaseModel.fromMap` (`test/data/tugas_firebase_model_test.dart`).
 
+- Light Material 3 theme (seed `#6750A4`), with a dark theme built but not yet used.
+- `go_router` navigation with a login redirect.
+- 4-tab bottom bar: Beranda, Kelas, Simulasi, Profil. Back on another tab returns to Beranda first.
+- Placeholder Beranda page that greets the user by name.
+
 ### Changed
 - Supabase URL and anon key are no longer hardcoded in `lib/main.dart`. The app fails fast at startup if they are missing.
-- `.gitignore` now ignores `config/supabase.json` and `.env` files.
+- `.gitignore` now ignores `config/supabase.json`, `.env` files, and the `.superpowers/` mockup folder.
+- Splash, login, and logout now go through the session controller and router.
+- Unknown roles no longer enter the app after login.
 
 ### Removed
 - The default counter test in `test/widget_test.dart`. It did not match the app and could not pass.
+- The local SQLite (SQF) screens and data code. SQLite will return with the offline-downloads feature.
+- The two old bottom nav screens, replaced by the 4-tab shell.
+- Packages no longer used: `circle_nav_bar`, `persistent_bottom_nav_bar_v2`, `animated_gradient`, `animated_gradient_box`, `sqflite`, `bottom_bar_matu`.
 
 ### Security
 - Supabase keys were committed to git history before this change. Treat the old anon key as exposed and create a new Supabase project or rotate keys.
