@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:project_volt/app/session_controller.dart';
 import 'package:project_volt/core/constants/app_color.dart';
 import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
 import 'package:project_volt/data/firebase/service/firebase.dart';
-import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
-import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
+import 'package:provider/provider.dart';
 import 'package:project_volt/widgets/buildtextfield.dart';
 import 'package:project_volt/widgets/primary_auth_button.dart';
 
@@ -66,23 +67,14 @@ class _LoginFormFirebaseState extends State<LoginFormFirebase> {
 
     // 3. Jika user berhasil didapatkan: Lanjutkan proses navigasi
     if (user != null) {
+      // Role yang tidak dikenal tidak masuk ke aplikasi.
+      if (user.role != 'mahasiswa' && user.role != 'dosen') return;
+
       await PreferenceHandlerFirebase.saveUser(user);
+      if (!mounted) return;
 
-      String userRole = user.role;
-
-      Widget nextScreen;
-      if (userRole == 'mahasiswa') {
-        nextScreen = BottomNavMhsFirebase(user: user);
-      } else if (userRole == 'dosen') {
-        nextScreen = BottomNavDosenFirebase(user: user);
-      } else {
-        return;
-      }
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => nextScreen),
-      );
+      context.read<SessionController>().signIn(user);
+      context.go('/beranda');
     }
   }
 

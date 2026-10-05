@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:project_volt/app/session_controller.dart';
 import 'package:project_volt/core/constants/app_image.dart';
 import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/features/1_auth/Firebase/authenticator_firebase.dart';
-import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_dosen_firebase.dart';
-import 'package:project_volt/features/2_dashboard/Firebase/bottom_nav_mhs_firebase.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreenFirebase extends StatefulWidget {
   const SplashScreenFirebase({super.key});
@@ -43,14 +43,13 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
 
   //  Logika Gabungan: Cek Sesi Lokal + Cek Firebase Auth
   Future<void> _cekSession() async {
+    final session = context.read<SessionController>();
+
     // 1. Ambil data sesi lokal
     final UserFirebaseModel? savedUser =
         await PreferenceHandlerFirebase.getUser();
 
     if (!mounted) return;
-
-    // Default navigasi jika sesi gagal
-    Widget nextPage = const AuthenticatorFirebase();
 
     // Cek apakah ada data lokal dan UID
     if (savedUser != null) {
@@ -58,16 +57,11 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
       final currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser != null && currentUser.uid == savedUser.uid) {
-        // Sesi VALID: Ambil role dari data lokal
+        // Sesi VALID: hanya role yang dikenal yang masuk ke aplikasi
         final String userRole = savedUser.role;
 
-        if (userRole == 'mahasiswa') {
-          nextPage = BottomNavMhsFirebase(user: savedUser);
-        } else if (userRole == 'dosen') {
-          nextPage = BottomNavDosenFirebase(user: savedUser);
-        } else {
-          // Role tidak dikenal, arahkan ke Login
-          nextPage = const AuthenticatorFirebase();
+        if (userRole == 'mahasiswa' || userRole == 'dosen') {
+          session.signIn(savedUser);
         }
       } else {
         // Sesi Lokal ada, tapi Firebase Auth sudah logout/token kadaluarsa.
@@ -80,19 +74,9 @@ class _SplashScreenFirebaseState extends State<SplashScreenFirebase> {
       await FirebaseAuth.instance.signOut();
     }
 
-    // Navigasi ke halaman yang ditentukan
-    _navigateAndRemove(nextPage);
-  }
-
-  // Helper untuk navigasi
-  void _navigateAndRemove(Widget page) {
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => page),
-        (route) => false,
-      );
-    }
+    // Navigasi: router mengarahkan ke /beranda jika sesi aktif
+    if (!mounted) return;
+    context.go(session.isSignedIn ? '/beranda' : '/login');
   }
 
   @override
