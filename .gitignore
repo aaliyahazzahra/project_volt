@@ -50,3 +50,6 @@ app.*.map.json
 config/supabase.json
 *.env
 .env*
+
+# Brainstorm mockups (visual companion session files)
+.superpowers/
