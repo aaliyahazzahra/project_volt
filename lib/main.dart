@@ -1,8 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:project_volt/features/0_splash/Firebase/splash_screen_firebase.dart';
+import 'package:go_router/go_router.dart';
+import 'package:project_volt/app/app_router.dart';
+import 'package:project_volt/app/session_controller.dart';
+import 'package:project_volt/core/theme/app_theme.dart';
 import 'package:project_volt/firebase_options.dart';
+import 'package:provider/provider.dart';
 // Impor Supabase yang baru ditambahkan
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -32,19 +36,38 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // Dibuat sekali agar sesi dan router tidak ikut dibuat ulang saat rebuild.
+  final SessionController _session = SessionController();
+  late final GoRouter _router = buildAppRouter(_session);
+
+  @override
+  void dispose() {
+    _router.dispose();
+    _session.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Volt',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return ChangeNotifierProvider.value(
+      value: _session,
+      child: MaterialApp.router(
+        title: 'Volt',
+        debugShowCheckedModeBanner: false,
+        theme: buildLightTheme(),
+        darkTheme: buildDarkTheme(),
+        // Tema gelap belum dipakai; lihat spesifikasi fase 1.
+        themeMode: ThemeMode.light,
+        routerConfig: _router,
       ),
-      home: SplashScreenFirebase(),
     );
   }
 }

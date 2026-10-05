@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:project_volt/app/session_controller.dart';
 import 'package:project_volt/core/constants/app_color.dart';
-import 'package:project_volt/data/auth_data_source.dart';
+import 'package:project_volt/core/utils/Firebase/preference_handler_firebase.dart';
 import 'package:project_volt/data/firebase/models/user_firebase_model.dart';
-import 'package:project_volt/features/1_auth/Firebase/authenticator_firebase.dart';
+import 'package:project_volt/data/firebase/service/firebase.dart';
 import 'package:project_volt/features/3_profile/Firebase/edit_profile_firebase_page.dart';
+import 'package:provider/provider.dart';
 import 'package:project_volt/features/3_profile/Firebase/widgets/profile_header_card_firebase.dart';
 import 'package:project_volt/features/3_profile/about_page.dart';
 import 'package:project_volt/features/3_profile/widgets/settings_group.dart';
@@ -19,8 +22,6 @@ class ProfilePageFirebase extends StatefulWidget {
 }
 
 class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
-  final AuthDataSource _authDataSource = AuthDataSource();
-
   late UserFirebaseModel _currentUser;
   late bool _isDosen; // True if the user role is 'dosen'
 
@@ -57,16 +58,12 @@ class _ProfilePageFirebaseState extends State<ProfilePageFirebase> {
     );
 
     if (confirm == true) {
-      await _authDataSource.logout();
+      await PreferenceHandlerFirebase.removeUser();
+      await FirebaseService.logoutUser();
       if (mounted) {
-        // Navigate to the login page and clear the navigation stack
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const AuthenticatorFirebase(),
-          ),
-          (route) => false,
-        );
+        // Router akan mengarahkan ke /login setelah sesi dihapus.
+        context.read<SessionController>().signOut();
+        context.go('/login');
       }
     }
   }
