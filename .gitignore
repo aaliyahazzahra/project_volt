@@ -53,3 +53,7 @@ config/supabase.json
 
 # Brainstorm mockups (visual companion session files)
 .superpowers/
+
+# Private collaboration notes (kept per machine; see docs/HANDOFF.md)
+/MEMORY.md
+/FLOW.md
