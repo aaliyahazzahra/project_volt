@@ -1,18 +1,18 @@
 # Volt handoff: where the work stands and what is next
 
-Written 2026-11-12 by the owner's AI assistant for the next collaborator. Covers `project_volt` (Flutter app, one repository, two work lines: backend and UI).
+Written and updated 2026-11-12 (after phase 1 was merged into `develop`) by the owner's AI assistant for the next collaborator. Covers `project_volt` (Flutter app, one repository, two work lines: backend and UI).
 How a human starts: tell your AI assistant "read `docs/HANDOFF.md`", then say "whats next".
 If you are an AI assistant and the user just said "whats next" (or asked you to read this file): read this whole file, run the checks in section 2, then answer with (a) the current state in 3-4 lines, (b) the open actions of section 4 with a recommendation, and (c) ask which one to start. Do not start building before the user picks. The owner keeps private notes (`MEMORY.md`, `FLOW.md` at the repo root, git-ignored) that you do NOT have; everything you need is in this file, `docs/WORK-SPLIT.md` and the committed docs named below.
 
 ## 1. What was done (summary)
 
-Volt is a Flutter learning app for lecturers (dosen) and students (mahasiswa). It is being rebuilt in six phases: new look, Supabase instead of Firebase, and a rebuilt logic-gate simulator. Phase 1 (foundation) is finished on a feature branch and not yet merged. The app still runs on Firebase.
+Volt is a Flutter learning app for lecturers (dosen) and students (mahasiswa). It is being rebuilt in six phases: new look, Supabase instead of Firebase, and a rebuilt logic-gate simulator. Phase 1 (foundation) is finished and merged into `develop` (a rebase-merge: `develop` has the same content as the feature branch but new commit hashes, so the hashes below are the feature-branch ones). The app still runs on Firebase.
 
 | Item | Repo | Version | Commit |
 |---|---|---|---|
 | Redesign design spec (approved in conversation) | project_volt | unreleased | `d2d6399`, [spec](superpowers/specs/2026-10-05-volt-redesign-design.md) |
 | Phase 1 implementation plan | project_volt | unreleased | `b19757c`, [plan](superpowers/plans/2026-10-05-phase-1-foundation.md) |
-| Phase 1 foundation: light and dark Material 3 themes (`a887f51`), `SessionController` (`990a744`), `go_router` with login redirect (`93f5878`), 4-tab shell and Beranda placeholder (`5a8a99c`), entry flow through the router (`922cc07`), SQF screens and data code removed (`36526a0`), unused packages removed (`fbe8291`), changelog (`ef14439`), simulasi pop fix (`fbb9df5`). Proven: analyzer and unit tests below. NOT proven: manual checklist on an emulator. | project_volt | unreleased (pubspec `1.0.2+11`) | `fbb9df5` on `feature/redesign-phase-1-foundation` |
+| Phase 1 foundation: light and dark Material 3 themes (`a887f51`), `SessionController` (`990a744`), `go_router` with login redirect (`93f5878`), 4-tab shell and Beranda placeholder (`5a8a99c`), entry flow through the router (`922cc07`), SQF screens and data code removed (`36526a0`), unused packages removed (`fbe8291`), changelog (`ef14439`), handoff docs (`1c651b7`), macOS registrant cleanup (`f29be41`). Proven: analyzer and unit tests (section 2) and, on an Android emulator, student and lecturer sign-in, reopen while signed in, logout (section 3). NOT proven: dark mode, unknown-role login. | project_volt | unreleased (pubspec `1.0.2+11`) | merged into `develop` at `e145b1b` |
 | Config out of source: Supabase URL and anon key come from `--dart-define-from-file=config/supabase.json` | project_volt | unreleased | see `CHANGELOG.md` |
 
 Read these before changing anything (all committed): the spec (sections 2 to 8 are the design, section 9 the open items), the phase 1 plan (shows the task style used), `README.md` (setup, branching, backend status table), `CHANGELOG.md`.
@@ -21,32 +21,35 @@ Read these before changing anything (all committed): the spec (sections 2 to 8 a
 
 ```bash
 git log --oneline -6 && git status --short && git tag --sort=-creatordate | head -3
-git rev-parse --short develop main && git rev-list --count develop..HEAD
+git rev-parse --short develop origin/develop main
 flutter analyze
 flutter test
 ```
-Expected at 2026-11-12: branch `feature/redesign-phase-1-foundation`, HEAD `fbb9df5`, last tag `v1.0.2`; `develop` at `7794c86`, `main` at `56f3b1c`; HEAD is 11 commits ahead of `develop`. One file shows as untracked and is NOT yours to touch or commit: `test/features/simulation_logic_test.dart` (the owner's reproduction test for the simulator, to be committed with the bugfix work, spec section 9).
-Then run `flutter analyze` (expected: 82 issues, all `info` level, 0 errors, 0 warnings) and `flutter test` (expected: 19 pass, 1 fail). The one failure is the untracked `simulation_logic_test.dart` (a 12-NOT chain listed in reverse order does not settle). That fits spec section 5 bug 4 (fixed 10 passes); the owner has not confirmed it, so ask before treating it as expected.
+Expected at 2026-11-12: branch `develop`, HEAD `e145b1b` (equal to `origin/develop`), last tag `v1.0.2`; `main` at `56f3b1c`. One file shows as untracked and is NOT yours to touch or commit: `test/features/simulation_logic_test.dart` (the owner's reproduction test for the simulator, to be committed with the bugfix work, spec section 9). `android/build/` (Gradle output) also shows as untracked on a machine that built for Android; never add it.
+Then run `flutter analyze` (expected: 82 issues, all `info` level, 0 errors, 0 warnings) and `flutter test` (expected: 19 pass, 1 fail). The one failure is the untracked `simulation_logic_test.dart` (a 12-NOT chain listed in reverse order does not settle). That fits spec section 5 bug 4 (fixed 10 passes); the owner has not confirmed it, so ask before treating it as expected. These numbers were measured on 2026-11-12 on the phase 1 branch, before the last cleanup (a simulasi edit was dropped and a macOS registrant file was committed). A re-run on `develop` crashed with a Windows memory error (Dart VM crash, then "Unable to determine engine version") and is NOT done: run both commands yourself and report the real numbers.
 Ask the owner what staging and production currently run: the release state of environments is not recorded in git. Ask whether the Supabase keys that were committed to history have been rotated.
 
 ## 3. Not verified (be honest about these)
 
-- Phase 1 app behavior: unit tests pass, but the manual checklist (plan Task 5 Step 7: splash, login, logout, tabs, back behavior, Kelas, Simulasi, Profil on an emulator) has no recorded result. NOT verified: `flutter run` on a device or emulator.
-- Phase 1 delivery: the branch is not on `origin` (the remote has only `main`, `develop` and `chore/project-setup`) and no PR exists. The plan's PR step waits for the owner's approval.
+- Phase 1 app behavior: checked on an Android emulator on 2026-11-12 (reported by the owner, not observed by the assistant). PASS: student sign-in shows four tabs and the greeting; lecturer sign-in shows four tabs; reopening while signed in opens the role's home; logout returns to login and a second back press does not return to the app. NOT verified: dark mode keeps the app light; a saved user with an unknown role is sent to login (only the code was read).
+- Simulasi tab cannot save a circuit: the editor opens without a class, so Simpan always shows "Simulasi tidak dapat disimpan karena tidak terkait dengan kelas manapun". This is existing behavior and stays until phase 5. The phase 1 branch once carried a fix for popping the last page after saving (`fbb9df5`); it was dropped because that line runs only after a successful save, which needs a class, so it could not be reached or tested from the tab.
 - Supabase: no Supabase-backed feature exists yet except the storage service for materials and submissions. No project, schema, RLS policy or RPC function is verified or recorded. Whether the exposed key was rotated is NOT verified (see `CHANGELOG.md`, Security).
 - Firebase flows (register, class, materials, assignments, simulator saving): behavior comes from the 1.0.2 release and the code; no check was run in this setup.
 - Test coverage: only data models, theme, router and session controller are unit-tested. Screens and services are not covered.
 - Environments: no staging or production is recorded. Whether `v1.0.2` (build 11) was published to Google Play is not recorded.
-- `flutter test` can be blocked by Device Guard on some machines (plan, Self-Review Notes). It ran fine on the owner's machine on 2026-11-12.
-- Stale generated files at `fbb9df5`: running `flutter analyze` or `flutter test` triggers `flutter pub get`, which rewrites `pubspec.lock` (about 90 lines removed, the packages dropped in `fbe8291`) and the generated plugin registrants under `linux/`, `macos/` and `windows/`. Those changes were reverted on 2026-11-12 and are NOT committed. Ask the owner whether to commit the refreshed lock and registrants with the phase 1 PR; until then, never stage them by accident.
+- `flutter test` can be blocked by Device Guard on some machines (plan, Self-Review Notes). It ran fine on the owner's machine earlier on 2026-11-12; later the same day Flutter commands crashed with a Windows memory error while an emulator was running (cause not investigated).
+- Android builds on Flutter 3.47.6: the project pins Gradle 8.12 and Android Gradle Plugin 8.9.1 (`android/settings.gradle.kts`), but Flutter 3.47.6 asks for Gradle 8.14 or newer, AGP 8.11.1 or newer, JDK 17 or 21 (the JDK bundled with Android Studio is 25 and fails) and NDK 28.2.13676358. On 2026-11-12 the app ran only with JDK 21 and the NDK installed, a local edit of `android/gradle/wrapper/gradle-wrapper.properties` to `gradle-8.14.3-all.zip`, and `flutter run --android-skip-build-dependency-validation --dart-define-from-file=config/supabase.json`. None of that is committed. Do not commit the two lines the Flutter migrator adds to `android/gradle.properties` (`android.builtInKotlin=false`, `android.newDsl=false`).
+- Stale `pubspec.lock`: on `develop` it still lists the packages removed in `fbe8291` (18 matching lines for `sqflite`, `circle_nav_bar`, `animated_gradient` at `e145b1b`). `flutter pub get` rewrites it. Not committed yet (section 4A item 2). The `linux/` and `windows/` generated files only differ in line endings; discard them, do not commit them.
 
 ## 4. What is next (priority order; ask the user which)
 
-**Work split:** two lines run in parallel after phase 1 merges: see `docs/WORK-SPLIT.md` (packages, owners, collision rules, kickoff prompts, open decisions).
+**Work split:** phase 1 is merged, so the two lines can start from `develop` once the Supabase project exists (item A3) and the owner says go: see `docs/WORK-SPLIT.md` (packages, owners, collision rules, kickoff prompts, open decisions).
 
 ### A. Release the finished work (owner, no new code)
-1. Run the manual checklist of plan Task 5 Step 7 on an emulator, then push `feature/redesign-phase-1-foundation` and open the PR into `develop` (title in plan Task 8: `[FEAT] Fondasi redesign: tema baru, navigasi 4 tab, hapus kode SQF`). Merge it before any phase 2 branch is cut.
-2. Rotate the Supabase keys, or create a new Supabase project, because the old anon key is in git history. Put the new values only in `config/supabase.json` (git-ignored).
+1. DONE 2026-11-12: phase 1 was checked on an emulator (section 3) and merged into `develop`.
+2. Refresh `pubspec.lock` on its own small branch: run `flutter pub get`, check that only the removed packages disappear, and commit it as `build: refresh pubspec.lock after package removal`.
+3. Rotate the Supabase keys, or create a new Supabase project, because the old anon key is in git history. Put the new values only in `config/supabase.json` (git-ignored). The lines cannot start before this.
+4. Upgrade the Android toolchain on `chore/android-toolchain` (package O2 in `WORK-SPLIT.md`): Gradle, AGP and Kotlin together, with JDK 21, tested on an emulator. Until then use the local run recipe in section 3, uncommitted.
 
 ### B. Build the next piece (each needs brainstorm, spec or plan, then execution)
 - Phase 2, auth on Supabase: login, register and splash session. Needs a plan with the exact SQL (`tb_profil`, signup trigger) because the spec leaves SQL to the plan (spec section 9). Packages BE1 and UI1 in `WORK-SPLIT.md`.
