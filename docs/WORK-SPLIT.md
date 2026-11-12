@@ -1,13 +1,13 @@
 # Volt: splitting the next work between collaborators
 
-Written 2026-11-12. Read `docs/HANDOFF.md` first (state, rules, how to verify). This file only says WHO does WHAT next, in which order, and how the two lines avoid stepping on each other in one repository. Verify the state with git before trusting any line.
+Written 2026-11-12, updated after phase 1 was merged. Read `docs/HANDOFF.md` first (state, rules, how to verify). This file only says WHO does WHAT next, in which order, and how the two lines avoid stepping on each other in one repository. Verify the state with git before trusting any line.
 
-## 1. State in one screen (written at `project_volt` HEAD `fbb9df5` on `feature/redesign-phase-1-foundation`, last tag `v1.0.2`)
+## 1. State in one screen (updated at `project_volt` `develop` `e145b1b`, last tag `v1.0.2`)
 
-- Phase 1 (theme, `go_router`, 4-tab shell, SQF code removed) is committed on the feature branch, 11 commits ahead of `develop` (`7794c86`). It is not pushed and has no PR. The app still runs on Firebase.
-- `flutter analyze`: 82 issues, all `info`. `flutter test`: 19 pass, 1 fail (the untracked simulator reproduction test).
-- NOT proven: the phase 1 manual checklist on an emulator, any Supabase project or schema, whether the exposed Supabase key was rotated.
-- The two lines can only start after phase 1 is merged into `develop` (package O0), because every later branch is cut from it.
+- Phase 1 (theme, `go_router`, 4-tab shell, SQF code removed) is merged into `develop` (`e145b1b`, rebase-merge). The app still runs on Firebase.
+- `flutter analyze`: 82 issues, all `info`. `flutter test`: 19 pass, 1 fail (the untracked simulator reproduction test). Measured before the last cleanup; a re-run on `develop` crashed with a Windows memory error and is not done.
+- NOT proven: dark mode and unknown-role login on an emulator, any Supabase project or schema, whether the exposed Supabase key was rotated. The Simulasi tab cannot save a circuit (existing behavior, until phase 5).
+- Package O0 is done, so the lines can start from `develop` once O1 is done and decision 14 is settled.
 
 ## 2. Work packages
 
@@ -15,8 +15,9 @@ Lines: **BE** = backend line (Supabase SQL, RLS, RPC, storage, repositories, sim
 
 | ID | Package | Line | Needs | Size | Conflicts with |
 |---|---|---|---|---|---|
-| O0 | Phase 1: emulator checklist, push, PR into `develop`, merge | owner | none | S | blocks every other package |
+| O0 | Phase 1: emulator checklist, push, PR into `develop`, merge | owner | none | S | DONE 2026-11-12 |
 | O1 | Rotate Supabase keys or create a new project; give BE the project, put values in `config/supabase.json` | owner | none | S | none (no code) |
+| O2 | Android toolchain upgrade on `chore/android-toolchain`: Gradle 8.14 or newer, AGP 8.11.1 or newer, Kotlin, with JDK 21; test on an emulator | owner (BE if asked: `android/` is a shared file) | O0 | M | none; UI1's emulator review needs it, or the local recipe in `HANDOFF.md` section 3 |
 | BE1 | Phase 2 backend: `tb_profil`, signup trigger, RLS, `AuthRepository` (interface plus Supabase implementation), `SessionController` on the Supabase user | BE | O0, O1 | M | UI1 (interface agreed first) |
 | UI1 | Phase 2 screens: splash session check, login, register, against `AuthRepository` with a fake in tests | UI | O0, BE1 step 1 (interface) | M | BE1 on `lib/app/session_controller.dart` |
 | BE2 | Phase 3 backend: `tb_kelas`, `tb_anggota_kelas`, RLS, join RPCs, `KelasRepository` | BE | BE1 | M | UI2 (interface) |
@@ -33,7 +34,7 @@ Dependencies: UI work in a phase calls repositories through an interface, so UI 
 
 - **Collaborator BE (backend line, owns the Supabase dev project and any RLS or SQL check run):** BE1, BE2, BE3, BE4 in that order. BE4's engine part may start earlier if BE is waiting.
 - **Collaborator UI (UI line):** UI1, UI2, UI3, UI4 in that order.
-- **Owner:** O0, O1, P6, runs every commit and tag, reviews and approves every package, grading screen design, answers section 7.
+- **Owner:** O0 (done), O1, O2, P6, runs every commit and tag, reviews and approves every package, grading screen design, answers section 7.
 
 Both lines work in `project_volt`. They avoid overlap by folder (section 4, rule 2).
 
@@ -53,7 +54,7 @@ Both lines work in `project_volt`. They avoid overlap by folder (section 4, rule
 ## 5. Package details
 
 ### O0: Phase 1 release (owner)
-**Status: not started.** Branch `feature/redesign-phase-1-foundation` at `fbb9df5`.
+**Status: DONE 2026-11-12.** Merged into `develop` (rebase-merge, `e145b1b`). Emulator results are in `docs/HANDOFF.md` section 3. The steps below are kept as the record.
 Steps:
 1. Run the manual list from plan Task 5 Step 7 on an emulator; record each result in the PR description.
 2. Push the branch and open the PR into `develop` with the title from plan Task 8.
@@ -76,8 +77,8 @@ Not detailed yet: each starts with a plan written after the previous package mer
 
 ## 6. Kickoff prompts (paste into each collaborator's Claude)
 
-- Collaborator BE: "Read `docs/HANDOFF.md` and `docs/WORK-SPLIT.md` in `project_volt`. You are the backend line and own `supabase/`, `lib/features/*/data/`, `lib/data/` and `lib/app/session_controller.dart`. Do not start until I confirm that phase 1 (package O0) is merged and I have given you the Supabase dev project (O1). Then start with package BE1 step 1 (plan and `AuthRepository` interface) and stop for my review. Never edit screens, widgets, `lib/core/` or the router, never read `config/supabase.json` or any `.env`, never use the `service_role` key in the app, never commit, tag or push; when a package is ready, review your own diff first, then give me a commit package (files to stage by explicit path, a Conventional Commits message and the CLI to run: `git add <paths>` then `git commit -m "..."`) and I will commit myself, never use `git add -A`. You are also the reviewer of the UI line: when I tell you UI work is ready for review, read the local working tree (`git status --short`, `git diff HEAD`, and any untracked files) and report findings (file:line, what is wrong, blocking or not) without editing UI files."
-- Collaborator UI: "Read `docs/HANDOFF.md` and `docs/WORK-SPLIT.md` in `project_volt`. You are the UI line and own screens, widgets, `lib/core/`, `lib/widgets/`, `lib/app/app_router.dart` and `lib/app/app_shell.dart`. Do not start until I confirm phase 1 (package O0) is merged and the `AuthRepository` interface from BE1 step 1 is approved. Then start with package UI1 against a fake repository and stop for my review after the first screen. Never edit `supabase/`, any `data/` folder or `lib/data/`, never write to or run SQL against the shared Supabase or Firebase project while BE runs a check, never read `config/supabase.json` or any `.env`, never commit, tag or push; when a package is ready, review your own diff first, then give me a commit package (files to stage by explicit path, a Conventional Commits message and the CLI to run: `git add <paths>` then `git commit -m "..."`) and I will commit myself, never use `git add -A`. You are also the reviewer of the BE line: when I tell you BE work is ready for review, read the local working tree (`git status --short`, `git diff HEAD`, and any untracked files) and report findings (file:line, what is wrong, blocking or not) without editing BE files."
+- Collaborator BE: "Read `docs/HANDOFF.md` and `docs/WORK-SPLIT.md` in `project_volt`. You are the backend line and own `supabase/`, `lib/features/*/data/`, `lib/data/` and `lib/app/session_controller.dart`. Phase 1 (package O0) is merged. Do not start until I have given you the Supabase dev project (O1) and told you to go. Then start with package BE1 step 1 (plan and `AuthRepository` interface) and stop for my review. Never edit screens, widgets, `lib/core/` or the router, never read `config/supabase.json` or any `.env`, never use the `service_role` key in the app, never commit, tag or push; when a package is ready, review your own diff first, then give me a commit package (files to stage by explicit path, a Conventional Commits message and the CLI to run: `git add <paths>` then `git commit -m "..."`) and I will commit myself, never use `git add -A`. You are also the reviewer of the UI line: when I tell you UI work is ready for review, read the local working tree (`git status --short`, `git diff HEAD`, and any untracked files) and report findings (file:line, what is wrong, blocking or not) without editing UI files."
+- Collaborator UI: "Read `docs/HANDOFF.md` and `docs/WORK-SPLIT.md` in `project_volt`. You are the UI line and own screens, widgets, `lib/core/`, `lib/widgets/`, `lib/app/app_router.dart` and `lib/app/app_shell.dart`. Phase 1 (package O0) is merged. Do not start until the `AuthRepository` interface from BE1 step 1 is approved and I tell you to go. Then start with package UI1 against a fake repository and stop for my review after the first screen. Never edit `supabase/`, any `data/` folder or `lib/data/`, never write to or run SQL against the shared Supabase or Firebase project while BE runs a check, never read `config/supabase.json` or any `.env`, never commit, tag or push; when a package is ready, review your own diff first, then give me a commit package (files to stage by explicit path, a Conventional Commits message and the CLI to run: `git add <paths>` then `git commit -m "..."`) and I will commit myself, never use `git add -A`. You are also the reviewer of the BE line: when I tell you BE work is ready for review, read the local working tree (`git status --short`, `git diff HEAD`, and any untracked files) and report findings (file:line, what is wrong, blocking or not) without editing BE files."
 
 ## 7. Decisions the owner still has to make
 
@@ -95,3 +96,4 @@ Not detailed yet: each starts with a plan written after the previous package mer
 12. ~~Who commits and tags?~~ ANSWERED 2026-11-12: the owner commits and tags; branch model and Conventional Commits from `README.md`. REVISED 2026-11-12: collaborators only write the commit message and the CLI (a commit package); the owner runs it.
 13. ~~Who reviews, and when?~~ ANSWERED 2026-11-12: the collaborators review each other across lines (UI reviews Backend, Backend reviews UI), on the owner's machine and before the owner commits (rule 10); the owner approves and commits.
 14. One working directory or two? The reviewer reads the local working tree, but two lines on two branches cannot share one checkout at the same time. OPEN, suggested default: one `git worktree` per line next to the main folder (for example `D:\Code\project_volt-be` and `D:\Code\project_volt-ui`), and the reviewer reads the other line's worktree. Owner to confirm.
+15. Android toolchain (package O2): DEFAULT yes, the owner does it before the first emulator review by the UI collaborator. Until then both collaborators use the uncommitted local recipe in `HANDOFF.md` section 3. Owner to confirm, or say who does it.
